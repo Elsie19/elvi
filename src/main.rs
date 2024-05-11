@@ -16,7 +16,5 @@ fn main() {
 
     let raw_parse =
         ElviParser::parse(Rule::program, &unparsed_file).unwrap_or_else(|e| panic!("{}", e));
-    dbg!(variables);
-    dbg!(commands);
     dbg!(&raw_parse);
 }

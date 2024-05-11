@@ -67,6 +67,10 @@ impl Variables {
     pub fn get_variable(&self, var: String) -> Option<&Variable> {
         self.vars.get(&var)
     }
+
+    pub fn set_variable(&mut self, name: String, var: Variable) {
+        self.vars.insert(name, var);
+    }
 }
 
 impl Variable {
