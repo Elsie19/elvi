@@ -1,0 +1,4 @@
+// Main rules
+normalVariable = @{ variableIdent ~ "=" ~ anyString }
+
+variableIdent = { !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_")+ }

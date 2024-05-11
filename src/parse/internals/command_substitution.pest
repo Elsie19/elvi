@@ -1,0 +1,6 @@
+// Main rules
+backtickSubstitution = @{ "`" ~ backtickInner ~ "`" }
+
+// Helper rules
+backtickInner  = @{ (!("`" | "\\") ~ ANY)* ~ (backtickEscape ~ backtickInner)? }
+backtickEscape = @{ "\\" ~ ("\\" | "`") }

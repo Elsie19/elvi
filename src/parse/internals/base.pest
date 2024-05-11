@@ -1,0 +1,7 @@
+program = { SOI ~ (statement ~ (newline)*)+ ~ EOI }
+
+newline = { ";"{1} | NEWLINE }
+
+statement = _{
+    normalVariable
+}
