@@ -1,10 +1,13 @@
 mod parse;
 
+use std::fs;
+
 use parse::grammar::{ElviParser, Rule};
 use pest::Parser;
 
 fn main() {
+    let unparsed_file = fs::read_to_string("test.elv").expect("Could not read file");
     let raw_parse =
-        ElviParser::parse(Rule::program, r#"foo="bar\n""#).unwrap_or_else(|e| panic!("{}", e));
+        ElviParser::parse(Rule::program, &unparsed_file).unwrap_or_else(|e| panic!("{}", e));
     dbg!(&raw_parse);
 }
