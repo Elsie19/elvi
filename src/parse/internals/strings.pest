@@ -3,7 +3,7 @@ singleQuoteString = @{ "'" ~ singleInner ~ "'" }
 doubleQuoteString = @{ "\"" ~ doubleInner ~ "\"" }
 
 // A wrapper so people don't have to { singleQuoteString | doubleQuoteString }
-anyString = { singleQuoteString | doubleQuoteString }
+anyString = ${ singleQuoteString | doubleQuoteString }
 
 // Helper rules
 doubleInner = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ doubleInner)? }

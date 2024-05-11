@@ -1,4 +1,6 @@
 // Main rules
-normalVariable = @{ variableIdent ~ "=" ~ anyString }
+normalVariable = @{ variableIdent ~ "=" ~ variableIdentifierPossibilities }
+
+variableIdentifierPossibilities = ${ anyString | backtickSubstitution }
 
 variableIdent = { !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_")+ }
