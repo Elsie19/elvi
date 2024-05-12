@@ -3,8 +3,8 @@ mod parse;
 
 use std::fs;
 
-use internal::commands::Commands;
 use internal::variables::Variables;
+use internal::{commands::Commands, variables::ElviType};
 use parse::grammar::{ElviParser, Rule};
 // use pest::Parser;
 use pest_consume::Parser;

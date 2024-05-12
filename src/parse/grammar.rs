@@ -1,5 +1,6 @@
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable};
 use pest_consume::{match_nodes, Error, Parser};
+use snailquote::unescape;
 
 #[derive(Parser)]
 #[grammar = "parse/internals/strings.pest"]
@@ -28,7 +29,9 @@ impl ElviParser {
 
     //TODO: Variable interpolation
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string()))
+        Ok(ElviType::String(input.as_str().to_string())
+            .eval_escapes()
+            .unwrap())
     }
 
     //TODO: Command substitution
@@ -67,7 +70,6 @@ impl ElviParser {
     pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
         Ok(match_nodes!(input.into_children();
             [normalVariable(var).., _] => {
-                println!("{:?}", var);
                 var.collect()
             },
         ))

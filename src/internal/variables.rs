@@ -1,4 +1,5 @@
 use custom_error::custom_error;
+use snailquote::unescape;
 use std::collections::HashMap;
 
 custom_error! {pub VariableError
@@ -106,6 +107,15 @@ impl Variable {
             contents,
             modification_status,
             shell_lvl,
+        }
+    }
+}
+
+impl ElviType {
+    pub fn eval_escapes(&self) -> Option<ElviType> {
+        match self {
+            ElviType::String(le_string) => Some(ElviType::String(unescape(le_string).unwrap())),
+            _ => None,
         }
     }
 }
