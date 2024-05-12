@@ -1,6 +1,7 @@
 mod internal;
 mod parse;
 
+use anyhow::Result;
 use std::fs;
 
 use internal::variables::Variables;
@@ -15,11 +16,25 @@ fn main() {
     let mut variables = Variables::default();
     let mut commands = Commands::generate(&variables);
 
-    let raw_parse = ElviParser::parse(Rule::program, &unparsed_file).unwrap();
+    let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
+        Ok(yay) => yay,
+        Err(oof) => {
+            eprintln!("Error: {}", oof.to_string());
+            std::process::exit(1);
+        }
+    };
 
     let raw_parse = raw_parse.single().unwrap();
 
-    let stuff = ElviParser::program(raw_parse).unwrap();
+    dbg!(&raw_parse);
+
+    let stuff = match ElviParser::program(raw_parse) {
+        Ok(yay) => yay,
+        Err(oof) => {
+            eprintln!("Error: {}", oof.to_string());
+            std::process::exit(1);
+        }
+    };
 
     for (name, var) in stuff {
         match variables.set_variable(name.to_string(), var) {

@@ -1,4 +1,4 @@
+# readonly bar="1"
 bar="1"
-bar="\${bar}"
 # comment
-baz='boo\tnotab';oof=`ls /`
+# baz='boo\tnotab';oof=`ls /`

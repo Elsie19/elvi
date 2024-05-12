@@ -1,6 +1,8 @@
 // Main rules
-normalVariable = { variableIdent ~ "=" ~ variableIdentifierPossibilities }
+normalVariable = @{ variableIdent ~ "=" ~ variableIdentifierPossibilities }
+// HACK: I don't like this, future me, make it so that any whitespace can follow the "readonly" but not after it.
+readonlyVariable = @{ "readonly " ~ variableIdent ~ "=" ~ variableIdentifierPossibilities }
 
 variableIdentifierPossibilities = ${ anyString | backtickSubstitution }
 
-variableIdent = { !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_")+ }
+variableIdent = !{ !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_")+ }

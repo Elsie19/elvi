@@ -64,6 +64,24 @@ impl ElviParser {
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
+                ElviMutable::Normal,
+                ElviGlobal::Normal(1),
+            ),
+        ))
+    }
+
+    pub fn readonlyVariable(input: Node) -> Result<(String, Variable)> {
+        let mut stuff = input.clone().into_children().into_pairs();
+
+        let name_pair = stuff.next().unwrap().as_str();
+
+        let variable_contents =
+            Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
+
+        Ok((
+            name_pair.to_string(),
+            Variable::oneshot_var(
+                variable_contents.unwrap(),
                 ElviMutable::Readonly,
                 ElviGlobal::Normal(1),
             ),
@@ -71,11 +89,22 @@ impl ElviParser {
     }
 
     pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
-        Ok(match_nodes!(input.into_children();
+        let mut le_vars: Vec<(String, Variable)> = vec![];
+        match_nodes!(input.into_children();
             [normalVariable(var).., _] => {
-                var.collect()
+                let le_vars_collected: Vec<(String, Variable)> = var.collect();
+                for indi_var in le_vars_collected {
+                    le_vars.push(indi_var);
+                }
             },
-        ))
+            [readonlyVariable(var).., _] => {
+                let le_vars_collected: Vec<(String, Variable)> = var.collect();
+                for indi_var in le_vars_collected {
+                    le_vars.push(indi_var);
+                }
+            },
+        );
+        Ok(le_vars)
     }
 }
 
