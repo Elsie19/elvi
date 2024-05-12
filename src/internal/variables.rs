@@ -1,4 +1,9 @@
+use custom_error::custom_error;
 use std::collections::HashMap;
+
+custom_error! {pub VariableError
+    Readonly{name:String} = "Cannot modify readonly variable: '{name}'"
+}
 
 #[derive(Debug)]
 pub enum ElviType {
@@ -68,8 +73,22 @@ impl Variables {
         self.vars.get(&var)
     }
 
-    pub fn set_variable(&mut self, name: String, var: Variable) {
-        self.vars.insert(name, var);
+    pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
+        match self.vars.get(&name) {
+            Some(value) => match value.modification_status {
+                ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
+                    Err(VariableError::Readonly { name })
+                }
+                ElviMutable::Normal => {
+                    self.vars.insert(name, var).unwrap();
+                    return Ok(());
+                }
+            },
+            None => {
+                self.vars.insert(name, var).unwrap();
+                return Ok(());
+            }
+        }
     }
 }
 

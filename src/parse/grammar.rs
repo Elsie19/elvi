@@ -1,4 +1,4 @@
-use pest_derive::Parser;
+use pest_consume::{Error, Parser};
 
 #[derive(Parser)]
 #[grammar = "parse/internals/strings.pest"]
@@ -6,6 +6,25 @@ use pest_derive::Parser;
 #[grammar = "parse/internals/command_substitution.pest"]
 #[grammar = "parse/internals/base.pest"]
 pub struct ElviParser;
+
+type Result<T> = std::result::Result<T, Error<Rule>>;
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+
+// This is the other half of the parser, using pest_consume.
+#[pest_consume::parser]
+impl ElviParser {
+    pub fn EOI(_input: Node) -> Result<()> {
+        Ok(())
+    }
+
+    pub fn normalVariable(input: Node) {
+        println!("Found variable {:?}", input);
+    }
+
+    pub fn program(input: Node) {
+        println!("Found program {:?}", input);
+    }
+}
 
 #[cfg(test)]
 mod tests {
