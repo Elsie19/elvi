@@ -58,9 +58,6 @@ impl ElviParser {
         let foo =
             Self::variableIdentifierPossibilities(input.into_children().skip(1).next().unwrap());
 
-        // print!("Name is {} and raw type is ", name_pair);
-        // println!("{}", &foo.clone().unwrap());
-
         Ok((
             name_pair.to_string(),
             Variable::oneshot_var(foo.unwrap(), ElviMutable::Normal, ElviGlobal::Normal(1)),
@@ -70,6 +67,7 @@ impl ElviParser {
     pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
         Ok(match_nodes!(input.into_children();
             [normalVariable(var).., _] => {
+                println!("{:?}", var);
                 var.collect()
             },
         ))

@@ -2,6 +2,8 @@ program = { SOI ~ (statement ~ (newline)*)+ ~ EOI }
 
 newline = _{ ";"{1} | NEWLINE }
 
+COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
+
 statement = _{
     normalVariable
 }
