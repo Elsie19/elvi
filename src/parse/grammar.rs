@@ -64,7 +64,7 @@ impl ElviParser {
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
-                ElviMutable::Normal,
+                ElviMutable::Readonly,
                 ElviGlobal::Normal(1),
             ),
         ))

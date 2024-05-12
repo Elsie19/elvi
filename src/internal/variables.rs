@@ -3,13 +3,13 @@ use snailquote::unescape;
 use std::collections::HashMap;
 
 custom_error! {pub VariableError
-    Readonly{name:String} = "Cannot modify readonly variable: '{name}'"
+    Readonly{name:String} = "elvi: {name}: readonly variable"
 }
 
 #[derive(Debug)]
 pub enum ElviType {
     String(String),
-    Array(Vec<Self>),
+    // Array(Vec<Self>),
     Boolean(bool),
 }
 
