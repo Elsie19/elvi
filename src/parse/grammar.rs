@@ -1,4 +1,4 @@
-use pest_consume::{Error, Parser};
+use pest_consume::{match_nodes, Error, Parser};
 
 #[derive(Parser)]
 #[grammar = "parse/internals/strings.pest"]
@@ -22,7 +22,7 @@ impl ElviParser {
     }
 
     pub fn program(input: Node) {
-        println!("Found program {:?}", input);
+        dbg!(input.children());
     }
 }
 

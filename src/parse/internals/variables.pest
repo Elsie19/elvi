@@ -1,5 +1,5 @@
 // Main rules
-normalVariable = @{ variableIdent ~ "=" ~ variableIdentifierPossibilities }
+normalVariable = { variableIdent ~ "=" ~ variableIdentifierPossibilities }
 
 variableIdentifierPossibilities = ${ anyString | backtickSubstitution }
 
