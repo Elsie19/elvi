@@ -1,3 +1,2 @@
 foo="bar"
-baz='boo'
-oof=`ls /`
+baz='boo';oof=`ls /`

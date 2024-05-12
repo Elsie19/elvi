@@ -19,5 +19,7 @@ fn main() {
 
     let raw_parse = raw_parse.single().unwrap();
 
-    ElviParser::program(raw_parse).unwrap();
+    let stuff = ElviParser::program(raw_parse).unwrap();
+
+    dbg!(stuff);
 }

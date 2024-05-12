@@ -96,4 +96,16 @@ impl Variable {
     pub fn get_value(&self) -> &ElviType {
         &self.contents
     }
+
+    pub fn oneshot_var(
+        contents: ElviType,
+        modification_status: ElviMutable,
+        shell_lvl: ElviGlobal,
+    ) -> Self {
+        Self {
+            contents,
+            modification_status,
+            shell_lvl,
+        }
+    }
 }
