@@ -17,12 +17,68 @@ impl ElviParser {
         Ok(())
     }
 
-    pub fn normalVariable(input: Node) {
-        println!("Found variable {:?}", input);
+    pub fn variableIdent(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
     }
 
-    pub fn program(input: Node) {
-        dbg!(input.children());
+    pub fn singleQuoteString(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
+    }
+
+    //TODO: Variable interpolation
+    pub fn doubleQuoteString(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
+    }
+
+    //TODO: Command substitution
+    pub fn backtickSubstitution(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
+    }
+
+    pub fn anyString(input: Node) -> Result<String> {
+        Ok(match_nodes!(input.into_children();
+            [singleQuoteString(stringo)] => stringo,
+            [doubleQuoteString(stringo)] => stringo,
+        ))
+    }
+
+    pub fn variableIdentifierPossibilities(input: Node) -> Result<String> {
+        println!("{:?}", input.as_str());
+        Ok(match_nodes!(input.into_children();
+            [anyString(stringo)] => stringo,
+            [backtickSubstitution(stringo)] => stringo,
+        ))
+    }
+
+    pub fn normalVariable(input: Node) -> Result<String> {
+        let mut stuff = input.clone().into_children().into_pairs();
+
+        let name_pair = stuff.next().unwrap().as_str();
+        print!("Name is {} and raw type is ", name_pair);
+        // Works: dbg!(&input.clone().into_pair().into_inner().skip(1).next());
+
+        let foo =
+            Self::variableIdentifierPossibilities(input.into_children().skip(1).next().unwrap());
+
+        println!("{}", &foo.clone().unwrap());
+
+        foo
+
+        // Ok(match_nodes!(input.into_children().skip(1).next().unwrap();
+        //     [variableIdent(stringo)] => {
+        //         println!("Var name is {}", stringo);
+        //         stringo
+        //     },
+        //     [variableIdentifierPossibilities(stringo)] => stringo,
+        // ))
+    }
+
+    pub fn program(input: Node) -> Result<String> {
+        Ok(match_nodes!(input.into_children();
+            [normalVariable(var).., _] => {
+                var.collect()
+            },
+        ))
     }
 }
 

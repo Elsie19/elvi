@@ -19,5 +19,5 @@ fn main() {
 
     let raw_parse = raw_parse.single().unwrap();
 
-    ElviParser::program(raw_parse)
+    ElviParser::program(raw_parse).unwrap();
 }
