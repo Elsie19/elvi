@@ -1,3 +1,3 @@
-foo="bar\nnewlineomg\there a tab"
+foo="\${foo}"
 # comment
 baz='boo\tnotab';oof=`ls /`

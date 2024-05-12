@@ -81,12 +81,13 @@ impl Variables {
                     Err(VariableError::Readonly { name })
                 }
                 ElviMutable::Normal => {
-                    self.vars.insert(name, var).unwrap();
+                    self.vars.insert(name, var);
                     Ok(())
                 }
             }
+        // Is this a fresh variable?
         } else {
-            self.vars.insert(name, var).unwrap();
+            self.vars.insert(name, var);
             Ok(())
         }
     }
