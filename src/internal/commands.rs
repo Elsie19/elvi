@@ -11,19 +11,12 @@ impl Commands {
     pub fn generate(variables: &Variables) -> Self {
         let mut cmds: HashMap<String, PathBuf> = HashMap::new();
 
-        let path_var = variables.get_variable("PATH".into()).unwrap().get_value();
+        let path_var = variables.get_variable("PATH").unwrap().get_value();
 
-        let path_var = match path_var {
-            ElviType::String(foo) => foo,
-            _ => unreachable!("How is `PATH` defined as anything but a string?"),
-        };
+        let ElviType::String(path_var) = path_var else { unreachable!("How is `PATH` defined as anything but a string?") };
 
-        for part in path_var.split(":") {
-            let files = match fs::read_dir(part) {
-                Ok(yas) => yas,
-                // Skip over it if the path don't exist
-                Err(_) => continue,
-            };
+        for part in path_var.split(':') {
+            let Ok(files) = fs::read_dir(part) else { continue };
 
             for part in files {
                 if part.as_ref().unwrap().path().is_file() {
@@ -37,7 +30,7 @@ impl Commands {
         Self { cmds }
     }
 
-    pub fn get_path(&self, program: String) -> PathBuf {
-        self.cmds.get(&program).unwrap().to_path_buf()
+    pub fn get_path(&self, program: &str) -> PathBuf {
+        self.cmds.get(program).unwrap().to_path_buf()
     }
 }

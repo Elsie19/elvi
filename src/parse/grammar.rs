@@ -1,6 +1,5 @@
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable};
 use pest_consume::{match_nodes, Error, Parser};
-use snailquote::unescape;
 
 #[derive(Parser)]
 #[grammar = "parse/internals/strings.pest"]
@@ -58,12 +57,16 @@ impl ElviParser {
 
         let name_pair = stuff.next().unwrap().as_str();
 
-        let foo =
-            Self::variableIdentifierPossibilities(input.into_children().skip(1).next().unwrap());
+        let variable_contents =
+            Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
 
         Ok((
             name_pair.to_string(),
-            Variable::oneshot_var(foo.unwrap(), ElviMutable::Normal, ElviGlobal::Normal(1)),
+            Variable::oneshot_var(
+                variable_contents.unwrap(),
+                ElviMutable::Normal,
+                ElviGlobal::Normal(1),
+            ),
         ))
     }
 

@@ -70,25 +70,24 @@ impl Variables {
         }
     }
 
-    pub fn get_variable(&self, var: String) -> Option<&Variable> {
-        self.vars.get(&var)
+    pub fn get_variable(&self, var: &str) -> Option<&Variable> {
+        self.vars.get(var)
     }
 
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
-        match self.vars.get(&name) {
-            Some(value) => match value.modification_status {
+        if let Some(value) = self.vars.get(&name) {
+            match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
                     Err(VariableError::Readonly { name })
                 }
                 ElviMutable::Normal => {
                     self.vars.insert(name, var).unwrap();
-                    return Ok(());
+                    Ok(())
                 }
-            },
-            None => {
-                self.vars.insert(name, var).unwrap();
-                return Ok(());
             }
+        } else {
+            self.vars.insert(name, var).unwrap();
+            Ok(())
         }
     }
 }
