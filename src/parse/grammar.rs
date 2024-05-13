@@ -14,7 +14,7 @@ use pest_consume::{match_nodes, Error, Parser};
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
-type Node<'i, 'a> = pest_consume::Node<'i, Rule, (&'a Variables, &'a Commands)>;
+type Node<'i, 'a> = pest_consume::Node<'i, Rule, (&'a mut Variables, &'a mut Commands)>;
 
 // This is the other half of the parser, using pest_consume.
 #[pest_consume::parser]
