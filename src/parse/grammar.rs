@@ -57,7 +57,7 @@ impl ElviParser {
         ))
     }
 
-    pub fn normalVariable(input: Node) -> Result<()> {
+    pub fn normalVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
         let lines = stuff.clone().next().unwrap().line_col();
@@ -67,26 +67,18 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        Ok(())
-
-        // match input.user_data().0.set_variable(
-        //     name_pair.to_string(),
-        //     Variable::oneshot_var(
-        //         variable_contents.unwrap(),
-        //         ElviMutable::Normal,
-        //         ElviGlobal::Normal(1),
-        //         lines,
-        //     ),
-        // ) {
-        //     Ok(_) => Ok(()),
-        //     Err(foo) => {
-        //         eprintln!("{foo}");
-        //         Ok(())
-        //     }
-        // }
+        Ok((
+            name_pair.to_string(),
+            Variable::oneshot_var(
+                variable_contents.unwrap(),
+                ElviMutable::Normal,
+                ElviGlobal::Normal(1),
+                lines,
+            ),
+        ))
     }
 
-    pub fn readonlyVariable(input: Node) -> Result<()> {
+    pub fn readonlyVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
         let lines = stuff.clone().next().unwrap().line_col();
@@ -96,23 +88,15 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        Ok(())
-
-        // match input.user_data().0.set_variable(
-        //     name_pair.to_string(),
-        //     Variable::oneshot_var(
-        //         variable_contents.unwrap(),
-        //         ElviMutable::Readonly,
-        //         ElviGlobal::Normal(1),
-        //         lines,
-        //     ),
-        // ) {
-        //     Ok(_) => Ok(()),
-        //     Err(foo) => {
-        //         eprintln!("{foo}");
-        //         Ok(())
-        //     }
-        // }
+        Ok((
+            name_pair.to_string(),
+            Variable::oneshot_var(
+                variable_contents.unwrap(),
+                ElviMutable::Readonly,
+                ElviGlobal::Normal(1),
+                lines,
+            ),
+        ))
     }
 
     pub fn builtinDbg(input: Node) -> Result<()> {
@@ -140,10 +124,13 @@ impl ElviParser {
         Ok(())
     }
 
-    pub fn statement(input: Node) -> Result<()> {
+    pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
-            [normalVariable(var)] | [readonlyVariable(var)] => {
-                Ok(())
+            [normalVariable(var)] => {
+                Ok(Actions::ChangeVariable(var))
+            },
+            [readonlyVariable(var)] => {
+                Ok(Actions::ChangeVariable(var))
             },
             // [builtinDbg(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
@@ -151,18 +138,49 @@ impl ElviParser {
         )
     }
 
-    pub fn program(input: Node) -> Result<()> {
+    pub fn program(input: Node) -> Result<u8> {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
 
+        let mut subshells_in = 1;
+
         for child in input.into_children() {
             if child.as_rule() != Rule::EOI {
-                dbg!(Self::statement(child));
+                match Self::statement(child) {
+                    Ok(yes) => match yes {
+                        Actions::ChangeVariable((name, var)) => {
+                            if var.get_lvl() != ElviGlobal::Global {
+                                let mut var = var.clone();
+                                var.change_lvl(subshells_in);
+                            }
+                            // println!("Changing variable '{}' with contents of: {:?}", name, var);
+                            match variables.set_variable(name, var) {
+                                Ok(_) => {}
+                                Err(foo) => eprintln!("{foo}"),
+                            }
+                        }
+                        Actions::Builtin(built) => {
+                            println!("Running builtin {:?}", built);
+                        }
+                        Actions::Command(cmd) => {
+                            println!("Running command {:?}", cmd);
+                        }
+                        Actions::Null => {}
+                    },
+                    Err(oops) => {
+                        eprintln!("{oops}");
+                        continue;
+                    }
+                }
             }
         }
-        // let mut nodes = input.into_children().next().unwrap();
 
-        Ok(())
+        let ret_value = match variables.get_variable("?".into()).unwrap().get_value() {
+            ElviType::ErrExitCode(x) => *x,
+            _ => unreachable!("How is $? defined as anything but ErrExitCode?????"),
+        };
+
+        Ok(ret_value)
     }
 }
 

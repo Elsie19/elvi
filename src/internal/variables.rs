@@ -9,6 +9,8 @@ custom_error! {pub VariableError
 #[derive(Debug, Clone)]
 pub enum ElviType {
     String(String),
+    Number(usize),
+    ErrExitCode(u8),
     // Array(Vec<Self>),
     Boolean(bool),
 }
@@ -20,7 +22,7 @@ pub enum ElviMutable {
     ReadonlyUnsettable,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ElviGlobal {
     Global,
     Normal(u32),
@@ -70,6 +72,15 @@ impl Variables {
                         line: (0, 0),
                     },
                 ),
+                (
+                    "?".into(),
+                    Variable {
+                        contents: ElviType::ErrExitCode(0),
+                        modification_status: ElviMutable::ReadonlyUnsettable,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
             ]),
         }
     }
@@ -80,21 +91,49 @@ impl Variables {
 
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
         if let Some(value) = self.vars.get(&name) {
+            let le_lines = value.clone();
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
+                    self.vars.insert(
+                        "?".into(),
+                        Variable::oneshot_var(
+                            ElviType::ErrExitCode(1),
+                            ElviMutable::ReadonlyUnsettable,
+                            ElviGlobal::Global,
+                            (0, 0),
+                        ),
+                    );
                     Err(VariableError::Readonly {
                         name,
-                        line: value.line.0,
-                        column: value.line.1,
+                        line: le_lines.line.0,
+                        column: le_lines.line.1,
                     })
                 }
                 ElviMutable::Normal => {
+                    self.vars.insert(
+                        "?".into(),
+                        Variable::oneshot_var(
+                            ElviType::ErrExitCode(0),
+                            ElviMutable::ReadonlyUnsettable,
+                            ElviGlobal::Global,
+                            (0, 0),
+                        ),
+                    );
                     self.vars.insert(name, var);
                     Ok(())
                 }
             }
         // Is this a fresh variable?
         } else {
+            self.vars.insert(
+                "?".into(),
+                Variable::oneshot_var(
+                    ElviType::ErrExitCode(0),
+                    ElviMutable::ReadonlyUnsettable,
+                    ElviGlobal::Global,
+                    (0, 0),
+                ),
+            );
             self.vars.insert(name, var);
             Ok(())
         }
@@ -118,6 +157,15 @@ impl Variable {
             shell_lvl,
             line,
         }
+    }
+
+    pub fn get_lvl(&self) -> ElviGlobal {
+        self.shell_lvl
+    }
+
+    pub fn change_lvl(&mut self, lvl: u32) -> ElviGlobal {
+        self.shell_lvl = ElviGlobal::Normal(lvl);
+        self.shell_lvl
     }
 }
 
