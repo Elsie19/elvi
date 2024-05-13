@@ -10,6 +10,7 @@ pub enum Actions {
     ChangeVariable((String, Variable)),
     Builtin(Builtins),
     Command(Vec<String>),
+    Null,
 }
 
 #[derive(Debug)]

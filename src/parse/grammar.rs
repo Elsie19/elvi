@@ -8,6 +8,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/command_substitution.pest"]
 #[grammar = "parse/internals/builtins.pest"]
 #[grammar = "parse/internals/commands.pest"]
+#[grammar = "parse/internals/if.pest"]
 #[grammar = "parse/internals/base.pest"]
 pub struct ElviParser;
 
@@ -58,6 +59,8 @@ impl ElviParser {
     pub fn normalVariable(input: Node) -> Result<Actions> {
         let mut stuff = input.clone().into_children().into_pairs();
 
+        let lines = stuff.clone().next().unwrap().line_col();
+
         let name_pair = stuff.next().unwrap().as_str();
 
         let variable_contents =
@@ -69,12 +72,15 @@ impl ElviParser {
                 variable_contents.unwrap(),
                 ElviMutable::Normal,
                 ElviGlobal::Normal(1),
+                lines,
             ),
         )))
     }
 
     pub fn readonlyVariable(input: Node) -> Result<Actions> {
         let mut stuff = input.clone().into_children().into_pairs();
+
+        let lines = stuff.clone().next().unwrap().line_col();
 
         let name_pair = stuff.next().unwrap().as_str();
 
@@ -87,6 +93,7 @@ impl ElviParser {
                 variable_contents.unwrap(),
                 ElviMutable::Readonly,
                 ElviGlobal::Normal(1),
+                lines,
             ),
         )))
     }
@@ -107,6 +114,11 @@ impl ElviParser {
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
     }
 
+    pub fn ifStatement(input: Node) -> Result<Actions> {
+        dbg!(input);
+        Ok(Actions::Null)
+    }
+
     pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
             [normalVariable(var)] | [readonlyVariable(var)] => {
@@ -114,6 +126,7 @@ impl ElviParser {
             },
             [builtinDbg(var)] => Ok(var),
             [externalCommand(var)] => Ok(var),
+            [ifStatement(var)] => Ok(var),
         )
     }
 

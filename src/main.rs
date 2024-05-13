@@ -62,6 +62,7 @@ fn main() {
                 Command::new(cmd_path);
                 ()
             }
+            Actions::Null => (),
         }
     }
 }

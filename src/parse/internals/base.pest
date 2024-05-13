@@ -1,12 +1,10 @@
-program = { SOI ~ (statement ~ (newline)*)+ ~ EOI }
+program = { SOI ~ ((WHITE_SPACE+)? ~ statement ~ (newline)*)+ ~ EOI }
 
 newline = _{ ";"{1} | NEWLINE }
 
 COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
 statement = {
-    normalVariable
-  | readonlyVariable
-  | builtinDbg
-  | externalCommand
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinDbg // | externalCommand
+  | ifStatement)
 }

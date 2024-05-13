@@ -1,0 +1,6 @@
+// Main rules
+ifStatement = { "if " ~ ifStatementMatch ~ (newline+)? ~ " then" ~ (newline+)? ~ statement ~ (newline+)? ~ "fi" }
+
+ifStatementMatch = ${
+    backtickSubstitution
+}

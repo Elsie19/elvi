@@ -1,9 +1,9 @@
 use custom_error::custom_error;
 use snailquote::unescape;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 custom_error! {pub VariableError
-    Readonly{name:String} = "elvi: {name}: readonly variable"
+    Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')"
 }
 
 #[derive(Debug)]
@@ -36,6 +36,7 @@ pub struct Variable {
     contents: ElviType,
     modification_status: ElviMutable,
     shell_lvl: ElviGlobal,
+    line: (usize, usize),
 }
 
 impl Variables {
@@ -48,6 +49,7 @@ impl Variables {
                         contents: ElviType::String("$ ".into()),
                         modification_status: ElviMutable::Normal,
                         shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
                     },
                 ),
                 (
@@ -56,6 +58,7 @@ impl Variables {
                         contents: ElviType::String(r#" \t\n"#.into()),
                         modification_status: ElviMutable::Normal,
                         shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
                     },
                 ),
                 (
@@ -64,6 +67,7 @@ impl Variables {
                         contents: ElviType::String("/usr/sbin:/usr/bin:/sbin:/bin".into()),
                         modification_status: ElviMutable::Normal,
                         shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
                     },
                 ),
             ]),
@@ -78,7 +82,11 @@ impl Variables {
         if let Some(value) = self.vars.get(&name) {
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-                    Err(VariableError::Readonly { name })
+                    Err(VariableError::Readonly {
+                        name,
+                        line: value.line.0,
+                        column: value.line.1,
+                    })
                 }
                 ElviMutable::Normal => {
                     self.vars.insert(name, var);
@@ -102,11 +110,13 @@ impl Variable {
         contents: ElviType,
         modification_status: ElviMutable,
         shell_lvl: ElviGlobal,
+        line: (usize, usize),
     ) -> Self {
         Self {
             contents,
             modification_status,
             shell_lvl,
+            line,
         }
     }
 }
