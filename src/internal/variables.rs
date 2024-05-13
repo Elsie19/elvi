@@ -1,37 +1,37 @@
 use custom_error::custom_error;
 use snailquote::unescape;
-use std::{collections::HashMap, path::PathBuf};
+use std::collections::HashMap;
 
 custom_error! {pub VariableError
     Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')"
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ElviType {
     String(String),
     // Array(Vec<Self>),
     Boolean(bool),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ElviMutable {
     Normal,
     Readonly,
     ReadonlyUnsettable,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ElviGlobal {
     Global,
     Normal(u32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Variables {
     vars: HashMap<String, Variable>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Variable {
     contents: ElviType,
     modification_status: ElviMutable,

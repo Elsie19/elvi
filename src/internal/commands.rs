@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 
 use super::variables::{ElviType, Variables};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Commands {
     cmds: HashMap<String, PathBuf>,
 }

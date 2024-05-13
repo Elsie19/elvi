@@ -1,5 +1,6 @@
-use crate::internal::tree::{Actions, Builtins, Tree};
-use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable};
+use crate::internal::commands::Commands;
+use crate::internal::tree::Actions;
+use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
 #[derive(Parser)]
@@ -13,7 +14,7 @@ use pest_consume::{match_nodes, Error, Parser};
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
-type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type Node<'i, 'a> = pest_consume::Node<'i, Rule, (&'a Variables, &'a Commands)>;
 
 // This is the other half of the parser, using pest_consume.
 #[pest_consume::parser]
@@ -56,7 +57,7 @@ impl ElviParser {
         ))
     }
 
-    pub fn normalVariable(input: Node) -> Result<Actions> {
+    pub fn normalVariable(input: Node) -> Result<()> {
         let mut stuff = input.clone().into_children().into_pairs();
 
         let lines = stuff.clone().next().unwrap().line_col();
@@ -64,9 +65,9 @@ impl ElviParser {
         let name_pair = stuff.next().unwrap().as_str();
 
         let variable_contents =
-            Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
+            Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        Ok(Actions::ChangeVariable((
+        match input.user_data().0.set_variable(
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
@@ -74,20 +75,27 @@ impl ElviParser {
                 ElviGlobal::Normal(1),
                 lines,
             ),
-        )))
+        ) {
+            Ok(_) => Ok(()),
+            Err(foo) => {
+                eprintln!("{foo}");
+                Ok(())
+            }
+        }
     }
 
-    pub fn readonlyVariable(input: Node) -> Result<Actions> {
-        let mut stuff = input.clone().into_children().into_pairs();
+    pub fn readonlyVariable(input: Node) -> Result<()> {
+        let stuff = input.children().into_pairs();
+        // let mut stuff = input.clone().into_children().into_pairs();
 
         let lines = stuff.clone().next().unwrap().line_col();
 
         let name_pair = stuff.next().unwrap().as_str();
 
         let variable_contents =
-            Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
+            Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        Ok(Actions::ChangeVariable((
+        match input.user_data().0.set_variable(
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
@@ -95,10 +103,16 @@ impl ElviParser {
                 ElviGlobal::Normal(1),
                 lines,
             ),
-        )))
+        ) {
+            Ok(_) => Ok(()),
+            Err(foo) => {
+                eprintln!("{foo}");
+                Ok(())
+            }
+        }
     }
 
-    pub fn builtinDbg(input: Node) -> Result<Actions> {
+    pub fn builtinDbg(input: Node) -> Result<()> {
         let name = input
             .into_children()
             .into_pairs()
@@ -106,41 +120,40 @@ impl ElviParser {
             .unwrap()
             .as_str()
             .to_string();
-        Ok(Actions::Builtin(Builtins::Dbg(name)))
+
+        println!(
+            "Variable: {} | Contents: {:?}",
+            name,
+            input.user_data().0.get_variable(&name)
+        );
+        Ok(())
     }
 
     pub fn externalCommand(input: Node) -> Result<Actions> {
-        dbg!(input);
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
     }
 
-    pub fn ifStatement(input: Node) -> Result<Actions> {
-        dbg!(input);
-        Ok(Actions::Null)
+    pub fn ifStatement(input: Node) -> Result<()> {
+        Ok(())
     }
 
-    pub fn statement(input: Node) -> Result<Actions> {
+    pub fn statement(input: Node) -> Result<()> {
         match_nodes!(input.into_children();
             [normalVariable(var)] | [readonlyVariable(var)] => {
-                Ok(var)
+                Ok(())
             },
-            [builtinDbg(var)] => Ok(var),
-            [externalCommand(var)] => Ok(var),
-            [ifStatement(var)] => Ok(var),
+            // [builtinDbg(var)] => Ok(var),
+            // [externalCommand(var)] => Ok(var),
+            // [ifStatement(var)] => Ok(var),
         )
     }
 
-    pub fn program(input: Node) -> Result<Tree> {
-        let mut tree = Tree::new();
-        dbg!(&input);
+    pub fn program(input: Node) -> Result<()> {
         match_nodes!(input.into_children();
             [statement(n)..,_] => {
-                for part in n {
-                    tree.exprs.push(part)
-                }
             },
         );
-        Ok(tree)
+        Ok(())
     }
 }
 
