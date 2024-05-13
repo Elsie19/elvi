@@ -14,7 +14,7 @@ use pest_consume::{match_nodes, Error, Parser};
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
-type Node<'i, 'a> = pest_consume::Node<'i, Rule, (&'a mut Variables, &'a mut Commands)>;
+type Node<'i> = pest_consume::Node<'i, Rule, ()>;
 
 // This is the other half of the parser, using pest_consume.
 #[pest_consume::parser]
@@ -67,26 +67,27 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        match input.user_data().0.set_variable(
-            name_pair.to_string(),
-            Variable::oneshot_var(
-                variable_contents.unwrap(),
-                ElviMutable::Normal,
-                ElviGlobal::Normal(1),
-                lines,
-            ),
-        ) {
-            Ok(_) => Ok(()),
-            Err(foo) => {
-                eprintln!("{foo}");
-                Ok(())
-            }
-        }
+        Ok(())
+
+        // match input.user_data().0.set_variable(
+        //     name_pair.to_string(),
+        //     Variable::oneshot_var(
+        //         variable_contents.unwrap(),
+        //         ElviMutable::Normal,
+        //         ElviGlobal::Normal(1),
+        //         lines,
+        //     ),
+        // ) {
+        //     Ok(_) => Ok(()),
+        //     Err(foo) => {
+        //         eprintln!("{foo}");
+        //         Ok(())
+        //     }
+        // }
     }
 
     pub fn readonlyVariable(input: Node) -> Result<()> {
-        let stuff = input.children().into_pairs();
-        // let mut stuff = input.clone().into_children().into_pairs();
+        let mut stuff = input.clone().into_children().into_pairs();
 
         let lines = stuff.clone().next().unwrap().line_col();
 
@@ -95,21 +96,23 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
 
-        match input.user_data().0.set_variable(
-            name_pair.to_string(),
-            Variable::oneshot_var(
-                variable_contents.unwrap(),
-                ElviMutable::Readonly,
-                ElviGlobal::Normal(1),
-                lines,
-            ),
-        ) {
-            Ok(_) => Ok(()),
-            Err(foo) => {
-                eprintln!("{foo}");
-                Ok(())
-            }
-        }
+        Ok(())
+
+        // match input.user_data().0.set_variable(
+        //     name_pair.to_string(),
+        //     Variable::oneshot_var(
+        //         variable_contents.unwrap(),
+        //         ElviMutable::Readonly,
+        //         ElviGlobal::Normal(1),
+        //         lines,
+        //     ),
+        // ) {
+        //     Ok(_) => Ok(()),
+        //     Err(foo) => {
+        //         eprintln!("{foo}");
+        //         Ok(())
+        //     }
+        // }
     }
 
     pub fn builtinDbg(input: Node) -> Result<()> {
@@ -121,11 +124,11 @@ impl ElviParser {
             .as_str()
             .to_string();
 
-        println!(
-            "Variable: {} | Contents: {:?}",
-            name,
-            input.user_data().0.get_variable(&name)
-        );
+        // println!(
+        //     "Variable: {} | Contents: {:?}",
+        //     name,
+        //     input.user_data().0.get_variable(&name)
+        // );
         Ok(())
     }
 
@@ -149,10 +152,11 @@ impl ElviParser {
     }
 
     pub fn program(input: Node) -> Result<()> {
-        match_nodes!(input.into_children();
-            [statement(n)..,_] => {
-            },
-        );
+        let mut variables = Variables::default();
+        let mut commands = Commands::generate(&variables);
+
+        let mut nodes = input.into_children();
+        dbg!(nodes);
         Ok(())
     }
 }
