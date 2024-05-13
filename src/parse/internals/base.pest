@@ -7,4 +7,5 @@ COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 statement = {
     normalVariable
   | readonlyVariable
+  | builtinDbg
 }

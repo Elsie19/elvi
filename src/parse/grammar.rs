@@ -1,3 +1,4 @@
+use crate::internal::tree::{Actions, Tree};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -5,6 +6,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/strings.pest"]
 #[grammar = "parse/internals/variables.pest"]
 #[grammar = "parse/internals/command_substitution.pest"]
+#[grammar = "parse/internals/builtins.pest"]
 #[grammar = "parse/internals/base.pest"]
 pub struct ElviParser;
 
@@ -52,7 +54,7 @@ impl ElviParser {
         ))
     }
 
-    pub fn normalVariable(input: Node) -> Result<(String, Variable)> {
+    pub fn normalVariable(input: Node) -> Result<Actions> {
         let mut stuff = input.clone().into_children().into_pairs();
 
         let name_pair = stuff.next().unwrap().as_str();
@@ -60,17 +62,17 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
 
-        Ok((
+        Ok(Actions::ChangeVariable((
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
                 ElviMutable::Normal,
                 ElviGlobal::Normal(1),
             ),
-        ))
+        )))
     }
 
-    pub fn readonlyVariable(input: Node) -> Result<(String, Variable)> {
+    pub fn readonlyVariable(input: Node) -> Result<Actions> {
         let mut stuff = input.clone().into_children().into_pairs();
 
         let name_pair = stuff.next().unwrap().as_str();
@@ -78,17 +80,22 @@ impl ElviParser {
         let variable_contents =
             Self::variableIdentifierPossibilities(input.into_children().nth(1).unwrap());
 
-        Ok((
+        Ok(Actions::ChangeVariable((
             name_pair.to_string(),
             Variable::oneshot_var(
                 variable_contents.unwrap(),
                 ElviMutable::Readonly,
                 ElviGlobal::Normal(1),
             ),
-        ))
+        )))
     }
 
-    pub fn statement(input: Node) -> Result<(String, Variable)> {
+    pub fn builtinDbg(input: Node) -> Result<()> {
+        dbg!(input);
+        Ok(())
+    }
+
+    pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
             [normalVariable(var)] | [readonlyVariable(var)] => {
                 Ok(var)
@@ -96,10 +103,16 @@ impl ElviParser {
         )
     }
 
-    pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
-        match_nodes!( input.into_children();
-            [statement(n)..,_] => Ok(n.collect()),
-        )
+    pub fn program(input: Node) -> Result<Tree> {
+        let mut tree = Tree::new();
+        match_nodes!(input.into_children();
+            [statement(n)..,_] => {
+                for part in n {
+                    tree.exprs.push(part)
+                }
+            },
+        );
+        Ok(tree)
     }
 }
 

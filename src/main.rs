@@ -35,14 +35,7 @@ fn main() {
         }
     };
 
-    for (name, var) in stuff {
-        match variables.set_variable(name.to_string(), var) {
-            Ok(_) => (),
-            Err(oof) => {
-                eprintln!("{}", oof);
-            }
-        }
-    }
+    dbg!(&stuff);
 
     dbg!(&variables);
 }
