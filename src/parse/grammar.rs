@@ -155,8 +155,13 @@ impl ElviParser {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
 
-        let mut nodes = input.into_children();
-        dbg!(nodes);
+        for child in input.into_children() {
+            if child.as_rule() != Rule::EOI {
+                dbg!(Self::statement(child));
+            }
+        }
+        // let mut nodes = input.into_children().next().unwrap();
+
         Ok(())
     }
 }
