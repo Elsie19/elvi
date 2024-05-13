@@ -1,4 +1,4 @@
-use crate::internal::tree::{Actions, Tree};
+use crate::internal::tree::{Actions, Builtins, Tree};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -90,9 +90,15 @@ impl ElviParser {
         )))
     }
 
-    pub fn builtinDbg(input: Node) -> Result<()> {
-        dbg!(input);
-        Ok(())
+    pub fn builtinDbg(input: Node) -> Result<Actions> {
+        let name = input
+            .into_children()
+            .into_pairs()
+            .next()
+            .unwrap()
+            .as_str()
+            .to_string();
+        Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
     pub fn statement(input: Node) -> Result<Actions> {
@@ -100,6 +106,7 @@ impl ElviParser {
             [normalVariable(var)] | [readonlyVariable(var)] => {
                 Ok(var)
             },
+            [builtinDbg(var)] => Ok(var),
         )
     }
 

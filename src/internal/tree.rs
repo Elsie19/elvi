@@ -8,6 +8,12 @@ pub struct Tree {
 #[derive(Debug)]
 pub enum Actions {
     ChangeVariable((String, Variable)),
+    Builtin(Builtins),
+}
+
+#[derive(Debug)]
+pub enum Builtins {
+    Dbg(String),
 }
 
 impl Tree {
