@@ -1,7 +1,6 @@
 mod internal;
 mod parse;
 
-use anyhow::Result;
 use std::fs;
 
 use internal::variables::Variables;
@@ -12,6 +11,8 @@ use pest_consume::Parser;
 
 fn main() {
     let unparsed_file = fs::read_to_string("test.elv").expect("Could not read file");
+
+    pest::set_error_detail(true);
 
     let mut variables = Variables::default();
     let mut commands = Commands::generate(&variables);
@@ -25,8 +26,6 @@ fn main() {
     };
 
     let raw_parse = raw_parse.single().unwrap();
-
-    dbg!(&raw_parse);
 
     let stuff = match ElviParser::program(raw_parse) {
         Ok(yay) => yay,

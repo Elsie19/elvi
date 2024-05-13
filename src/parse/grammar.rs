@@ -88,23 +88,18 @@ impl ElviParser {
         ))
     }
 
-    pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
-        let mut le_vars: Vec<(String, Variable)> = vec![];
+    pub fn statement(input: Node) -> Result<(String, Variable)> {
         match_nodes!(input.into_children();
-            [normalVariable(var).., _] => {
-                let le_vars_collected: Vec<(String, Variable)> = var.collect();
-                for indi_var in le_vars_collected {
-                    le_vars.push(indi_var);
-                }
+            [normalVariable(var)] | [readonlyVariable(var)] => {
+                Ok(var)
             },
-            [readonlyVariable(var).., _] => {
-                let le_vars_collected: Vec<(String, Variable)> = var.collect();
-                for indi_var in le_vars_collected {
-                    le_vars.push(indi_var);
-                }
-            },
-        );
-        Ok(le_vars)
+        )
+    }
+
+    pub fn program(input: Node) -> Result<Vec<(String, Variable)>> {
+        match_nodes!( input.into_children();
+            [statement(n)..,_] => Ok(n.collect()),
+        )
     }
 }
 

@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 custom_error = "1.9.2"
 pest = "2.7.10"
-pest_consume = "1.1.3"
+pest_consume = { git = "https://github.com/Nadrieril/pest_consume.git" }
 pest_derive = { version = "2.7.10", features = ["grammar-extras"] }
 snailquote = "0.3.1"
