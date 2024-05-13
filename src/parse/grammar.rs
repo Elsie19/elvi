@@ -119,6 +119,7 @@ impl ElviParser {
 
     pub fn program(input: Node) -> Result<Tree> {
         let mut tree = Tree::new();
+        dbg!(&input);
         match_nodes!(input.into_children();
             [statement(n)..,_] => {
                 for part in n {

@@ -1,5 +1,5 @@
 readonly bar="1"
 bar="2"
-dbgbar
+# dbgbar
 # comment
 baz='boo\tnotab';oof=`ls /`
