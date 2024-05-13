@@ -7,6 +7,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/variables.pest"]
 #[grammar = "parse/internals/command_substitution.pest"]
 #[grammar = "parse/internals/builtins.pest"]
+#[grammar = "parse/internals/commands.pest"]
 #[grammar = "parse/internals/base.pest"]
 pub struct ElviParser;
 
@@ -101,12 +102,18 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
+    pub fn externalCommand(input: Node) -> Result<Actions> {
+        dbg!(input);
+        Ok(Actions::Command(vec!["dbgbar".to_string()]))
+    }
+
     pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
             [normalVariable(var)] | [readonlyVariable(var)] => {
                 Ok(var)
             },
             [builtinDbg(var)] => Ok(var),
+            [externalCommand(var)] => Ok(var),
         )
     }
 

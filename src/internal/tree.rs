@@ -9,6 +9,7 @@ pub struct Tree {
 pub enum Actions {
     ChangeVariable((String, Variable)),
     Builtin(Builtins),
+    Command(Vec<String>),
 }
 
 #[derive(Debug)]

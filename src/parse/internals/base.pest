@@ -8,4 +8,5 @@ statement = {
     normalVariable
   | readonlyVariable
   | builtinDbg
+  | externalCommand
 }

@@ -2,6 +2,7 @@ mod internal;
 mod parse;
 
 use std::fs;
+use std::process::Command;
 
 use internal::variables::Variables;
 use internal::{commands::Commands, variables::ElviType};
@@ -50,6 +51,17 @@ fn main() {
                     variables.get_variable(&text)
                 ),
             },
+            Actions::Command(cmd) => {
+                let cmd_path = match commands.get_path(cmd.get(0).unwrap()) {
+                    Some(yes) => yes,
+                    None => {
+                        eprintln!("{}: command not found", cmd.get(0).unwrap());
+                        continue;
+                    }
+                };
+                Command::new(cmd_path);
+                ()
+            }
         }
     }
 }

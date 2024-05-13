@@ -1,0 +1,5 @@
+// Main rules
+externalCommand = @{ externalCommandFirstWord ~ externalCommandRest* }
+
+externalCommandFirstWord = { (ASCII_ALPHA | "_" | "-" | ASCII_DIGIT)+ }
+externalCommandRest      = { (!(newline) ~ ANY)+ }

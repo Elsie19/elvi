@@ -1,1 +1,1 @@
-builtinDbg = { "dbg " ~ variableIdent }
+builtinDbg = !{ "dbg" ~ (" " | "\t")+ ~ variableIdent }
