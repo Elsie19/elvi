@@ -157,12 +157,11 @@ impl ElviParser {
                         }
                         Actions::Builtin(built) => match built {
                             Builtins::Dbg(var) => {
-                                if builtins::dbg::builtin_dbg(var.clone(), &mut variables).get()
-                                    == ReturnCode::SUCCESS
-                                {
-                                    variables.set_ret(ReturnCode::ret(0));
+                                let ret = builtins::dbg::builtin_dbg(&var, &mut variables).get();
+                                if ret == ReturnCode::SUCCESS {
+                                    variables.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
                                 } else {
-                                    variables.set_ret(ReturnCode::ret(1));
+                                    variables.set_ret(ReturnCode::ret(ret));
                                 }
                             }
                         },

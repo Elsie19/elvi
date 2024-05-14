@@ -109,7 +109,7 @@ impl Variables {
             let le_lines = value.clone();
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-                    self.set_ret(ReturnCode::ret(1));
+                    self.set_ret(ReturnCode::ret(ReturnCode::FAILURE));
                     Err(VariableError::Readonly {
                         name,
                         line: le_lines.line.0,
@@ -117,14 +117,14 @@ impl Variables {
                     })
                 }
                 ElviMutable::Normal => {
-                    self.set_ret(ReturnCode::ret(0));
+                    self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
                     self.vars.insert(name, var);
                     Ok(())
                 }
             }
         // Is this a fresh variable?
         } else {
-            self.set_ret(ReturnCode::ret(0));
+            self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
             self.vars.insert(name, var);
             Ok(())
         }

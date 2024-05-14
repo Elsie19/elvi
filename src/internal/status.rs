@@ -13,4 +13,7 @@ impl ReturnCode {
     }
 
     pub const SUCCESS: u8 = 0;
+    pub const FAILURE: u8 = 1;
+    pub const COMMAND_NOT_FOUND: u8 = 127;
+    pub const CTRL_C: u8 = 130;
 }
