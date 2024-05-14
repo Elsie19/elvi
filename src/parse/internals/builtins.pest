@@ -1,1 +1,2 @@
-builtinDbg = !{ "dbg" ~ (" " | "\t")+ ~ variableIdent }
+builtinDbg  = !{ "dbg" ~ (" " | "\t")+ ~ variableIdent }
+builtinExit = !{ "exit" ~ (" " | "\t")+ ~ (anyString | elviNumber){1} }

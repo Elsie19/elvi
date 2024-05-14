@@ -4,7 +4,8 @@ newline = _{ ";"{1} | NEWLINE }
 
 COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
+elviNumber = { ASCII_DIGIT+ }
+
 statement = {
-    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinDbg // | externalCommand
-  | ifStatement)
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinDbg | builtinExit)
 }

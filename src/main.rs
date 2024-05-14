@@ -12,7 +12,7 @@ fn main() {
     let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
         Ok(yay) => yay,
         Err(oof) => {
-            eprintln!("Error: {oof}");
+            eprintln!("{oof}");
             std::process::exit(1);
         }
     };

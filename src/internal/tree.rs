@@ -11,4 +11,5 @@ pub enum Actions {
 #[derive(Debug)]
 pub enum Builtins {
     Dbg(String),
+    Exit(String),
 }

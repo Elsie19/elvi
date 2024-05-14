@@ -13,7 +13,7 @@ custom_error! {pub VariableError
 pub enum ElviType {
     String(String),
     Number(usize),
-    ErrExitCode(u8),
+    ErrExitCode(u16),
     // Array(Vec<Self>),
     Boolean(bool),
 }

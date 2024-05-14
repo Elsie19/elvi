@@ -112,6 +112,19 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
+    pub fn elviNumber(input: Node) -> Result<u16> {
+        Ok(input.as_str().parse().unwrap())
+    }
+
+    pub fn builtinExit(input: Node) -> Result<Actions> {
+        let possibles = match_nodes!(input.into_children();
+            [anyString(stringo)] => stringo,
+            [elviNumber(stringo)] => ElviType::String(stringo.to_string()),
+        );
+
+        Ok(Actions::Builtin(Builtins::Exit(possibles.to_string())))
+    }
+
     pub fn externalCommand(input: Node) -> Result<Actions> {
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
     }
@@ -129,6 +142,7 @@ impl ElviParser {
                 Ok(Actions::ChangeVariable(var))
             },
             [builtinDbg(var)] => Ok(var),
+            [builtinExit(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
             // [ifStatement(var)] => Ok(var),
         )
@@ -163,6 +177,10 @@ impl ElviParser {
                                 } else {
                                     variables.set_ret(ReturnCode::ret(ret));
                                 }
+                            }
+                            Builtins::Exit(var) => {
+                                let ret = builtins::exit::builtin_exit(var);
+                                std::process::exit(ret.get().into());
                             }
                         },
                         Actions::Command(cmd) => {
