@@ -35,9 +35,6 @@ impl Commands {
     }
 
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
-        match self.cmds.get(program) {
-            Some(foo) => Some(foo.to_path_buf()),
-            None => None,
-        }
+        self.cmds.get(program).map(|cmd| cmd.to_path_buf())
     }
 }

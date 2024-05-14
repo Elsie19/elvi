@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct ReturnCode {
     val: u8,
 }
@@ -8,7 +8,7 @@ impl ReturnCode {
         ReturnCode { val }
     }
 
-    pub fn get(&self) -> u8 {
+    pub fn get(self) -> u8 {
         self.val
     }
 

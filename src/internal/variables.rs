@@ -60,7 +60,7 @@ impl Variables {
                 (
                     "IFS".into(),
                     Variable {
-                        contents: ElviType::String(r#" \t\n"#.into()),
+                        contents: ElviType::String(r" \t\n".into()),
                         modification_status: ElviMutable::Normal,
                         shell_lvl: ElviGlobal::Global,
                         line: (0, 0),
@@ -165,12 +165,12 @@ impl Variable {
 }
 
 impl ElviType {
-    pub fn eval_escapes(&self) -> Option<ElviType> {
+    pub fn eval_escapes(&self) -> ElviType {
         match self {
-            ElviType::String(le_string) => Some(ElviType::String(unescape(le_string).unwrap())),
-            ElviType::Number(x) => Some(ElviType::Number(*x)),
-            ElviType::Boolean(x) => Some(ElviType::Boolean(*x)),
-            ElviType::ErrExitCode(x) => Some(ElviType::ErrExitCode(*x)),
+            ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),
+            ElviType::Number(x) => ElviType::Number(*x),
+            ElviType::Boolean(x) => ElviType::Boolean(*x),
+            ElviType::ErrExitCode(x) => ElviType::ErrExitCode(*x),
         }
     }
 }
@@ -179,9 +179,9 @@ impl fmt::Display for ElviType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ElviType::String(x) => write!(f, "{}", escape(x)),
-            ElviType::Number(x) => write!(f, "{}", x),
-            ElviType::ErrExitCode(x) => write!(f, "{}", x),
-            ElviType::Boolean(x) => write!(f, "{}", x),
+            ElviType::Number(x) => write!(f, "{x}"),
+            ElviType::ErrExitCode(x) => write!(f, "{x}"),
+            ElviType::Boolean(x) => write!(f, "{x}"),
         }
     }
 }

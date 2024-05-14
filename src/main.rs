@@ -12,20 +12,12 @@ fn main() {
     let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
         Ok(yay) => yay,
         Err(oof) => {
-            eprintln!("Error: {}", oof.to_string());
+            eprintln!("Error: {oof}");
             std::process::exit(1);
         }
     };
 
     let raw_parse = raw_parse.single().unwrap();
 
-    let stuff = match ElviParser::program(raw_parse) {
-        Ok(yay) => yay,
-        Err(oof) => {
-            eprintln!("Error: {}", oof.to_string());
-            std::process::exit(1);
-        }
-    };
-
-    std::process::exit(stuff.into());
+    std::process::exit(ElviParser::program(raw_parse).get().into());
 }

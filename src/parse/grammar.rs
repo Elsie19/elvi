@@ -1,4 +1,4 @@
-use crate::internal::builtins::{self, *};
+use crate::internal::builtins;
 use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::{Actions, Builtins};
@@ -21,6 +21,7 @@ type Node<'i> = pest_consume::Node<'i, Rule, ()>;
 // This is the other half of the parser, using pest_consume.
 #[pest_consume::parser]
 impl ElviParser {
+    #[allow(clippy::used_underscore_binding)]
     pub fn EOI(_input: Node) -> Result<()> {
         Ok(())
     }
@@ -35,9 +36,7 @@ impl ElviParser {
 
     //TODO: Variable interpolation
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string())
-            .eval_escapes()
-            .unwrap())
+        Ok(ElviType::String(input.as_str().to_string()).eval_escapes())
     }
 
     //TODO: Command substitution
@@ -135,7 +134,7 @@ impl ElviParser {
         )
     }
 
-    pub fn program(input: Node) -> Result<u8> {
+    pub fn program(input: Node) -> ReturnCode {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
 
@@ -152,23 +151,23 @@ impl ElviParser {
                             }
                             // println!("Changing variable '{}' with contents of: {:?}", name, var);
                             match variables.set_variable(name, var) {
-                                Ok(_) => {}
+                                Ok(()) => {}
                                 Err(foo) => eprintln!("{foo}"),
                             }
                         }
                         Actions::Builtin(built) => match built {
                             Builtins::Dbg(var) => {
                                 if builtins::dbg::builtin_dbg(var.clone(), &mut variables).get()
-                                    != ReturnCode::SUCCESS
+                                    == ReturnCode::SUCCESS
                                 {
-                                    variables.set_ret(ReturnCode::ret(1));
-                                } else {
                                     variables.set_ret(ReturnCode::ret(0));
+                                } else {
+                                    variables.set_ret(ReturnCode::ret(1));
                                 }
                             }
                         },
                         Actions::Command(cmd) => {
-                            println!("Running command {:?}", cmd);
+                            println!("Running command {cmd:?}");
                         }
                         Actions::Null => {}
                     },
@@ -180,12 +179,12 @@ impl ElviParser {
             }
         }
 
-        let ret_value = match variables.get_variable("?".into()).unwrap().get_value() {
+        let ret_value = match variables.get_variable("?").unwrap().get_value() {
             ElviType::ErrExitCode(x) => *x,
             _ => unreachable!("How is $? defined as anything but ErrExitCode?????"),
         };
 
-        Ok(ret_value)
+        ReturnCode::ret(ret_value)
     }
 }
 
