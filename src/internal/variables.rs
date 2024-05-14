@@ -1,6 +1,9 @@
+use core::fmt;
 use custom_error::custom_error;
-use snailquote::unescape;
+use snailquote::{escape, unescape};
 use std::collections::HashMap;
+
+use super::status::ReturnCode;
 
 custom_error! {pub VariableError
     Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')"
@@ -89,20 +92,24 @@ impl Variables {
         self.vars.get(var)
     }
 
+    pub fn set_ret(&mut self, code: ReturnCode) {
+        self.vars.insert(
+            "?".into(),
+            Variable::oneshot_var(
+                ElviType::ErrExitCode(code.get()),
+                ElviMutable::ReadonlyUnsettable,
+                ElviGlobal::Global,
+                (0, 0),
+            ),
+        );
+    }
+
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
         if let Some(value) = self.vars.get(&name) {
             let le_lines = value.clone();
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-                    self.vars.insert(
-                        "?".into(),
-                        Variable::oneshot_var(
-                            ElviType::ErrExitCode(1),
-                            ElviMutable::ReadonlyUnsettable,
-                            ElviGlobal::Global,
-                            (0, 0),
-                        ),
-                    );
+                    self.set_ret(ReturnCode::ret(1));
                     Err(VariableError::Readonly {
                         name,
                         line: le_lines.line.0,
@@ -110,30 +117,14 @@ impl Variables {
                     })
                 }
                 ElviMutable::Normal => {
-                    self.vars.insert(
-                        "?".into(),
-                        Variable::oneshot_var(
-                            ElviType::ErrExitCode(0),
-                            ElviMutable::ReadonlyUnsettable,
-                            ElviGlobal::Global,
-                            (0, 0),
-                        ),
-                    );
+                    self.set_ret(ReturnCode::ret(0));
                     self.vars.insert(name, var);
                     Ok(())
                 }
             }
         // Is this a fresh variable?
         } else {
-            self.vars.insert(
-                "?".into(),
-                Variable::oneshot_var(
-                    ElviType::ErrExitCode(0),
-                    ElviMutable::ReadonlyUnsettable,
-                    ElviGlobal::Global,
-                    (0, 0),
-                ),
-            );
+            self.set_ret(ReturnCode::ret(0));
             self.vars.insert(name, var);
             Ok(())
         }
@@ -167,13 +158,30 @@ impl Variable {
         self.shell_lvl = ElviGlobal::Normal(lvl);
         self.shell_lvl
     }
+
+    pub fn get_modification_status(&self) -> ElviMutable {
+        self.modification_status
+    }
 }
 
 impl ElviType {
     pub fn eval_escapes(&self) -> Option<ElviType> {
         match self {
             ElviType::String(le_string) => Some(ElviType::String(unescape(le_string).unwrap())),
-            _ => None,
+            ElviType::Number(x) => Some(ElviType::Number(*x)),
+            ElviType::Boolean(x) => Some(ElviType::Boolean(*x)),
+            ElviType::ErrExitCode(x) => Some(ElviType::ErrExitCode(*x)),
+        }
+    }
+}
+
+impl fmt::Display for ElviType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ElviType::String(x) => write!(f, "{}", escape(x)),
+            ElviType::Number(x) => write!(f, "{}", x),
+            ElviType::ErrExitCode(x) => write!(f, "{}", x),
+            ElviType::Boolean(x) => write!(f, "{}", x),
         }
     }
 }

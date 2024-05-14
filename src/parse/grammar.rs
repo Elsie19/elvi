@@ -1,5 +1,7 @@
+use crate::internal::builtins::{self, *};
 use crate::internal::commands::Commands;
-use crate::internal::tree::Actions;
+use crate::internal::status::ReturnCode;
+use crate::internal::tree::{Actions, Builtins};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -99,7 +101,7 @@ impl ElviParser {
         ))
     }
 
-    pub fn builtinDbg(input: Node) -> Result<()> {
+    pub fn builtinDbg(input: Node) -> Result<Actions> {
         let name = input
             .into_children()
             .into_pairs()
@@ -108,12 +110,7 @@ impl ElviParser {
             .as_str()
             .to_string();
 
-        // println!(
-        //     "Variable: {} | Contents: {:?}",
-        //     name,
-        //     input.user_data().0.get_variable(&name)
-        // );
-        Ok(())
+        Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
     pub fn externalCommand(input: Node) -> Result<Actions> {
@@ -132,7 +129,7 @@ impl ElviParser {
             [readonlyVariable(var)] => {
                 Ok(Actions::ChangeVariable(var))
             },
-            // [builtinDbg(var)] => Ok(var),
+            [builtinDbg(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
             // [ifStatement(var)] => Ok(var),
         )
@@ -159,9 +156,17 @@ impl ElviParser {
                                 Err(foo) => eprintln!("{foo}"),
                             }
                         }
-                        Actions::Builtin(built) => {
-                            println!("Running builtin {:?}", built);
-                        }
+                        Actions::Builtin(built) => match built {
+                            Builtins::Dbg(var) => {
+                                if builtins::dbg::builtin_dbg(var.clone(), &mut variables).get()
+                                    != ReturnCode::SUCCESS
+                                {
+                                    variables.set_ret(ReturnCode::ret(1));
+                                } else {
+                                    variables.set_ret(ReturnCode::ret(0));
+                                }
+                            }
+                        },
                         Actions::Command(cmd) => {
                             println!("Running command {:?}", cmd);
                         }

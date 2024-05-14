@@ -13,10 +13,14 @@ impl Commands {
 
         let path_var = variables.get_variable("PATH").unwrap().get_value();
 
-        let ElviType::String(path_var) = path_var else { unreachable!("How is `PATH` defined as anything but a string?") };
+        let ElviType::String(path_var) = path_var else {
+            unreachable!("How is `PATH` defined as anything but a string?")
+        };
 
         for part in path_var.split(':') {
-            let Ok(files) = fs::read_dir(part) else { continue };
+            let Ok(files) = fs::read_dir(part) else {
+                continue;
+            };
 
             for part in files {
                 if part.as_ref().unwrap().path().is_file() {
