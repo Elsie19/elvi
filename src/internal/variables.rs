@@ -168,9 +168,7 @@ impl ElviType {
     pub fn eval_escapes(&self) -> ElviType {
         match self {
             ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),
-            ElviType::Number(x) => ElviType::Number(*x),
-            ElviType::Boolean(x) => ElviType::Boolean(*x),
-            ElviType::ErrExitCode(x) => ElviType::ErrExitCode(*x),
+            default => default.clone(),
         }
     }
 }
