@@ -13,5 +13,6 @@ pub enum Actions {
 /// A list of builtins and their parameters.
 pub enum Builtins {
     Dbg(String),
+    Unset(String),
     Exit(Option<ElviType>),
 }

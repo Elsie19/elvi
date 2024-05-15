@@ -111,6 +111,13 @@ impl Variables {
         self.vars.get(var)
     }
 
+    pub fn unset(&mut self, var: &str) -> Option<()> {
+        match self.vars.remove(var) {
+            Some(_) => Some(()),
+            None => None,
+        }
+    }
+
     /// Quick function to set `$?`.
     pub fn set_ret(&mut self, code: ReturnCode) {
         self.vars.insert(
@@ -191,6 +198,17 @@ impl ElviType {
     pub fn eval_escapes(&self) -> ElviType {
         match self {
             ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),
+            default => default.clone(),
+        }
+    }
+
+    // This assumes double quotes.
+    pub fn eval_variables(&self, vars: &Variables) -> ElviType {
+        match self {
+            ElviType::String(le_string) => {
+                let chars_of = le_string.chars();
+                unimplemented!();
+            }
             default => default.clone(),
         }
     }

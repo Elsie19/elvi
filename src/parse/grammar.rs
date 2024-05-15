@@ -128,6 +128,19 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
+    /// Handles the unset builtin.
+    pub fn builtinUnset(input: Node) -> Result<Actions> {
+        let name = input
+            .into_children()
+            .into_pairs()
+            .next()
+            .unwrap()
+            .as_str()
+            .to_string();
+
+        Ok(Actions::Builtin(Builtins::Unset(name)))
+    }
+
     /// Handles the exit builtin.
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
@@ -160,6 +173,7 @@ impl ElviParser {
             },
             [builtinDbg(var)] => Ok(var),
             [builtinExit(var)] => Ok(var),
+            [builtinUnset(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
             // [ifStatement(var)] => Ok(var),
         )
@@ -190,11 +204,7 @@ impl ElviParser {
                         Actions::Builtin(built) => match built {
                             Builtins::Dbg(var) => {
                                 let ret = builtins::dbg::builtin_dbg(&var, &mut variables).get();
-                                if ret == ReturnCode::SUCCESS {
-                                    variables.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
-                                } else {
-                                    variables.set_ret(ReturnCode::ret(ret));
-                                }
+                                variables.set_ret(ReturnCode::ret(ret));
                             }
                             Builtins::Exit(var) => {
                                 let ret = builtins::exit::builtin_exit(var);
@@ -203,6 +213,11 @@ impl ElviParser {
                                 } else {
                                     std::process::exit(ret.get().into());
                                 }
+                            }
+                            Builtins::Unset(var) => {
+                                let ret =
+                                    builtins::unset::builtin_unset(&var, &mut variables).get();
+                                variables.set_ret(ReturnCode::ret(ret));
                             }
                         },
                         Actions::Command(cmd) => {
