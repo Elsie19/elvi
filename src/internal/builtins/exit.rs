@@ -13,6 +13,7 @@ pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
                 }
             }
         }
+        // If we have a bare exit, return with 0.
         None => return ReturnCode::ret(ReturnCode::SUCCESS),
     }
 }
