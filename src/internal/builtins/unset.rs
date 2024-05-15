@@ -12,7 +12,7 @@ pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
     match var.get_modification_status() {
         ElviMutable::Normal => match variables.unset(name) {
             // We don't care about what it returned
-            Some(_) | None => return ReturnCode::ret(ReturnCode::SUCCESS),
+            Some(_) | None => ReturnCode::ret(ReturnCode::SUCCESS),
         },
         ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
             eprintln!(
@@ -23,7 +23,7 @@ pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
                     column: var.get_line().1
                 }
             );
-            return ReturnCode::ret(ReturnCode::MISUSE);
+            ReturnCode::ret(ReturnCode::MISUSE)
         }
     }
 }

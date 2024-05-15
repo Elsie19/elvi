@@ -58,7 +58,7 @@ impl Commands {
 }
 
 impl ExternalCommand {
-    /// Convert a string into an ExternalCommand.
+    /// Convert a string into an [`ExternalCommand`].
     ///
     /// # Examples
     ///
@@ -68,7 +68,7 @@ impl ExternalCommand {
     /// ```
     pub fn string_to_command(cmd: &str) -> Self {
         let split_up = cmd.split(' ').collect_vec();
-        let cmd = (*split_up.get(0).unwrap()).to_string();
+        let cmd = split_up.first().unwrap().to_string();
         if split_up.len() == 1 {
             Self { cmd, args: None }
         } else {

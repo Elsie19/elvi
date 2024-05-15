@@ -1,7 +1,7 @@
 use core::fmt;
 use custom_error::custom_error;
 use snailquote::{escape, unescape};
-use std::{collections::HashMap, env, ffi::OsStr};
+use std::{collections::HashMap, env};
 
 use super::status::ReturnCode;
 
@@ -67,61 +67,6 @@ pub struct Variable {
 }
 
 impl Variables {
-    /// Create new default variable list with required variables.
-    pub fn default() -> Self {
-        Self {
-            vars: HashMap::from([
-                (
-                    "PS1".into(),
-                    Variable {
-                        contents: ElviType::String("$ ".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
-                    },
-                ),
-                (
-                    "IFS".into(),
-                    Variable {
-                        contents: ElviType::String(r" \t\n".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
-                    },
-                ),
-                (
-                    "PATH".into(),
-                    Variable {
-                        contents: ElviType::String("/usr/sbin:/usr/bin:/sbin:/bin".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
-                    },
-                ),
-                (
-                    "?".into(),
-                    Variable {
-                        contents: ElviType::ErrExitCode(0),
-                        modification_status: ElviMutable::ReadonlyUnsettable,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
-                    },
-                ),
-                (
-                    "PWD".into(),
-                    Variable {
-                        contents: ElviType::String(
-                            env::current_dir().unwrap().to_str().unwrap().to_string(),
-                        ),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
-                    },
-                ),
-            ]),
-        }
-    }
-
     pub fn get_variable(&self, var: &str) -> Option<&Variable> {
         self.vars.get(var)
     }
@@ -180,6 +125,63 @@ impl Variables {
             self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
             self.vars.insert(name, var);
             Ok(())
+        }
+    }
+}
+
+impl Default for Variables {
+    /// Create new default variable list with required variables.
+    fn default() -> Self {
+        Self {
+            vars: HashMap::from([
+                (
+                    "PS1".into(),
+                    Variable {
+                        contents: ElviType::String("$ ".into()),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+                (
+                    "IFS".into(),
+                    Variable {
+                        contents: ElviType::String(r" \t\n".into()),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+                (
+                    "PATH".into(),
+                    Variable {
+                        contents: ElviType::String("/usr/sbin:/usr/bin:/sbin:/bin".into()),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+                (
+                    "?".into(),
+                    Variable {
+                        contents: ElviType::ErrExitCode(0),
+                        modification_status: ElviMutable::ReadonlyUnsettable,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+                (
+                    "PWD".into(),
+                    Variable {
+                        contents: ElviType::String(
+                            env::current_dir().unwrap().to_str().unwrap().to_string(),
+                        ),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+            ]),
         }
     }
 }

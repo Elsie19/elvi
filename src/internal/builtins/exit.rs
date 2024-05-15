@@ -13,7 +13,7 @@ pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
         Some(yo) => {
             let try_code = yo.to_string().parse::<ReturnCode>();
             if let Ok(yay) = try_code {
-                return yay;
+                yay
             } else {
                 eprintln!(
                     "{}",
