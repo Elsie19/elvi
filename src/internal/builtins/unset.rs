@@ -1,5 +1,6 @@
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::ElviMutable;
+use crate::internal::variables::VariableError;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `unset` builtin is run.
@@ -14,7 +15,14 @@ pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
             Some(_) | None => return ReturnCode::ret(ReturnCode::SUCCESS),
         },
         ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-            eprintln!("elvi: unset: {}: is readonly", name);
+            eprintln!(
+                "{}",
+                VariableError::Readonly {
+                    name: "unset".to_string(),
+                    line: var.get_line().0,
+                    column: var.get_line().1
+                }
+            );
             return ReturnCode::ret(ReturnCode::MISUSE);
         }
     }

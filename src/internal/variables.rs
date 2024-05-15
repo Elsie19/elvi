@@ -6,11 +6,13 @@ use std::collections::HashMap;
 use super::status::ReturnCode;
 
 custom_error! {pub VariableError
-    Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')"
+    Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')",
+    IllegalNumber{name:String, caller:String} = "elvi: {caller}: Illegal number: {name})",
+    NoSuchVariable{name:String, caller:String} = "{caller}: no such variable: {name})",
 }
 
 #[derive(Debug, Clone)]
-/// Struct representing the variable types in Elvi
+/// Struct representing the variable types in Elvi.
 pub enum ElviType {
     /// A string.
     String(String),
@@ -23,7 +25,7 @@ pub enum ElviType {
 }
 
 #[derive(Debug, Clone, Copy)]
-/// Enum representing the state that a variable can be
+/// Enum representing the state that a variable can be.
 pub enum ElviMutable {
     /// Mutable variable, the default one.
     Normal,
@@ -34,7 +36,7 @@ pub enum ElviMutable {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-/// Enum representing the globality of a variable
+/// Enum representing the globality of a variable.
 pub enum ElviGlobal {
     /// Exported variable.
     Global,
@@ -43,14 +45,14 @@ pub enum ElviGlobal {
 }
 
 #[derive(Debug, Clone)]
-/// Global variable list
+/// Global variable list.
 pub struct Variables {
     /// Hashmap of a variable name and its contents.
     vars: HashMap<String, Variable>,
 }
 
 #[derive(Debug, Clone)]
-/// Single variable content
+/// Single variable content.
 pub struct Variable {
     /// Contents of the variable.
     contents: ElviType,
@@ -190,6 +192,10 @@ impl Variable {
 
     pub fn get_modification_status(&self) -> ElviMutable {
         self.modification_status
+    }
+
+    pub fn get_line(&self) -> (usize, usize) {
+        self.line
     }
 }
 

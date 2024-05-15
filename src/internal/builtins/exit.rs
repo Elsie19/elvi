@@ -1,4 +1,7 @@
-use crate::internal::{status::ReturnCode, variables::ElviType};
+use crate::internal::{
+    status::ReturnCode,
+    variables::{ElviType, VariableError},
+};
 
 /// The internal code that runs when the `exit` builtin is run.
 ///
@@ -12,7 +15,13 @@ pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
             match try_code {
                 Ok(yay) => return yay,
                 Err(_) => {
-                    eprintln!("elvi: exit: Illegal number: {yo}");
+                    eprintln!(
+                        "{}",
+                        VariableError::IllegalNumber {
+                            name: yo.to_string(),
+                            caller: "exit".to_string()
+                        }
+                    );
                     return ReturnCode::ret(ReturnCode::MISUSE);
                 }
             }
