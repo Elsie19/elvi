@@ -52,9 +52,15 @@ impl ElviParser {
         Ok(ElviType::String(input.as_str().to_string()).eval_escapes())
     }
 
+    pub fn backtickInner(input: Node) -> Result<ElviType> {
+        Ok(ElviType::CommandSubstitution(input.as_str().to_string()))
+    }
+
     /// Handles backtick substitution.
     pub fn backtickSubstitution(input: Node) -> Result<ElviType> {
-        Ok(ElviType::CommandSubstitution(input.as_str().to_string()))
+        Ok(match_nodes!(input.into_children();
+            [backtickInner(stringo)] => stringo,
+        ))
     }
 
     /// Wrapper to handle any valid string.
@@ -195,19 +201,19 @@ impl ElviParser {
                         Actions::ChangeVariable((name, var)) => match var.get_value() {
                             // If we have a string we can just assign as is, as the escaping has
                             // already been done.
-                            ElviType::String(x) => {
+                            ElviType::String(_x) => {
                                 if var.get_lvl() != ElviGlobal::Global {
                                     let mut var = var.clone();
                                     var.change_lvl(subshells_in);
                                 }
                                 match variables.set_variable(name, var) {
                                     Ok(()) => {}
-                                    Err(foo) => eprintln!("{foo}"),
+                                    Err(oops) => eprintln!("{oops}"),
                                 }
                             }
                             ElviType::CommandSubstitution(x) => {
                                 //TODO: Interpolate the variables if any
-                                let cmd_to_run = ExternalCommand::string_to_command(x.to_string());
+                                let cmd_to_run = ExternalCommand::string_to_command(x);
                                 // Set variable to empty if we can't get the command
                                 if commands.get_path(&cmd_to_run.cmd).is_none() {
                                     eprintln!(
@@ -223,14 +229,14 @@ impl ElviParser {
                                     match variables.set_variable(
                                         name,
                                         Variable::oneshot_var(
-                                            ElviType::String("".into()),
+                                            ElviType::String(String::new()),
                                             var.get_modification_status(),
                                             var.get_lvl(),
                                             var.get_line(),
                                         ),
                                     ) {
                                         Ok(()) => {}
-                                        Err(foo) => eprintln!("{foo}"),
+                                        Err(oops) => eprintln!("{oops}"),
                                     }
                                 } else {
                                     // Let's get our environmental variables ready
@@ -246,14 +252,14 @@ impl ElviParser {
                                             cmd_to_run.args.unwrap()
                                         })
                                         .env_clear()
-                                        .envs(filtered_env)
                                         .current_dir(
                                             variables
-                                                .get_variable("PWD".into())
+                                                .get_variable("PWD")
                                                 .unwrap()
                                                 .get_value()
                                                 .to_string(),
                                         )
+                                        .envs(filtered_env)
                                         .output()
                                         .expect("oops");
 
@@ -269,7 +275,7 @@ impl ElviParser {
                                         .clone(),
                                     ) {
                                         Ok(()) => {}
-                                        Err(foo) => eprintln!("{foo}"),
+                                        Err(oops) => eprintln!("{oops}"),
                                     }
                                 }
                             }

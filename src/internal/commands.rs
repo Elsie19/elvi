@@ -16,9 +16,11 @@ pub struct Commands {
 }
 
 #[derive(Debug, Clone)]
-/// Struct to make handling external commands easier
+/// Struct to make handling external commands easier.
 pub struct ExternalCommand {
+    /// Command name.
     pub cmd: String,
+    /// Arguments (if any).
     pub args: Option<Vec<String>>,
 }
 
@@ -56,15 +58,23 @@ impl Commands {
 }
 
 impl ExternalCommand {
-    pub fn string_to_command(cmd: String) -> Self {
-        let split_up = cmd.split(" ").collect_vec();
-        let cmd = split_up.get(0).unwrap().to_string();
-        if split_up.len() > 1 {
+    /// Convert a string into an ExternalCommand.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let cmd = ExternalCommand::string_to_command("ls -l /".to_string());
+    /// let cmd_without_args = ExternalCommand::string_to_command("touch".to_string());
+    /// ```
+    pub fn string_to_command(cmd: &str) -> Self {
+        let split_up = cmd.split(' ').collect_vec();
+        let cmd = (*split_up.get(0).unwrap()).to_string();
+        if split_up.len() == 1 {
             Self { cmd, args: None }
         } else {
             Self {
                 cmd,
-                args: Some(split_up.iter().skip(1).map(|s| s.to_string()).collect()),
+                args: Some(split_up.iter().skip(1).map(|s| (*s).to_string()).collect()),
             }
         }
     }
