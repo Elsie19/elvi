@@ -10,6 +10,7 @@ custom_error! {pub VariableError
 }
 
 #[derive(Debug, Clone)]
+/// Struct representing the variable types in Elvi
 pub enum ElviType {
     String(String),
     Number(usize),
@@ -19,6 +20,7 @@ pub enum ElviType {
 }
 
 #[derive(Debug, Clone, Copy)]
+/// Enum representing the state that a variable can be
 pub enum ElviMutable {
     Normal,
     Readonly,
@@ -26,17 +28,20 @@ pub enum ElviMutable {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+/// Enum representing the globality of a variable
 pub enum ElviGlobal {
     Global,
     Normal(u32),
 }
 
 #[derive(Debug, Clone)]
+/// Global variable list
 pub struct Variables {
     vars: HashMap<String, Variable>,
 }
 
 #[derive(Debug, Clone)]
+/// Single variable content
 pub struct Variable {
     contents: ElviType,
     modification_status: ElviMutable,
@@ -45,6 +50,7 @@ pub struct Variable {
 }
 
 impl Variables {
+    /// Create new default variable list with required variables.
     pub fn default() -> Self {
         Self {
             vars: HashMap::from([
@@ -92,6 +98,7 @@ impl Variables {
         self.vars.get(var)
     }
 
+    /// Quick function to set `$?`.
     pub fn set_ret(&mut self, code: ReturnCode) {
         self.vars.insert(
             "?".into(),
@@ -104,6 +111,7 @@ impl Variables {
         );
     }
 
+    /// Set a given variable.
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
         if let Some(value) = self.vars.get(&name) {
             let le_lines = value.clone();
@@ -136,6 +144,7 @@ impl Variable {
         &self.contents
     }
 
+    /// Return a variable template with all options available.
     pub fn oneshot_var(
         contents: ElviType,
         modification_status: ElviMutable,
@@ -165,6 +174,7 @@ impl Variable {
 }
 
 impl ElviType {
+    /// Return an escaped string
     pub fn eval_escapes(&self) -> ElviType {
         match self {
             ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),
