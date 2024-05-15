@@ -1,6 +1,10 @@
 use crate::internal::{status::ReturnCode, variables::ElviType};
 
 /// The internal code that runs when the `exit` builtin is run.
+///
+/// This builtin corresponds with
+/// <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#exit>
+/// except for trapping.
 pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
     match num {
         Some(yo) => {
