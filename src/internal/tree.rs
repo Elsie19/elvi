@@ -1,6 +1,7 @@
 use super::variables::{ElviType, Variable};
 
 #[derive(Debug)]
+/// A list of possible actions a line can cause.
 pub enum Actions {
     ChangeVariable((String, Variable)),
     Builtin(Builtins),
@@ -9,6 +10,7 @@ pub enum Actions {
 }
 
 #[derive(Debug)]
+/// A list of builtins and their parameters.
 pub enum Builtins {
     Dbg(String),
     Exit(Option<ElviType>),

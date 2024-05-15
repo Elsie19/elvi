@@ -3,11 +3,14 @@ use std::{collections::HashMap, fs, path::PathBuf};
 use super::variables::{ElviType, Variables};
 
 #[derive(Debug, Clone)]
+/// Global list of commands.
 pub struct Commands {
+    /// Hashmap of the name of a command, and the path to its executable.
     cmds: HashMap<String, PathBuf>,
 }
 
 impl Commands {
+    /// Generate a list of commands from a path variable.
     pub fn generate(variables: &Variables) -> Self {
         let mut cmds: HashMap<String, PathBuf> = HashMap::new();
 

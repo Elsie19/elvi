@@ -1,5 +1,6 @@
 use crate::internal::{status::ReturnCode, variables::ElviType};
 
+/// The internal code that runs when the `exit` builtin is run.
 pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
     match num {
         Some(yo) => {

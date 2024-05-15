@@ -12,40 +12,53 @@ custom_error! {pub VariableError
 #[derive(Debug, Clone)]
 /// Struct representing the variable types in Elvi
 pub enum ElviType {
+    /// A string.
     String(String),
+    /// A number.
     Number(usize),
+    /// An error code type, cannot be assigned inside of Elvi.
     ErrExitCode(u16),
-    // Array(Vec<Self>),
+    /// Boolean.
     Boolean(bool),
 }
 
 #[derive(Debug, Clone, Copy)]
 /// Enum representing the state that a variable can be
 pub enum ElviMutable {
+    /// Mutable variable, the default one.
     Normal,
+    /// Readonly variable, cannot be unset or changed.
     Readonly,
+    /// Generally only used internally, will create a readonly variable that can be unset.
     ReadonlyUnsettable,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 /// Enum representing the globality of a variable
 pub enum ElviGlobal {
+    /// Exported variable.
     Global,
+    /// Scoped variable.
     Normal(u32),
 }
 
 #[derive(Debug, Clone)]
 /// Global variable list
 pub struct Variables {
+    /// Hashmap of a variable name and its contents.
     vars: HashMap<String, Variable>,
 }
 
 #[derive(Debug, Clone)]
 /// Single variable content
 pub struct Variable {
+    /// Contents of the variable.
     contents: ElviType,
+    /// Mutability status.
     modification_status: ElviMutable,
+    /// Relation to `$SHLVL`.
     shell_lvl: ElviGlobal,
+    /// Line and column variable was declared on.
     line: (usize, usize),
 }
 
@@ -174,7 +187,7 @@ impl Variable {
 }
 
 impl ElviType {
-    /// Return an escaped string
+    /// Return an escaped string using [`snailquote::unescape`].
     pub fn eval_escapes(&self) -> ElviType {
         match self {
             ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),

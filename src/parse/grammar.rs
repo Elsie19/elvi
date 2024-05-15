@@ -13,6 +13,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/commands.pest"]
 #[grammar = "parse/internals/if.pest"]
 #[grammar = "parse/internals/base.pest"]
+/// Global struct that implements the pest.rs parser.
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
@@ -22,32 +23,39 @@ type Node<'i> = pest_consume::Node<'i, Rule, ()>;
 #[pest_consume::parser]
 impl ElviParser {
     #[allow(clippy::used_underscore_binding)]
+    /// Handles end of file.
     pub fn EOI(_input: Node) -> Result<()> {
         Ok(())
     }
 
+    /// Handles any number.
     pub fn elviNumber(input: Node) -> Result<u16> {
         Ok(input.as_str().parse().unwrap())
     }
 
+    /// Handles a variable name.
     pub fn variableIdent(input: Node) -> Result<String> {
         Ok(input.as_str().to_string())
     }
 
+    /// Handles single quotes.
     pub fn singleQuoteString(input: Node) -> Result<ElviType> {
         Ok(ElviType::String(input.as_str().to_string()))
     }
 
     //TODO: Variable interpolation
+    /// Handles double quotes.
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
         Ok(ElviType::String(input.as_str().to_string()).eval_escapes())
     }
 
     //TODO: Command substitution
+    /// Handles backtick substitution.
     pub fn backtickSubstitution(input: Node) -> Result<ElviType> {
         Ok(ElviType::String(input.as_str().to_string()))
     }
 
+    /// Wrapper to handle any valid string.
     pub fn anyString(input: Node) -> Result<ElviType> {
         Ok(match_nodes!(input.into_children();
             [singleQuoteString(stringo)] => stringo,
@@ -55,6 +63,7 @@ impl ElviParser {
         ))
     }
 
+    /// Wrapper to handle any valid assignment of a variable.
     pub fn variableIdentifierPossibilities(input: Node) -> Result<ElviType> {
         Ok(match_nodes!(input.into_children();
             [anyString(stringo)] => stringo,
@@ -62,6 +71,7 @@ impl ElviParser {
         ))
     }
 
+    /// Handles normal variable assignments.
     pub fn normalVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
@@ -83,6 +93,7 @@ impl ElviParser {
         ))
     }
 
+    /// Handles readonly variable assignments.
     pub fn readonlyVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
@@ -104,6 +115,7 @@ impl ElviParser {
         ))
     }
 
+    /// Handles the readonly builtin.
     pub fn builtinDbg(input: Node) -> Result<Actions> {
         let name = input
             .into_children()
@@ -116,6 +128,7 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
+    /// Handles the exit builtin.
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
             [anyString(stringo)] => Some(stringo),
@@ -126,14 +139,17 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Exit(possibles)))
     }
 
+    /// Handles any external command.
     pub fn externalCommand(input: Node) -> Result<Actions> {
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
     }
 
+    /// Handles if statements.
     pub fn ifStatement(input: Node) -> Result<()> {
         Ok(())
     }
 
+    /// Handles global statements.
     pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
             [normalVariable(var)] => {
@@ -149,6 +165,7 @@ impl ElviParser {
         )
     }
 
+    /// Entry point for parsing.
     pub fn program(input: Node) -> ReturnCode {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
