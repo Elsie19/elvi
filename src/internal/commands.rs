@@ -1,12 +1,25 @@
+use custom_error::custom_error;
+use pest_consume::Itertools;
 use std::{collections::HashMap, fs, path::PathBuf};
 
 use super::variables::{ElviType, Variables};
+
+custom_error! {pub CommandError
+    NotFound{name:String} = "elvi: {name}: not found",
+}
 
 #[derive(Debug, Clone)]
 /// Global list of commands.
 pub struct Commands {
     /// Hashmap of the name of a command, and the path to its executable.
     cmds: HashMap<String, PathBuf>,
+}
+
+#[derive(Debug, Clone)]
+/// Struct to make handling external commands easier
+pub struct ExternalCommand {
+    pub cmd: String,
+    pub args: Option<Vec<String>>,
 }
 
 impl Commands {
@@ -39,5 +52,20 @@ impl Commands {
 
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
         self.cmds.get(program).map(|cmd| cmd.to_path_buf())
+    }
+}
+
+impl ExternalCommand {
+    pub fn string_to_command(cmd: String) -> Self {
+        let split_up = cmd.split(" ").collect_vec();
+        let cmd = split_up.get(0).unwrap().to_string();
+        if split_up.len() > 1 {
+            Self { cmd, args: None }
+        } else {
+            Self {
+                cmd,
+                args: Some(split_up.iter().skip(1).map(|s| s.to_string()).collect()),
+            }
+        }
     }
 }

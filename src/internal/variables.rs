@@ -1,7 +1,7 @@
 use core::fmt;
 use custom_error::custom_error;
 use snailquote::{escape, unescape};
-use std::collections::HashMap;
+use std::{collections::HashMap, env, ffi::OsStr};
 
 use super::status::ReturnCode;
 
@@ -22,6 +22,8 @@ pub enum ElviType {
     ErrExitCode(u16),
     /// Boolean.
     Boolean(bool),
+    /// A type that signifies command substitution, cannot be assigned inside of Elvi.
+    CommandSubstitution(String),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -105,12 +107,33 @@ impl Variables {
                         line: (0, 0),
                     },
                 ),
+                (
+                    "PWD".into(),
+                    Variable {
+                        contents: ElviType::String(
+                            env::current_dir().unwrap().to_str().unwrap().to_string(),
+                        ),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
             ]),
         }
     }
 
     pub fn get_variable(&self, var: &str) -> Option<&Variable> {
         self.vars.get(var)
+    }
+
+    pub fn get_environmentals(&self) -> HashMap<String, String> {
+        let mut ret: HashMap<String, String> = HashMap::new();
+        for (name, var) in self.vars.iter() {
+            if var.get_lvl() == ElviGlobal::Global {
+                ret.insert(name.to_string(), var.get_value().to_string());
+            }
+        }
+        ret
     }
 
     pub fn unset(&mut self, var: &str) -> Option<()> {
@@ -197,6 +220,11 @@ impl Variable {
     pub fn get_line(&self) -> (usize, usize) {
         self.line
     }
+
+    pub fn change_contents(&mut self, var: ElviType) -> &Variable {
+        self.contents = var;
+        self
+    }
 }
 
 impl ElviType {
@@ -227,6 +255,7 @@ impl fmt::Display for ElviType {
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
+            ElviType::CommandSubstitution(x) => write!(f, "{x}"),
         }
     }
 }

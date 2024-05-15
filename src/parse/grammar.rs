@@ -1,5 +1,9 @@
+use std::collections::HashMap;
+use std::io::{self, Read, Write};
+use std::process::Command;
+
 use crate::internal::builtins;
-use crate::internal::commands::Commands;
+use crate::internal::commands::{CommandError, Commands, ExternalCommand};
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::{Actions, Builtins};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
@@ -43,16 +47,14 @@ impl ElviParser {
         Ok(ElviType::String(input.as_str().to_string()))
     }
 
-    //TODO: Variable interpolation
     /// Handles double quotes.
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
         Ok(ElviType::String(input.as_str().to_string()).eval_escapes())
     }
 
-    //TODO: Command substitution
     /// Handles backtick substitution.
     pub fn backtickSubstitution(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string()))
+        Ok(ElviType::CommandSubstitution(input.as_str().to_string()))
     }
 
     /// Wrapper to handle any valid string.
@@ -190,17 +192,89 @@ impl ElviParser {
             if child.as_rule() != Rule::EOI {
                 match Self::statement(child) {
                     Ok(yes) => match yes {
-                        Actions::ChangeVariable((name, var)) => {
-                            if var.get_lvl() != ElviGlobal::Global {
-                                let mut var = var.clone();
-                                var.change_lvl(subshells_in);
+                        Actions::ChangeVariable((name, var)) => match var.get_value() {
+                            // If we have a string we can just assign as is, as the escaping has
+                            // already been done.
+                            ElviType::String(x) => {
+                                if var.get_lvl() != ElviGlobal::Global {
+                                    let mut var = var.clone();
+                                    var.change_lvl(subshells_in);
+                                }
+                                match variables.set_variable(name, var) {
+                                    Ok(()) => {}
+                                    Err(foo) => eprintln!("{foo}"),
+                                }
                             }
-                            // println!("Changing variable '{}' with contents of: {:?}", name, var);
-                            match variables.set_variable(name, var) {
-                                Ok(()) => {}
-                                Err(foo) => eprintln!("{foo}"),
+                            ElviType::CommandSubstitution(x) => {
+                                //TODO: Interpolate the variables if any
+                                let cmd_to_run = ExternalCommand::string_to_command(x.to_string());
+                                // Set variable to empty if we can't get the command
+                                if commands.get_path(&cmd_to_run.cmd).is_none() {
+                                    eprintln!(
+                                        "{}",
+                                        CommandError::NotFound {
+                                            name: cmd_to_run.cmd,
+                                        }
+                                    );
+                                    if var.get_lvl() != ElviGlobal::Global {
+                                        let mut var = var.clone();
+                                        var.change_lvl(subshells_in);
+                                    }
+                                    match variables.set_variable(
+                                        name,
+                                        Variable::oneshot_var(
+                                            ElviType::String("".into()),
+                                            var.get_modification_status(),
+                                            var.get_lvl(),
+                                            var.get_line(),
+                                        ),
+                                    ) {
+                                        Ok(()) => {}
+                                        Err(foo) => eprintln!("{foo}"),
+                                    }
+                                } else {
+                                    // Let's get our environmental variables ready
+                                    let filtered_env = variables.get_environmentals();
+                                    // Full path, this is important as we don't want Command::new()
+                                    // to be fooling around with it's own PATH, even though we
+                                    // override it.
+                                    let patho = commands.get_path(&cmd_to_run.cmd).unwrap();
+                                    let cmd = Command::new(patho.to_str().unwrap())
+                                        .args(if cmd_to_run.args.is_none() {
+                                            vec![]
+                                        } else {
+                                            cmd_to_run.args.unwrap()
+                                        })
+                                        .env_clear()
+                                        .envs(filtered_env)
+                                        .current_dir(
+                                            variables
+                                                .get_variable("PWD".into())
+                                                .unwrap()
+                                                .get_value()
+                                                .to_string(),
+                                        )
+                                        .output()
+                                        .expect("oops");
+
+                                    if !cmd.stderr.is_empty() {
+                                        io::stderr().write_all(&cmd.stderr).unwrap();
+                                    }
+                                    let mut var = var.clone();
+                                    match variables.set_variable(
+                                        name,
+                                        var.change_contents(ElviType::String(
+                                            std::str::from_utf8(&cmd.stdout).unwrap().to_string(),
+                                        ))
+                                        .clone(),
+                                    ) {
+                                        Ok(()) => {}
+                                        Err(foo) => eprintln!("{foo}"),
+                                    }
+                                }
                             }
-                        }
+                            _ => unimplemented!("Is not done yet"),
+                        },
                         Actions::Builtin(built) => match built {
                             Builtins::Dbg(var) => {
                                 let ret = builtins::dbg::builtin_dbg(&var, &mut variables).get();
