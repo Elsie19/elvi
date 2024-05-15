@@ -1,4 +1,4 @@
-use super::variables::Variable;
+use super::variables::{ElviType, Variable};
 
 #[derive(Debug)]
 pub enum Actions {
@@ -11,5 +11,5 @@ pub enum Actions {
 #[derive(Debug)]
 pub enum Builtins {
     Dbg(String),
-    Exit(String),
+    Exit(Option<ElviType>),
 }

@@ -26,6 +26,10 @@ impl ElviParser {
         Ok(())
     }
 
+    pub fn elviNumber(input: Node) -> Result<u16> {
+        Ok(input.as_str().parse().unwrap())
+    }
+
     pub fn variableIdent(input: Node) -> Result<String> {
         Ok(input.as_str().to_string())
     }
@@ -112,17 +116,14 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Dbg(name)))
     }
 
-    pub fn elviNumber(input: Node) -> Result<u16> {
-        Ok(input.as_str().parse().unwrap())
-    }
-
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [anyString(stringo)] => stringo,
-            [elviNumber(stringo)] => ElviType::String(stringo.to_string()),
+            [anyString(stringo)] => Some(stringo),
+            [elviNumber(stringo)] => Some(ElviType::String(stringo.to_string())),
+            [] => None,
         );
 
-        Ok(Actions::Builtin(Builtins::Exit(possibles.to_string())))
+        Ok(Actions::Builtin(Builtins::Exit(possibles)))
     }
 
     pub fn externalCommand(input: Node) -> Result<Actions> {
@@ -180,7 +181,11 @@ impl ElviParser {
                             }
                             Builtins::Exit(var) => {
                                 let ret = builtins::exit::builtin_exit(var);
-                                std::process::exit(ret.get().into());
+                                if subshells_in > 1 {
+                                    subshells_in -= 1;
+                                } else {
+                                    std::process::exit(ret.get().into());
+                                }
                             }
                         },
                         Actions::Command(cmd) => {
