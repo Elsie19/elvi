@@ -7,5 +7,5 @@ COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 elviNumber = { ASCII_DIGIT+ }
 
 statement = {
-    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinDbg | builtinExit | builtinUnset)
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper)
 }

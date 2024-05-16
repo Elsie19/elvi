@@ -171,6 +171,14 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Exit(possibles)))
     }
 
+    pub fn builtinWrapper(input: Node) -> Result<Actions> {
+        Ok(match_nodes!(input.into_children();
+            [builtinDbg(stringo)] => stringo,
+            [builtinExit(stringo)] => stringo,
+            [builtinUnset(stringo)] => stringo,
+        ))
+    }
+
     /// Handles any external command.
     pub fn externalCommand(input: Node) -> Result<Actions> {
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
@@ -190,9 +198,7 @@ impl ElviParser {
             [readonlyVariable(var)] => {
                 Ok(Actions::ChangeVariable(var))
             },
-            [builtinDbg(var)] => Ok(var),
-            [builtinExit(var)] => Ok(var),
-            [builtinUnset(var)] => Ok(var),
+            [builtinWrapper(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
             // [ifStatement(var)] => Ok(var),
         )
