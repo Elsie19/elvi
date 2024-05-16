@@ -1,6 +1,6 @@
 // Main rules
-singleQuoteString = @{ "'" ~ singleInner ~ "'" }
-doubleQuoteString = @{ "\"" ~ doubleInner ~ "\"" }
+singleQuoteString = { "'" ~ singleInner ~ "'" }
+doubleQuoteString = { "\"" ~ doubleInner ~ "\"" }
 
 // A wrapper so people don't have to { singleQuoteString | doubleQuoteString }
 anyString = ${ singleQuoteString | doubleQuoteString }

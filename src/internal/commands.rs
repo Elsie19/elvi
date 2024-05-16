@@ -63,8 +63,9 @@ impl ExternalCommand {
     /// # Examples
     ///
     /// ```
-    /// let cmd = ExternalCommand::string_to_command("ls -l /".to_string());
-    /// let cmd_without_args = ExternalCommand::string_to_command("touch".to_string());
+    /// # use ExternalCommand;
+    /// let cmd = ExternalCommand::string_to_command("ls -l /");
+    /// let cmd_without_args = ExternalCommand::string_to_command("touch");
     /// ```
     pub fn string_to_command(cmd: &str) -> Self {
         let split_up = cmd.split(' ').collect_vec();

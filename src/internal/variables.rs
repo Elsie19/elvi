@@ -71,6 +71,8 @@ impl Variables {
         self.vars.get(var)
     }
 
+    /// Return a hashmap of all variables marked as [`ElviGlobal::Global`] and their corresponding
+    /// values (can only be a [`ElviType::String`]).
     pub fn get_environmentals(&self) -> HashMap<String, String> {
         let mut ret: HashMap<String, String> = HashMap::new();
         for (name, var) in self.vars.iter() {
@@ -81,6 +83,11 @@ impl Variables {
         ret
     }
 
+    /// Unsets a variable.
+    ///
+    /// # Notes
+    /// Check before running this function if a varible is not [`ElviMutable::Normal`], because
+    /// this function will happily unset anything.
     pub fn unset(&mut self, var: &str) -> Option<()> {
         match self.vars.remove(var) {
             Some(_) => Some(()),
@@ -102,6 +109,10 @@ impl Variables {
     }
 
     /// Set a given variable.
+    ///
+    /// # Errors
+    /// Will return [`VariableError`] if a variable is [`ElviMutable::Readonly`] or
+    /// [`ElviMutable::ReadonlyUnsettable`].
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
         if let Some(value) = self.vars.get(&name) {
             let le_lines = value.clone();
@@ -206,23 +217,28 @@ impl Variable {
         }
     }
 
+    /// Return the [`ElviGlobal`] of a given variable.
     pub fn get_lvl(&self) -> ElviGlobal {
         self.shell_lvl
     }
 
+    /// Change any variable's level to a [`ElviGlobal::Normal`] and return it.
     pub fn change_lvl(&mut self, lvl: u32) -> ElviGlobal {
         self.shell_lvl = ElviGlobal::Normal(lvl);
         self.shell_lvl
     }
 
+    /// Get the [`ElviMutable`] of a variable.
     pub fn get_modification_status(&self) -> ElviMutable {
         self.modification_status
     }
 
+    /// Get the assignment line of a variable.
     pub fn get_line(&self) -> (usize, usize) {
         self.line
     }
 
+    /// Change and return the contents of a variable.
     pub fn change_contents(&mut self, var: ElviType) -> &Variable {
         self.contents = var;
         self

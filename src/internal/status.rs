@@ -1,19 +1,24 @@
 use std::str::FromStr;
 
 #[derive(Debug, Copy, Clone)]
+/// Wrapper for a [`u16`] to represent an error code.
 pub struct ReturnCode {
+    /// Actual error code.
     val: u16,
 }
 
 #[derive(Debug, PartialEq, Eq)]
+/// Struct for bad parses into a [`ReturnCode`].
 pub struct ParseReturnCodeError;
 
 /// <https://tldp.org/LDP/abs/html/exitcodes.html>
 impl ReturnCode {
+    /// Returns an instance of [`ReturnCode`] with a given value.
     pub fn ret(val: u16) -> Self {
         ReturnCode { val }
     }
 
+    /// Pull [`ReturnCode::val`].
     pub fn get(self) -> u16 {
         self.val
     }

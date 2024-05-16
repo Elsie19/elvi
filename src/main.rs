@@ -1,4 +1,16 @@
 //! A POSIX shell written in Rust.
+//!
+//! # Getting Started
+//! To get started using Elvi, just install the binary and run any POSIX shell script!
+//!
+//! # Hacking on Elvi
+//! ## Creating a builtin
+//! To get started, you can check out how to implement your own builtin in [`internal::builtins`],
+//! which should offer a complete guide.
+//! ## Modifying grammar
+//! To modify grammar to add your own non-POSIX creation, check out `src/parse/internals/` and
+//! make sure to look at [`pest_consume`] and [`pest_derive`] to understand how to both parse and
+//! create grammar!
 
 pub mod internal;
 pub mod parse;

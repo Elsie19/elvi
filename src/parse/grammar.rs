@@ -16,7 +16,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/commands.pest"]
 #[grammar = "parse/internals/if.pest"]
 #[grammar = "parse/internals/base.pest"]
-/// Global struct that implements the pest.rs parser.
+/// Global struct that implements the pest.rs parser ([`pest_derive`]).
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
@@ -41,14 +41,26 @@ impl ElviParser {
         Ok(input.as_str().to_string())
     }
 
+    pub fn doubleInner(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
+    }
+
+    pub fn singleInner(input: Node) -> Result<String> {
+        Ok(input.as_str().to_string())
+    }
+
     /// Handles single quotes.
     pub fn singleQuoteString(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string()))
+        Ok(match_nodes!(input.into_children();
+            [singleInner(stringo)] => ElviType::String(stringo),
+        ))
     }
 
     /// Handles double quotes.
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string()).eval_escapes())
+        Ok(match_nodes!(input.into_children();
+            [doubleInner(stringo)] => ElviType::String(stringo).eval_escapes(),
+        ))
     }
 
     pub fn backtickInner(input: Node) -> Result<ElviType> {
