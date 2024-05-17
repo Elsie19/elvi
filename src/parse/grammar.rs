@@ -1,8 +1,5 @@
-use std::io::{self, Write};
-use std::process::Command;
-
 use crate::internal::builtins;
-use crate::internal::commands::{CommandError, Commands, ExternalCommand};
+use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::{change_variable, Actions, Builtins};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
@@ -216,7 +213,7 @@ impl ElviParser {
                 match Self::statement(child) {
                     Ok(yes) => match yes {
                         Actions::ChangeVariable((name, var)) => {
-                            change_variable(&mut variables, &commands, subshells_in, name, var);
+                            change_variable(&mut variables, &commands, subshells_in, name, &var);
                         }
                         Actions::Builtin(built) => match built {
                             Builtins::Dbg(var) => {

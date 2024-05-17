@@ -261,7 +261,8 @@ impl ElviType {
         }
     }
 
-    /// This assumes [`ElviType::VariableSubstitution`].
+    /// This assumes [`ElviType::VariableSubstitution`]. If not, it will return the text given as
+    /// is.
     pub fn eval_variables(&self, vars: &Variables) -> Self {
         match self {
             // So basically because of my shitty thinking, we set all double quotes to
@@ -281,6 +282,9 @@ impl ElviType {
                     // Do we have a variable that is escaped?
                     } else if charp == '\\' && chars_of.peek() == Some(&'$') {
                         back_to_string.push(charp);
+                        // This cannot fail as we've checked above that the next character is
+                        // `Some()`
+                        #[allow(clippy::panicking_unwrap)]
                         chars_of.next().unwrap();
                         back_to_string.push(charp);
                         continue;
@@ -295,20 +299,17 @@ impl ElviType {
                         //TODO: Work on parameter expansion, ugh.
                         let tasty_var: String =
                             chars_of.by_ref().take_while(|&c| c != '}').collect();
-                        match vars.get_variable(&tasty_var) {
-                            Some(woot) => {
-                                // This is the magic of the entire function lol. Bask in its
-                                // glory!!
-                                back_to_string.push_str(woot.get_value().to_string().as_str())
-                            }
-                            None => {}
+                        if let Some(woot) = vars.get_variable(&tasty_var) {
+                            // This is the magic of the entire function lol. Bask in its
+                            // glory!!
+                            back_to_string.push_str(woot.get_value().to_string().as_str())
                         }
                         continue;
                     } else {
                         // Fuck.
                         // Well before we fuck we should check if this is the last character, which
                         // is stupid but hey, I'm writing a POSIX shell.
-                        if chars_of.peek() == None {
+                        if chars_of.peek().is_none() {
                             back_to_string.push('$');
                             continue;
                         }
@@ -319,11 +320,8 @@ impl ElviType {
                             // take_while() instead.
                             .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
                             .collect();
-                        match vars.get_variable(&tasty_var) {
-                            Some(woot) => {
-                                back_to_string.push_str(woot.get_value().to_string().as_str());
-                            }
-                            None => {}
+                        if let Some(woot) = vars.get_variable(&tasty_var) {
+                            back_to_string.push_str(woot.get_value().to_string().as_str())
                         }
                     }
                 }
@@ -337,12 +335,11 @@ impl ElviType {
 impl fmt::Display for ElviType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ElviType::String(x) => write!(f, "{}", escape(x)),
+            ElviType::String(x) | ElviType::VariableSubstitution(x) => write!(f, "{}", escape(x)),
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
             ElviType::CommandSubstitution(x) => write!(f, "{x}"),
-            ElviType::VariableSubstitution(x) => write!(f, "{x}"),
         }
     }
 }
