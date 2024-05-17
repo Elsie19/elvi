@@ -25,6 +25,9 @@ pub enum Builtins {
     Exit(Option<ElviType>),
 }
 
+/// Function to change/assign a variable.
+///
+/// I added this because putting everything into `grammar.rs` was too much work and tedious.
 pub fn change_variable(
     variables: &mut Variables,
     commands: &Commands,
@@ -35,6 +38,11 @@ pub fn change_variable(
     // Makes shit easier to deal with.
     let mut var = var.clone();
     match var.get_value() {
+        goopy @ ElviType::VariableSubstitution(_x) => {
+            // Goopy will save us!!!
+            var.change_contents(goopy.eval_variables(&variables));
+            change_variable(variables, commands, lvl, name, var);
+        }
         ElviType::String(_we_dont_care) => {
             // First let's get the level because while parsing we assume a certain variable level that is
             // not true to the actual evaluating.
@@ -79,6 +87,9 @@ pub fn change_variable(
                 // to be fooling around with it's own PATH, even though we
                 // override it.
                 let patho = commands.get_path(&cmd_to_run.cmd).unwrap();
+                // This is a doozy but what we're doing is creating a command that takes the full
+                // path to our program, clears it's own environment, inserts ours, set's the
+                // current directory to ours as well.
                 let cmd = Command::new(patho.to_str().unwrap())
                     .args(if cmd_to_run.args.is_none() {
                         vec![]
@@ -104,6 +115,8 @@ pub fn change_variable(
                 match variables.set_variable(
                     name,
                     var.change_contents(ElviType::String(
+                        // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
+                        // assignment if it comes up.
                         std::str::from_utf8(&cmd.stdout).unwrap().to_string(),
                     ))
                     .clone(),

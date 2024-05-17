@@ -1,5 +1,6 @@
 use core::fmt;
 use custom_error::custom_error;
+use pest_consume::Itertools;
 use snailquote::{escape, unescape};
 use std::{collections::HashMap, env};
 
@@ -253,6 +254,9 @@ impl ElviType {
     pub fn eval_escapes(&self) -> Self {
         match self {
             Self::String(le_string) => Self::String(unescape(le_string).unwrap()),
+            Self::VariableSubstitution(le_string) => {
+                Self::VariableSubstitution(unescape(le_string).unwrap())
+            }
             default => default.clone(),
         }
     }
@@ -260,9 +264,48 @@ impl ElviType {
     /// This assumes [`ElviType::VariableSubstitution`].
     pub fn eval_variables(&self, vars: &Variables) -> Self {
         match self {
+            // So basically because of my shitty thinking, we set all double quotes to
+            // [`ElviType::VariableSubstitution`] and convert that into a string. Haha.
             ElviType::VariableSubstitution(le_string) => {
-                let chars_of = le_string.chars();
-                Self::String(le_string.to_string())
+                // Let's skip the variables loops if we can't even find anything.
+                if !le_string.contains('$') && !le_string.contains(r"\$") {
+                    return Self::String(le_string.to_string());
+                }
+                dbg!(le_string);
+                let mut chars_of = le_string.chars().peekable();
+                let mut back_to_string = String::new();
+                while let Some(charp) = chars_of.next() {
+                    // Do we have a normal string please.
+                    if charp != '$' {
+                        back_to_string.push(charp);
+                        continue;
+                    // Do we have a variable that is escaped?
+                    } else if charp == '\\' && chars_of.peek() == Some(&'$') {
+                        back_to_string.push(charp);
+                        chars_of.next().unwrap();
+                        back_to_string.push(charp);
+                        continue;
+                    }
+                    // Ok at this point we have a variable! Woo, yay, congrats. Now is it a stupid
+                    // mfing $bare_variable or a lovely (we love) ${braced_variable}?
+                    // Oh and we're at '$' in the thing.
+                    if chars_of.peek() == Some(&'{') {
+                        // WOOOOOOOO
+                        chars_of.next().unwrap();
+                        let tasty_var: String =
+                            chars_of.by_ref().take_while(|&c| c != '}').collect();
+                        match vars.get_variable(&tasty_var) {
+                            Some(woot) => {
+                                back_to_string.push_str(woot.get_value().to_string().as_str())
+                            }
+                            None => {}
+                        }
+                        continue;
+                    } else {
+                        // Fuck.
+                    }
+                }
+                Self::String(back_to_string)
             }
             default => default.clone(),
         }
