@@ -24,6 +24,9 @@ pub enum ElviType {
     Boolean(bool),
     /// A type that signifies command substitution, cannot be assigned inside of Elvi.
     CommandSubstitution(String),
+    /// A type that signifies the need to evaluate variables. This will have to be converted to
+    /// [`ElviType::String`] when it is seen. By nature, it has to be a double quoted string.
+    VariableSubstitution(String),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -247,19 +250,19 @@ impl Variable {
 
 impl ElviType {
     /// Return an escaped string using [`snailquote::unescape`].
-    pub fn eval_escapes(&self) -> ElviType {
+    pub fn eval_escapes(&self) -> Self {
         match self {
-            ElviType::String(le_string) => ElviType::String(unescape(le_string).unwrap()),
+            Self::String(le_string) => Self::String(unescape(le_string).unwrap()),
             default => default.clone(),
         }
     }
 
-    // This assumes double quotes.
-    pub fn eval_variables(&self, vars: &Variables) -> ElviType {
+    /// This assumes [`ElviType::VariableSubstitution`].
+    pub fn eval_variables(&self, vars: &Variables) -> Self {
         match self {
-            ElviType::String(le_string) => {
+            ElviType::VariableSubstitution(le_string) => {
                 let chars_of = le_string.chars();
-                unimplemented!();
+                Self::String(le_string.to_string())
             }
             default => default.clone(),
         }
@@ -274,6 +277,7 @@ impl fmt::Display for ElviType {
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
             ElviType::CommandSubstitution(x) => write!(f, "{x}"),
+            ElviType::VariableSubstitution(x) => write!(f, "{x}"),
         }
     }
 }
