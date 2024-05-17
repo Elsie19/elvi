@@ -1,7 +1,7 @@
 // Main grammars
-builtinDbg   = !{ "dbg" ~ (" " | "\t")+ ~ variableIdent }
-builtinUnset = !{ "unset" ~ (" " | "\t")+ ~ variableIdent }
-builtinExit  = !{ "exit" ~ ((" " | "\t")+ ~ (anyString | elviNumber){1})? }
+builtinDbg   = !{ "dbg" ~ (" " | "\t")? ~ variableIdent }
+builtinUnset = !{ "unset" ~ (" " | "\t")? ~ variableIdent }
+builtinExit  = !{ "exit" ~ (" " | "\t")? ~ (anyString | elviNumber)? }
 
 // Wrapper grammar for any builtin
 builtinWrapper = { builtinDbg | builtinUnset | builtinExit }
