@@ -271,7 +271,6 @@ impl ElviType {
                 if !le_string.contains('$') && !le_string.contains(r"\$") {
                     return Self::String(le_string.to_string());
                 }
-                dbg!(le_string);
                 let mut chars_of = le_string.chars().peekable();
                 let mut back_to_string = String::new();
                 while let Some(charp) = chars_of.next() {
@@ -292,10 +291,14 @@ impl ElviType {
                     if chars_of.peek() == Some(&'{') {
                         // WOOOOOOOO
                         chars_of.next().unwrap();
+                        //BUG:  What about ${foo\}bar}
+                        //TODO: Work on parameter expansion, ugh.
                         let tasty_var: String =
                             chars_of.by_ref().take_while(|&c| c != '}').collect();
                         match vars.get_variable(&tasty_var) {
                             Some(woot) => {
+                                // This is the magic of the entire function lol. Bask in its
+                                // glory!!
                                 back_to_string.push_str(woot.get_value().to_string().as_str())
                             }
                             None => {}
@@ -303,6 +306,26 @@ impl ElviType {
                         continue;
                     } else {
                         // Fuck.
+                        // Well before we fuck we should check if this is the last character, which
+                        // is stupid but hey, I'm writing a POSIX shell.
+                        if chars_of.peek() == None {
+                            back_to_string.push('$');
+                            continue;
+                        }
+                        // Ok now we fuck
+                        let tasty_var: String = chars_of
+                            .by_ref()
+                            // We don't wanna consume the character it fails on, otherwise we'd use
+                            // take_while() instead.
+                            .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
+                            .collect();
+                        dbg!(&tasty_var);
+                        match vars.get_variable(&tasty_var) {
+                            Some(woot) => {
+                                back_to_string.push_str(woot.get_value().to_string().as_str());
+                            }
+                            None => {}
+                        }
                     }
                 }
                 Self::String(back_to_string)
