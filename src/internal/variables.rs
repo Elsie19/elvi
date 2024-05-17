@@ -319,7 +319,6 @@ impl ElviType {
                             // take_while() instead.
                             .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
                             .collect();
-                        dbg!(&tasty_var);
                         match vars.get_variable(&tasty_var) {
                             Some(woot) => {
                                 back_to_string.push_str(woot.get_value().to_string().as_str());
