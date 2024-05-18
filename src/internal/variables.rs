@@ -226,6 +226,19 @@ impl Default for Variables {
                         line: (0, 0),
                     },
                 ),
+                (
+                    "HOME".into(),
+                    Variable {
+                        contents: ElviType::String(
+                            // We (I) don't support windows.
+                            #[allow(deprecated)]
+                            env::home_dir().unwrap().to_str().unwrap().to_string(),
+                        ),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
             ]),
         }
     }

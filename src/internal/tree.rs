@@ -32,6 +32,8 @@ pub enum Builtins {
     Exit(Option<ElviType>),
     /// Will display commands if no argument given, will regenerate if `-r` is passed.
     Hash(Option<ElviType>),
+    /// Needs a path, empty, or dash.
+    Cd(Option<ElviType>),
 }
 
 /// Function to change/assign a variable.

@@ -190,12 +190,23 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Hash(possibles)))
     }
 
+    /// Handles the cd builtin.
+    pub fn builtinCd(input: Node) -> Result<Actions> {
+        let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)] => Some(stringo),
+            [] => None,
+        );
+
+        Ok(Actions::Builtin(Builtins::Cd(possibles)))
+    }
+
     pub fn builtinWrapper(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinDbg(stringo)] => stringo,
             [builtinExit(stringo)] => stringo,
             [builtinUnset(stringo)] => stringo,
             [builtinHash(stringo)] => stringo,
+            [builtinCd(stringo)] => stringo,
         ))
     }
 
@@ -264,6 +275,14 @@ impl ElviParser {
                                 let ret =
                                     builtins::hash::builtin_hash(flag, &mut commands, &variables)
                                         .get();
+                                variables.set_ret(ReturnCode::ret(ret));
+                            }
+                            Builtins::Cd(mut flag) => {
+                                // Let's just eval possible vars
+                                if flag.is_some() {
+                                    flag = Some(flag.unwrap().eval_variables(&variables));
+                                }
+                                let ret = builtins::cd::builtin_cd(flag, &mut variables).get();
                                 variables.set_ret(ReturnCode::ret(ret));
                             }
                         },

@@ -19,6 +19,11 @@ pub mod commands;
 /// # Notes
 /// All builtins defined by the [POSIX specification](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html) should function identically, and other builtins not related to these can do whatever.
 pub mod builtins {
+    /// The `cd` builtin.
+    ///
+    /// Conforming to
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#cd>
+    pub mod cd;
     /// The `dbg` builtin (not POSIX).
     ///
     /// # Notes

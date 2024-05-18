@@ -3,6 +3,7 @@ builtinDbg   = !{ "dbg" ~ (" " | "\t")? ~ variableIdent }
 builtinUnset = !{ "unset" ~ (" " | "\t")? ~ variableIdent }
 builtinExit  = !{ "exit" ~ (" " | "\t")? ~ (anyString | elviNumber)? }
 builtinHash  = !{ "hash" ~ (" " | "\t")? ~ elviWord? }
+builtinCd    = !{ "cd" ~ (" " | "\t")? ~ elviWord? }
 
 // Wrapper grammar for any builtin
-builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash }
+builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd }
