@@ -10,7 +10,7 @@ pub fn builtin_hash(
 ) -> ReturnCode {
     if flag.is_some() {
         if *flag.as_ref().unwrap() == ElviType::String("-r".into()) {
-            *commands = Commands::generate(&variables);
+            *commands = Commands::generate(variables);
         } else {
             eprintln!(
                 "{}",
