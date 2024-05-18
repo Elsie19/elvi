@@ -44,7 +44,9 @@ impl FromStr for ReturnCode {
     type Err = ParseReturnCodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let Ok(x) = s.parse::<u16>() else { return Err(ParseReturnCodeError) };
+        let Ok(x) = s.parse::<u16>() else {
+            return Err(ParseReturnCodeError);
+        };
 
         Ok(ReturnCode { val: x })
     }

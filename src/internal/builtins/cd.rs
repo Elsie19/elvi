@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::PathBuf;
 
 use crate::internal::commands::CommandError;
@@ -51,6 +52,16 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                     .to_string(),
             );
             if !to_cd.exists() {
+                eprintln!(
+                    "{}",
+                    CommandError::CannotCd {
+                        name: "cd".to_string(),
+                        path: to_cd.to_str().unwrap().to_string()
+                    }
+                );
+                return ReturnCode::ret(ReturnCode::MISUSE);
+            }
+            if fs::read_dir(to_cd.to_str().unwrap()).is_err() {
                 eprintln!(
                     "{}",
                     CommandError::CannotCd {

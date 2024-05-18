@@ -6,5 +6,5 @@ boogle="bar is: '${bar}'"
 dbg boogle
 dbg oof
 hash -r
-cd ~/Projects
+cd /root
 # exit

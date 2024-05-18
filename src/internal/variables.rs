@@ -322,24 +322,17 @@ impl ElviType {
                 // Do we have a tilde at the start?
                 if path.starts_with("~/") {
                     let home_dir = vars.get_variable("HOME").unwrap().get_value();
+                    let final_cd = home_dir.to_string()
+                        + std::path::MAIN_SEPARATOR_STR
+                        + path.strip_prefix("~/").unwrap().to_str().unwrap();
                     match self {
-                        Self::String(_) => {
-                            return Self::String(
-                                home_dir.to_string()
-                                    + std::path::MAIN_SEPARATOR_STR
-                                    + path.strip_prefix("~/").unwrap().to_str().unwrap(),
-                            );
-                        }
-                        Self::VariableSubstitution(_) => {
-                            return Self::VariableSubstitution(
-                                home_dir.to_string()
-                                    + std::path::MAIN_SEPARATOR_STR
-                                    + path.strip_prefix("~/").unwrap().to_str().unwrap(),
-                            );
-                        }
+                        Self::String(_) => Self::String(final_cd),
+                        Self::VariableSubstitution(_) => Self::VariableSubstitution(final_cd),
                         _ => unreachable!("Not possible."),
                     }
                 // Perchance could it be a user form?
+                // } else if path.f {
+                //     todo!();
                 } else {
                     // We don't and the caller is an idiot. Congrats: here's your string back to
                     // you. Fuck you.
