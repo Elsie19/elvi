@@ -168,11 +168,22 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Exit(possibles)))
     }
 
+    /// Handles the hash builtin.
+    pub fn builtinHash(input: Node) -> Result<Actions> {
+        dbg!(&input);
+        let possibles = match_nodes!(input.into_children();
+            [] => None,
+        );
+
+        Ok(Actions::Builtin(Builtins::Hash(possibles)))
+    }
+
     pub fn builtinWrapper(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinDbg(stringo)] => stringo,
             [builtinExit(stringo)] => stringo,
             [builtinUnset(stringo)] => stringo,
+            [builtinHash(stringo)] => stringo,
         ))
     }
 
@@ -232,6 +243,11 @@ impl ElviParser {
                                 let ret =
                                     builtins::unset::builtin_unset(&var, &mut variables).get();
                                 variables.set_ret(ReturnCode::ret(ret));
+                            }
+                            Builtins::Hash(flag) => {
+                                let ret =
+                                    builtins::hash::builtin_hash(flag, &mut commands, &variables)
+                                        .get();
                             }
                         },
                         Actions::Command(cmd) => {

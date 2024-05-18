@@ -4,4 +4,5 @@ bar="2"
 baz='boo\tnotab';oof=`ls /`
 boogle="bar is: '${bar}'"
 dbg boogle
+hash -r
 exit

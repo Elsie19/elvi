@@ -1,6 +1,10 @@
 use custom_error::custom_error;
 use pest_consume::Itertools;
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{
+    collections::{hash_map::IntoIter, HashMap},
+    fs,
+    path::PathBuf,
+};
 
 use super::variables::{ElviType, Variables};
 
@@ -56,6 +60,24 @@ impl Commands {
         self.cmds.get(program).map(|cmd| cmd.to_path_buf())
     }
 }
+
+impl IntoIterator for Commands {
+    type Item = (String, PathBuf);
+
+    type IntoIter = IntoIter<String, PathBuf>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.cmds.into_iter()
+    }
+}
+
+// impl Iterator for Commands {
+//     type Item = (String, PathBuf);
+//
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.cmds.into_iter().next()
+//     }
+// }
 
 impl ExternalCommand {
     /// Convert a string into an [`ExternalCommand`].
