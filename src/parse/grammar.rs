@@ -56,7 +56,7 @@ impl ElviParser {
     /// Handles double quotes.
     pub fn doubleQuoteString(input: Node) -> Result<ElviType> {
         Ok(match_nodes!(input.into_children();
-            [doubleInner(stringo)] => ElviType::VariableSubstitution(stringo).eval_escapes(),
+            [doubleInner(stringo)] => ElviType::VariableSubstitution(stringo),
         ))
     }
 

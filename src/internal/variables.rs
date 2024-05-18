@@ -275,57 +275,52 @@ impl ElviType {
                 let mut chars_of = le_string.chars().peekable();
                 let mut back_to_string = String::new();
                 while let Some(charp) = chars_of.next() {
-                    // Do we have a normal string please.
-                    if charp != '$' {
-                        back_to_string.push(charp);
-                        continue;
                     // Do we have a variable that is escaped?
-                    } else if charp == '\\' && chars_of.peek() == Some(&'$') {
-                        back_to_string.push(charp);
-                        // This cannot fail as we've checked above that the next character is
-                        // `Some()`
-                        #[allow(clippy::panicking_unwrap)]
+                    if charp == '\\' && chars_of.peek() == Some(&'$') {
                         chars_of.next().unwrap();
+                        back_to_string.push('$');
+                    // Do we have a normal string please.
+                    } else if charp != '$' {
                         back_to_string.push(charp);
-                        continue;
-                    }
-                    // Ok at this point we have a variable! Woo, yay, congrats. Now is it a stupid
-                    // mfing $bare_variable or a lovely (we love) ${braced_variable}?
-                    // Oh and we're at '$' in the thing.
-                    if chars_of.peek() == Some(&'{') {
-                        // WOOOOOOOO
-                        chars_of.next().unwrap();
-                        //BUG:  What about ${foo\}bar}
-                        //TODO: Work on parameter expansion, ugh.
-                        let tasty_var: String =
-                            chars_of.by_ref().take_while(|&c| c != '}').collect();
-                        if let Some(woot) = vars.get_variable(&tasty_var) {
-                            // This is the magic of the entire function lol. Bask in its
-                            // glory!!
-                            back_to_string.push_str(woot.get_value().to_string().as_str())
-                        }
-                        continue;
                     } else {
-                        // Fuck.
-                        // Well before we fuck we should check if this is the last character, which
-                        // is stupid but hey, I'm writing a POSIX shell.
-                        if chars_of.peek().is_none() {
-                            back_to_string.push('$');
+                        // Ok at this point we have a variable! Woo, yay, congrats. Now is it a stupid
+                        // mfing $bare_variable or a lovely (we love) ${braced_variable}?
+                        // Oh and we're at '$' in the thing.
+                        if chars_of.peek() == Some(&'{') {
+                            // WOOOOOOOO
+                            chars_of.next().unwrap();
+                            //BUG:  What about ${foo\}bar}
+                            //TODO: Work on parameter expansion, ugh.
+                            let tasty_var: String =
+                                chars_of.by_ref().take_while(|&c| c != '}').collect();
+                            if let Some(woot) = vars.get_variable(&tasty_var) {
+                                // This is the magic of the entire function lol. Bask in its
+                                // glory!!
+                                back_to_string.push_str(woot.get_value().to_string().as_str())
+                            }
                             continue;
-                        }
-                        // Ok now we fuck
-                        let tasty_var: String = chars_of
-                            .by_ref()
-                            // We don't wanna consume the character it fails on, otherwise we'd use
-                            // take_while() instead.
-                            .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
-                            .collect();
-                        if let Some(woot) = vars.get_variable(&tasty_var) {
-                            back_to_string.push_str(woot.get_value().to_string().as_str())
+                        } else {
+                            // Fuck.
+                            // Well before we fuck we should check if this is the last character, which
+                            // is stupid but hey, I'm writing a POSIX shell.
+                            if chars_of.peek().is_none() {
+                                back_to_string.push('$');
+                                continue;
+                            }
+                            // Ok now we fuck
+                            let tasty_var: String = chars_of
+                                .by_ref()
+                                // We don't wanna consume the character it fails on, otherwise we'd use
+                                // take_while() instead.
+                                .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
+                                .collect();
+                            if let Some(woot) = vars.get_variable(&tasty_var) {
+                                back_to_string.push_str(woot.get_value().to_string().as_str())
+                            }
                         }
                     }
                 }
-                Self::String(back_to_string)
+                Self::String(back_to_string).eval_escapes()
             }
             default => default.clone(),
         }
