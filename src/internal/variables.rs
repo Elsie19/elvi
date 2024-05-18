@@ -260,7 +260,7 @@ impl Variable {
     }
 
     /// Change and return the contents of a variable.
-    pub fn change_contents(&mut self, var: ElviType) -> &Variable {
+    pub fn change_contents(&mut self, var: ElviType) -> &Self {
         self.contents = var;
         self
     }

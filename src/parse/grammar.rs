@@ -301,4 +301,11 @@ mod tests {
         let parse = ElviParser::parse(Rule::doubleQuoteString, stringo).unwrap();
         assert_eq!(r#""foobar""#, parse.as_str());
     }
+
+    #[test]
+    fn single_quote_string_is_chill() {
+        let stringo = r#"'foobar'"#;
+        let parse = ElviParser::parse(Rule::singleQuoteString, stringo).unwrap();
+        assert_eq!(r#"'foobar'"#, parse.as_str());
+    }
 }
