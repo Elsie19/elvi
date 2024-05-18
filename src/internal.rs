@@ -22,7 +22,8 @@ pub mod builtins {
     /// The `cd` builtin.
     ///
     /// Conforming to
-    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#cd>
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/cd.html> but implemented as a
+    /// builtin.
     pub mod cd;
     /// The `dbg` builtin (not POSIX).
     ///
