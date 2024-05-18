@@ -6,6 +6,6 @@ boogle="bar is: '${bar}'"
 dbg boogle
 dbg oof
 hash -r
-cd ~/Projects/
-cd ~foo
+dir="/usr/share"
+cd "${dir}"
 # exit

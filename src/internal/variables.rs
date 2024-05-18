@@ -390,7 +390,6 @@ impl ElviType {
                         _ => unreachable!("Not possible."),
                     }
                 } else {
-                    dbg!(path.parent());
                     // We don't and the caller is an idiot. Congrats: here's your string back to
                     // you. Fuck you.
                     match self {
