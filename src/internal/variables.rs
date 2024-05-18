@@ -16,14 +16,16 @@ custom_error! {pub VariableError
 /// Struct representing the variable types in Elvi.
 pub enum ElviType {
     /// A string (a single quoted string or post variable/command substituted string).
+    ///
+    /// If this string is seen, take it as it is ;)
     String(String),
     /// A number.
     Number(usize),
-    /// An error code type, cannot be assigned inside of Elvi.
+    /// An error code type, **cannot be assigned inside of an Elvi script**.
     ErrExitCode(u16),
     /// Boolean.
     Boolean(bool),
-    /// A type that signifies command substitution, cannot be assigned inside of Elvi.
+    /// A type that signifies command substitution, **cannot be assigned inside of  an Elvi script**.
     CommandSubstitution(String),
     /// A type that signifies the need to evaluate variables. This will have to be converted to
     /// [`ElviType::String`] when it is seen. By nature, it has to be a double quoted string.
@@ -204,6 +206,17 @@ impl Default for Variables {
                 ),
                 (
                     "PWD".into(),
+                    Variable {
+                        contents: ElviType::String(
+                            env::current_dir().unwrap().to_str().unwrap().to_string(),
+                        ),
+                        modification_status: ElviMutable::Normal,
+                        shell_lvl: ElviGlobal::Global,
+                        line: (0, 0),
+                    },
+                ),
+                (
+                    "OLDPWD".into(),
                     Variable {
                         contents: ElviType::String(
                             env::current_dir().unwrap().to_str().unwrap().to_string(),

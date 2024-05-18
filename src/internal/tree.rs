@@ -11,9 +11,13 @@ use super::{
 #[derive(Debug)]
 /// A list of possible actions a line can cause.
 pub enum Actions {
+    /// Change/create a variable.
     ChangeVariable((String, Variable)),
+    /// Execute a builtin.
     Builtin(Builtins),
+    /// Run a command.
     Command(Vec<String>),
+    /// Do nothing.
     Null,
 }
 
