@@ -1,8 +1,14 @@
 use core::fmt;
 use custom_error::custom_error;
+use homedir::get_home;
 use pest_consume::Itertools;
+use regex::Regex;
 use snailquote::unescape;
-use std::{collections::HashMap, env, path::PathBuf};
+use std::{
+    collections::HashMap,
+    env,
+    path::{Path, PathBuf},
+};
 
 use super::status::ReturnCode;
 
@@ -306,11 +312,22 @@ impl ElviType {
 
     /// Tilde substitution.
     ///
+    /// # What it does
+    /// 1. Converts `~` -> `$HOME`
+    /// 2. Converts `~/foo` -> `$HOME/foo`
+    /// 3. Converts `~bob/foo` -> `/home/bob/foo`
+    /// 4. Converts `~bob` -> `/home/bob`
+    ///
+    /// # Panics
+    /// This can panic if a username is found but a path cannot be found for it. You will probably
+    /// *never* encounter this, and if you do, you have bigger issues than a panic.
+    ///
     /// # Notes
     /// Requires bare string.
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
             Self::String(le_string) | Self::VariableSubstitution(le_string) => {
+                let re = Regex::new(r"^~([a-z_][a-z0-9_]{0,30})").unwrap();
                 let path = PathBuf::from(le_string);
                 // So in POSIX, you can have two (*three) forms:
                 //
@@ -331,9 +348,49 @@ impl ElviType {
                         _ => unreachable!("Not possible."),
                     }
                 // Perchance could it be a user form?
-                // } else if path.f {
-                //     todo!();
+                //BUG: Will fail on ~foo because it expects something after.
+                } else if re.is_match(path.parent().unwrap().to_str().unwrap())
+                    || re.is_match(path.to_str().unwrap())
+                {
+                    let user = match path.parent() {
+                        Some(woot) => {
+                            if woot == Path::new("") {
+                                path.to_str().unwrap()[1..].to_string()
+                            } else {
+                                // ~foo/bar -> foo
+                                path.parent().unwrap().to_str().unwrap()[1..].to_string()
+                            }
+                        }
+                        None => path.to_str().unwrap().to_string(),
+                    };
+                    let user_path = match get_home(&user) {
+                        Ok(woot) => match woot {
+                            Some(yas) => yas,
+                            None => match self {
+                                // We should return the literal path they provided
+                                Self::String(_) => {
+                                    return Self::String(path.to_str().unwrap().to_string())
+                                }
+                                Self::VariableSubstitution(_) => {
+                                    return Self::VariableSubstitution(
+                                        path.to_str().unwrap().to_string(),
+                                    );
+                                }
+                                _ => unreachable!("Not possible."),
+                            },
+                        },
+                        Err(oof) => panic!("Could not obtain this home directory LMAO {oof}"),
+                    };
+                    let final_cd = user_path.join(path.strip_prefix(format!("~{}", user)).unwrap());
+                    match self {
+                        Self::String(_) => Self::String(final_cd.to_str().unwrap().to_string()),
+                        Self::VariableSubstitution(_) => {
+                            Self::VariableSubstitution(final_cd.to_str().unwrap().to_string())
+                        }
+                        _ => unreachable!("Not possible."),
+                    }
                 } else {
+                    dbg!(path.parent());
                     // We don't and the caller is an idiot. Congrats: here's your string back to
                     // you. Fuck you.
                     match self {
