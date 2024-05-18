@@ -15,7 +15,7 @@ custom_error! {pub VariableError
 #[derive(Debug, Clone)]
 /// Struct representing the variable types in Elvi.
 pub enum ElviType {
-    /// A string.
+    /// A string (a single quoted string or post variable/command substituted string).
     String(String),
     /// A number.
     Number(usize),
@@ -47,6 +47,9 @@ pub enum ElviGlobal {
     /// Exported variable.
     Global,
     /// Scoped variable.
+    ///
+    /// Every variable in [`Variables`] that is above the current level will be sweeped after the
+    /// subshell ends.
     Normal(u32),
 }
 
@@ -92,6 +95,11 @@ impl Variables {
     /// # Notes
     /// Check before running this function if a varible is not [`ElviMutable::Normal`], because
     /// this function will happily unset anything.
+    ///
+    /// # Returns
+    /// `Some(())` for a variable that was found and removed.
+    ///
+    /// `None` for a variable that was not found.
     pub fn unset(&mut self, var: &str) -> Option<()> {
         match self.vars.remove(var) {
             Some(_) => Some(()),
@@ -100,6 +108,15 @@ impl Variables {
     }
 
     /// Quick function to set `$?`.
+    ///
+    /// # Examples
+    /// ```
+    /// use super::internal::variables::Variables;
+    /// use super::status::ReturnCode;
+    /// let mut variables = Variables::default();
+    /// let ret = 1;
+    /// variables.set_ret(ReturnCode::ret(ret));
+    /// ```
     pub fn set_ret(&mut self, code: ReturnCode) {
         self.vars.insert(
             "?".into(),

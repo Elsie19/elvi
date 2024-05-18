@@ -20,8 +20,11 @@ pub enum Actions {
 #[derive(Debug)]
 /// A list of builtins and their parameters.
 pub enum Builtins {
+    /// Just needs a variable name.
     Dbg(String),
+    /// Just needs a variable name.
     Unset(String),
+    /// Will exit with `0` if not given data, and if so, attempt to parse into a number.
     Exit(Option<ElviType>),
 }
 
@@ -38,7 +41,7 @@ pub fn change_variable(
     // Makes shit easier to deal with.
     let mut var = var.clone();
     match var.get_value() {
-        goopy @ ElviType::VariableSubstitution(_x) => {
+        goopy @ ElviType::VariableSubstitution(_) => {
             // Goopy will save us!!!
             var.change_contents(goopy.eval_variables(variables));
             change_variable(variables, commands, lvl, name, &var);
