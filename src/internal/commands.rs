@@ -11,6 +11,7 @@ use super::variables::{ElviType, Variables};
 custom_error! {pub CommandError
     NotFound{name:String} = "elvi: {name}: not found",
     SubCommandNotFound{name:String, cmd:String} = "elvi: {name}: {cmd}: not found",
+    CannotCd{name:String, path:String} = "elvi: {name}: can't cd to {path}",
 }
 
 #[derive(Debug, Clone)]

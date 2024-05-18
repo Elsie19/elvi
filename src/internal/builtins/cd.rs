@@ -1,7 +1,13 @@
+use std::path::PathBuf;
+
+use crate::internal::commands::CommandError;
 use crate::internal::status::ReturnCode;
-use crate::internal::variables::{ElviType, Variables};
+use crate::internal::variables::{ElviType, Variable, Variables};
 
 /// The internal code that runs when the `cd` builtin is run.
+///
+/// # Todo
+/// Fix this spaghetti code.
 pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCode {
     if flag.is_none() {
         match variables.set_variable(
@@ -39,7 +45,41 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
             ReturnCode::ret(ReturnCode::SUCCESS)
         }
         patho => {
-            println!("Cding to {}", patho);
+            let to_cd = PathBuf::from(
+                ElviType::String(patho.to_string())
+                    .tilde_expansion(variables)
+                    .to_string(),
+            );
+            if !to_cd.exists() {
+                eprintln!(
+                    "{}",
+                    CommandError::CannotCd {
+                        name: "cd".to_string(),
+                        path: to_cd.to_str().unwrap().to_string()
+                    }
+                );
+                return ReturnCode::ret(ReturnCode::MISUSE);
+            }
+            // Ok so the path exists, time to roll.
+            match variables.set_variable(
+                "OLDPWD".to_string(),
+                variables.get_variable("PWD").unwrap().clone(),
+            ) {
+                Ok(()) => {}
+                Err(oops) => eprintln!("{oops}"),
+            }
+            match variables.set_variable(
+                "PWD".to_string(),
+                Variable::oneshot_var(
+                    ElviType::String(to_cd.to_str().unwrap().to_string()),
+                    crate::internal::variables::ElviMutable::Normal,
+                    crate::internal::variables::ElviGlobal::Global,
+                    (0, 0),
+                ),
+            ) {
+                Ok(()) => {}
+                Err(oops) => eprintln!("{oops}"),
+            }
             ReturnCode::ret(ReturnCode::SUCCESS)
         }
     }

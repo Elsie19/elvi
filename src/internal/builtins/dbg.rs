@@ -10,7 +10,7 @@ pub fn builtin_dbg(name: &str, variables: &mut Variables) -> ReturnCode {
         return ReturnCode::ret(ReturnCode::FAILURE);
     };
     match var.get_modification_status() {
-        ElviMutable::Normal => println!("{}={}", name, var.get_value()),
+        ElviMutable::Normal => println!("{}={:?}", name, var.get_value()),
         ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
             println!("readonly {}={}", name, var.get_value());
         }

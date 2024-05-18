@@ -4,6 +4,7 @@ bar="2"
 baz='boo\tnotab';oof=`ls /`
 boogle="bar is: '${bar}'"
 dbg boogle
+dbg oof
 hash -r
-cd /home/
+cd ~/Projects
 # exit

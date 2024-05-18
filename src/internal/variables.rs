@@ -1,8 +1,8 @@
 use core::fmt;
 use custom_error::custom_error;
 use pest_consume::Itertools;
-use snailquote::{escape, unescape};
-use std::{collections::HashMap, env};
+use snailquote::unescape;
+use std::{collections::HashMap, env, path::PathBuf};
 
 use super::status::ReturnCode;
 
@@ -304,6 +304,59 @@ impl ElviType {
         }
     }
 
+    /// Tilde substitution.
+    ///
+    /// # Notes
+    /// Requires bare string.
+    pub fn tilde_expansion(&self, vars: &Variables) -> Self {
+        match self {
+            Self::String(le_string) | Self::VariableSubstitution(le_string) => {
+                let path = PathBuf::from(le_string);
+                // So in POSIX, you can have two (*three) forms:
+                //
+                // ```bash
+                // ~/foo
+                // ~henry/oof
+                // ~
+                // ```
+                // Do we have a tilde at the start?
+                if path.starts_with("~/") {
+                    let home_dir = vars.get_variable("HOME").unwrap().get_value();
+                    match self {
+                        Self::String(_) => {
+                            return Self::String(
+                                home_dir.to_string()
+                                    + std::path::MAIN_SEPARATOR_STR
+                                    + path.strip_prefix("~/").unwrap().to_str().unwrap(),
+                            );
+                        }
+                        Self::VariableSubstitution(_) => {
+                            return Self::VariableSubstitution(
+                                home_dir.to_string()
+                                    + std::path::MAIN_SEPARATOR_STR
+                                    + path.strip_prefix("~/").unwrap().to_str().unwrap(),
+                            );
+                        }
+                        _ => unreachable!("Not possible."),
+                    }
+                // Perchance could it be a user form?
+                } else {
+                    // We don't and the caller is an idiot. Congrats: here's your string back to
+                    // you. Fuck you.
+                    return match self {
+                        goopy @ Self::String(_) | goopy @ Self::VariableSubstitution(_) => {
+                            goopy.clone()
+                        }
+                        _ => unreachable!(
+                            "We already matched above. How did self change? It's immutable????"
+                        ),
+                    };
+                }
+            }
+            default => default.clone(),
+        }
+    }
+
     /// This assumes [`ElviType::VariableSubstitution`]. If not, it will return the text given as
     /// is.
     pub fn eval_variables(&self, vars: &Variables) -> Self {
@@ -373,11 +426,22 @@ impl ElviType {
 impl fmt::Display for ElviType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ElviType::String(x) | ElviType::VariableSubstitution(x) => write!(f, "{}", escape(x)),
+            ElviType::String(x) | ElviType::VariableSubstitution(x) => write!(f, "{}", x),
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
             ElviType::CommandSubstitution(x) => write!(f, "{x}"),
+        }
+    }
+}
+
+impl Default for Variable {
+    fn default() -> Self {
+        Self {
+            contents: ElviType::String("".to_string()),
+            modification_status: ElviMutable::Normal,
+            shell_lvl: ElviGlobal::Global,
+            line: (0, 0),
         }
     }
 }
