@@ -1,11 +1,18 @@
+// Base program.
 program = { SOI ~ ((WHITE_SPACE+)? ~ statement ~ (newline)*)+ ~ EOI }
 
+// Newlines in POSIX are defined as either a newline or a seperator `;`.
 newline = _{ ";"{1} | NEWLINE }
 
 COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
+// Easy function for just a number
 elviNumber = { ASCII_DIGIT+ }
 
+elviWord       = { anyString | elviSingleWord }
+elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-")+ }
+
+// `program` is comprised of statements.
 statement = {
     (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper)
 }

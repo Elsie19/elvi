@@ -10,6 +10,7 @@ use super::variables::{ElviType, Variables};
 
 custom_error! {pub CommandError
     NotFound{name:String} = "elvi: {name}: not found",
+    SubCommandNotFound{name:String, cmd:String} = "elvi: {name}: {cmd}: not found",
 }
 
 #[derive(Debug, Clone)]
@@ -36,7 +37,7 @@ impl Commands {
         let path_var = variables.get_variable("PATH").unwrap().get_value();
 
         let ElviType::String(path_var) = path_var else {
-            unreachable!("How is `PATH` defined as anything but a string?")
+            unreachable!("How is `PATH` defined as anything but a string? For your debugging information, it is {:?}", path_var)
         };
 
         for part in path_var.split(':') {
@@ -70,14 +71,6 @@ impl IntoIterator for Commands {
         self.cmds.into_iter()
     }
 }
-
-// impl Iterator for Commands {
-//     type Item = (String, PathBuf);
-//
-//     fn next(&mut self) -> Option<Self::Item> {
-//         self.cmds.into_iter().next()
-//     }
-// }
 
 impl ExternalCommand {
     /// Convert a string into an [`ExternalCommand`].

@@ -12,7 +12,7 @@ custom_error! {pub VariableError
     NoSuchVariable{name:String, caller:String} = "{caller}: no such variable: {name})",
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 /// Struct representing the variable types in Elvi.
 pub enum ElviType {
     /// A string (a single quoted string or post variable/command substituted string).

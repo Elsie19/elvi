@@ -1,16 +1,25 @@
-use crate::internal::commands::Commands;
+use crate::internal::commands::{CommandError, Commands};
 use crate::internal::status::ReturnCode;
-use crate::internal::variables::Variables;
+use crate::internal::variables::{ElviType, Variables};
 
 /// The internal code that runs when the `hash` builtin is run.
 pub fn builtin_hash(
-    flag: Option<String>,
+    flag: Option<ElviType>,
     commands: &mut Commands,
     variables: &Variables,
 ) -> ReturnCode {
     if flag.is_some() {
-        if flag.unwrap() == "-r" {
+        if *flag.as_ref().unwrap() == ElviType::String("-r".into()) {
             *commands = Commands::generate(&variables);
+        } else {
+            eprintln!(
+                "{}",
+                CommandError::SubCommandNotFound {
+                    name: "hash".to_string(),
+                    cmd: flag.unwrap().to_string(),
+                }
+            );
+            return ReturnCode::ret(ReturnCode::FAILURE);
         }
     } else {
         for (cmd, patho) in commands.clone().into_iter() {

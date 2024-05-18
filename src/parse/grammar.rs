@@ -79,6 +79,18 @@ impl ElviParser {
         ))
     }
 
+    pub fn elviSingleWord(input: Node) -> Result<ElviType> {
+        Ok(ElviType::String(input.as_str().to_string()))
+    }
+
+    /// Handles any single word
+    pub fn elviWord(input: Node) -> Result<ElviType> {
+        Ok(match_nodes!(input.into_children();
+            [anyString(stringo)] => stringo,
+            [elviSingleWord(stringo)] => stringo,
+        ))
+    }
+
     /// Wrapper to handle any valid assignment of a variable.
     pub fn variableIdentifierPossibilities(input: Node) -> Result<ElviType> {
         Ok(match_nodes!(input.into_children();
@@ -170,8 +182,8 @@ impl ElviParser {
 
     /// Handles the hash builtin.
     pub fn builtinHash(input: Node) -> Result<Actions> {
-        dbg!(&input);
         let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)] => Some(stringo),
             [] => None,
         );
 
@@ -244,10 +256,15 @@ impl ElviParser {
                                     builtins::unset::builtin_unset(&var, &mut variables).get();
                                 variables.set_ret(ReturnCode::ret(ret));
                             }
-                            Builtins::Hash(flag) => {
+                            Builtins::Hash(mut flag) => {
+                                // Let's just eval possible vars
+                                if flag.is_some() {
+                                    flag = Some(flag.unwrap().eval_variables(&variables));
+                                }
                                 let ret =
                                     builtins::hash::builtin_hash(flag, &mut commands, &variables)
                                         .get();
+                                variables.set_ret(ReturnCode::ret(ret));
                             }
                         },
                         Actions::Command(cmd) => {

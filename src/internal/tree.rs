@@ -27,7 +27,7 @@ pub enum Builtins {
     /// Will exit with `0` if not given data, and if so, attempt to parse into a number.
     Exit(Option<ElviType>),
     /// Will display commands if no argument given, will regenerate if `-r` is passed.
-    Hash(Option<String>),
+    Hash(Option<ElviType>),
 }
 
 /// Function to change/assign a variable.
