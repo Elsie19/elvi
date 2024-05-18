@@ -9,4 +9,5 @@ hash -r
 dir="/usr/share"
 cd "${dir}"
 dbg PWD
+[ "foo" = "bar" ]
 # exit

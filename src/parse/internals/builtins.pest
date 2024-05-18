@@ -1,9 +1,28 @@
 // Main grammars
-builtinDbg   = !{ "dbg" ~ (" " | "\t")? ~ variableIdent }
-builtinUnset = !{ "unset" ~ (" " | "\t")? ~ variableIdent }
-builtinExit  = !{ "exit" ~ (" " | "\t")? ~ (anyString | elviNumber)? }
-builtinHash  = !{ "hash" ~ (" " | "\t")? ~ elviWord? }
-builtinCd    = !{ "cd" ~ (" " | "\t")? ~ elviWord? }
+builtinDbg   = !{ "dbg" ~ space? ~ variableIdent }
+builtinUnset = !{ "unset" ~ space? ~ variableIdent }
+builtinExit  = !{ "exit" ~ space? ~ (anyString | elviNumber)? }
+builtinHash  = !{ "hash" ~ space? ~ elviWord? }
+builtinCd    = !{ "cd" ~ space? ~ elviWord? }
+// TODO: Add commands to `builtinTest` and also `-a` and `-o`
+builtinTest = !{ "[" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]" }
+
+builtinTestPrimaries = {
+    (("-b" | "-c" | "-d" | "-e" | "-f" | "-g" | "-h" | "-k" | "-n" | "-p" | "-r" | "-s" | "-t" | "-w" | "-x" | "-z" | "-L" | "-O" | "-G" | "-S") ~ space+ ~ elviWord)
+}
+
+builtinTestComparisons = {
+    #string_equals = (elviWord ~ space+ ~ "=" ~ space+ ~ elviWord)
+  | #string_not_equals = (elviWord ~ space+ ~ "!=" ~ space+ ~ elviWord)
+  | #ascii_comparison_lt = (elviWord ~ space+ ~ "<" ~ space+ ~ elviWord)
+  | #ascii_comparison_gt = (elviWord ~ space+ ~ ">" ~ space+ ~ elviWord)
+  | #integer_eq = (elviWord ~ space+ ~ "-eq" ~ space+ ~ elviWord)
+  | #integer_ne = (elviWord ~ space+ ~ "-ne" ~ space+ ~ elviWord)
+  | #integer_gt = (elviWord ~ space+ ~ "-gt" ~ space+ ~ elviWord)
+  | #integer_ge = (elviWord ~ space+ ~ "-ge" ~ space+ ~ elviWord)
+  | #integer_lt = (elviWord ~ space+ ~ "-lt" ~ space+ ~ elviWord)
+  | #integer_le = (elviWord ~ space+ ~ "-le" ~ space+ ~ elviWord)
+}
 
 // Wrapper grammar for any builtin
-builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd }
+builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest }

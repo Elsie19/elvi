@@ -6,6 +6,8 @@ newline = _{ ";"{1} | NEWLINE }
 
 COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
+space = _{ (" " | "\t") }
+
 // Easy function for just a number
 elviNumber = { ASCII_DIGIT+ }
 
