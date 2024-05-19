@@ -34,6 +34,83 @@ pub enum Builtins {
     Hash(Option<ElviType>),
     /// Needs a path, empty, or dash.
     Cd(Option<ElviType>),
+    /// Oh boy.
+    Test(TestOptions),
+}
+
+#[derive(Debug)]
+/// A list of things `test` can do.
+pub enum TestOptions {
+    /// `-b file`
+    BlockFileExists(String),
+    /// `-c file`
+    CharacterFileExists(String),
+    /// `-d file`
+    DirectoryExists(String),
+    /// `-e file`
+    AnyFileExists(String),
+    /// `-f file`
+    RegularFileExists(String),
+    /// `-g file`
+    GroupIDFlagSetExists(String),
+    /// `-h file`
+    SymbolicLinkExists(String),
+    /// `-k file`
+    StickyBitSetExists(String),
+    /// `-n file`
+    StringNonZero(String),
+    /// `-p file`
+    NamedPipeExists(String),
+    /// `-r file`
+    ReadableFileExists(String),
+    /// `-s file`
+    FileExistsGreaterThanZero(String),
+    /// `-t file_descriptor`
+    FDDescriptorNumberOpened(String),
+    /// `-u file`
+    FileExistsUserIDSet(String),
+    /// `-w file`
+    FileExistsWrittable(String),
+    /// `-x file`
+    FileExistsExecutable(String),
+    /// `-z string`
+    StringZero(String),
+    /// `-L file`
+    SymbolicLinkExistL(String),
+    /// `-O file`
+    FileExistsOwnerEffectiveUserID(String),
+    /// `-G file`
+    FileExistsOwnerEffectiveGroupID(String),
+    /// `-S file`
+    FileExistsSocket(String),
+    /// `file1 -nt file2`
+    File1NewerThanFile2((String, String)),
+    /// `file1 -ot file2`
+    File1OlderThanFile2((String, String)),
+    /// `file1 -ef file2`
+    File1SameAsFile2((String, String)),
+    /// `string`
+    StringNotNull(String),
+    /// `s1 = s2`
+    String1IsString2((String, String)),
+    /// `s1 != s2`
+    String1IsNotString2((String, String)),
+    /// `s1 < s2`
+    String1BeforeString2ASCII((String, String)),
+    /// `s1 > s2`
+    String1AfterString2ASCII((String, String)),
+    /// `n1 -eq n2`
+    Int1EqualsInt2Algebraically((usize, usize)),
+    /// `n1 -ne n2`
+    Int1NotEqualsInt2Algebraically((usize, usize)),
+    /// `n1 -gt n2`
+    Int1GreaterThanInt2Algebraically((usize, usize)),
+    /// `n1 -lt n2`
+    Int1LessThanInt2Algebraically((usize, usize)),
+    /// `n1 -ge n2`
+    Int1GreaterEqualInt2Algebraically((usize, usize)),
+    /// `n1 -le n2`
+    Int1LessEqualInt2Algebraically((usize, usize)),
 }
 
 /// Function to change/assign a variable.

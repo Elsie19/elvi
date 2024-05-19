@@ -79,6 +79,11 @@ impl ElviParser {
         ))
     }
 
+    /// Handles the builtin `test`.
+    pub fn builtinTest(input: Node) -> Result<ElviType> {
+        Ok(ElviType::String(input.as_str().to_string()))
+    }
+
     pub fn elviSingleWord(input: Node) -> Result<ElviType> {
         Ok(ElviType::String(input.as_str().to_string()))
     }
@@ -284,6 +289,9 @@ impl ElviParser {
                                 }
                                 let ret = builtins::cd::builtin_cd(flag, &mut variables).get();
                                 variables.set_ret(ReturnCode::ret(ret));
+                            }
+                            Builtins::Test(yo) => {
+                                println!("{:?}", yo);
                             }
                         },
                         Actions::Command(cmd) => {
