@@ -187,14 +187,12 @@ impl ElviParser {
 
     /// Handles the hash builtin.
     pub fn builtinHash(input: Node) -> Result<Actions> {
-        // let possibles = match_nodes!(input.into_children();
-        //     [elviWord(stringo)] => Some(stringo),
-        //     [] => None,
-        // );
+        let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)] => Some(stringo),
+            [] => None,
+        );
 
-        Ok(Actions::Builtin(Builtins::Test(
-            TestOptions::String1IsString2(("foo".to_string(), "bar".to_string())),
-        )))
+        Ok(Actions::Builtin(Builtins::Hash(possibles)))
     }
 
     /// Handles the cd builtin.
