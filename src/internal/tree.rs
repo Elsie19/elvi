@@ -42,75 +42,75 @@ pub enum Builtins {
 /// A list of things `test` can do.
 pub enum TestOptions {
     /// `-b file`
-    BlockFileExists(String),
+    BlockFileExists(ElviType),
     /// `-c file`
-    CharacterFileExists(String),
+    CharacterFileExists(ElviType),
     /// `-d file`
-    DirectoryExists(String),
+    DirectoryExists(ElviType),
     /// `-e file`
-    AnyFileExists(String),
+    AnyFileExists(ElviType),
     /// `-f file`
-    RegularFileExists(String),
+    RegularFileExists(ElviType),
     /// `-g file`
-    GroupIDFlagSetExists(String),
+    GroupIDFlagSetExists(ElviType),
     /// `-h file`
-    SymbolicLinkExists(String),
+    SymbolicLinkExists(ElviType),
     /// `-k file`
-    StickyBitSetExists(String),
+    StickyBitSetExists(ElviType),
     /// `-n file`
-    StringNonZero(String),
+    StringNonZero(ElviType),
     /// `-p file`
-    NamedPipeExists(String),
+    NamedPipeExists(ElviType),
     /// `-r file`
-    ReadableFileExists(String),
+    ReadableFileExists(ElviType),
     /// `-s file`
-    FileExistsGreaterThanZero(String),
+    FileExistsGreaterThanZero(ElviType),
     /// `-t file_descriptor`
-    FDDescriptorNumberOpened(String),
+    FDDescriptorNumberOpened(ElviType),
     /// `-u file`
-    FileExistsUserIDSet(String),
+    FileExistsUserIDSet(ElviType),
     /// `-w file`
-    FileExistsWrittable(String),
+    FileExistsWrittable(ElviType),
     /// `-x file`
-    FileExistsExecutable(String),
+    FileExistsExecutable(ElviType),
     /// `-z string`
-    StringZero(String),
+    StringZero(ElviType),
     /// `-L file`
-    SymbolicLinkExistL(String),
+    SymbolicLinkExistL(ElviType),
     /// `-O file`
-    FileExistsOwnerEffectiveUserID(String),
+    FileExistsOwnerEffectiveUserID(ElviType),
     /// `-G file`
-    FileExistsOwnerEffectiveGroupID(String),
+    FileExistsOwnerEffectiveGroupID(ElviType),
     /// `-S file`
-    FileExistsSocket(String),
+    FileExistsSocket(ElviType),
     /// `file1 -nt file2`
-    File1NewerThanFile2((String, String)),
+    File1NewerThanFile2((ElviType, ElviType)),
     /// `file1 -ot file2`
-    File1OlderThanFile2((String, String)),
+    File1OlderThanFile2((ElviType, ElviType)),
     /// `file1 -ef file2`
-    File1SameAsFile2((String, String)),
+    File1SameAsFile2((ElviType, ElviType)),
     /// `string`
-    StringNotNull(String),
+    StringNotNull(ElviType),
     /// `s1 = s2`
-    String1IsString2((String, String)),
+    String1IsString2((ElviType, ElviType)),
     /// `s1 != s2`
-    String1IsNotString2((String, String)),
+    String1IsNotString2((ElviType, ElviType)),
     /// `s1 < s2`
-    String1BeforeString2ASCII((String, String)),
+    String1BeforeString2ASCII((ElviType, ElviType)),
     /// `s1 > s2`
-    String1AfterString2ASCII((String, String)),
+    String1AfterString2ASCII((ElviType, ElviType)),
     /// `n1 -eq n2`
-    Int1EqualsInt2Algebraically((usize, usize)),
+    Int1EqualsInt2Algebraically((ElviType, ElviType)),
     /// `n1 -ne n2`
-    Int1NotEqualsInt2Algebraically((usize, usize)),
+    Int1NotEqualsInt2Algebraically((ElviType, ElviType)),
     /// `n1 -gt n2`
-    Int1GreaterThanInt2Algebraically((usize, usize)),
+    Int1GreaterThanInt2Algebraically((ElviType, ElviType)),
     /// `n1 -lt n2`
-    Int1LessThanInt2Algebraically((usize, usize)),
+    Int1LessThanInt2Algebraically((ElviType, ElviType)),
     /// `n1 -ge n2`
-    Int1GreaterEqualInt2Algebraically((usize, usize)),
+    Int1GreaterEqualInt2Algebraically((ElviType, ElviType)),
     /// `n1 -le n2`
-    Int1LessEqualInt2Algebraically((usize, usize)),
+    Int1LessEqualInt2Algebraically((ElviType, ElviType)),
 }
 
 /// Function to change/assign a variable.
