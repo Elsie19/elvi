@@ -8,7 +8,26 @@ builtinCd    = !{ "cd" ~ space? ~ elviWord? }
 builtinTest = !{ "[" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]" }
 
 builtinTestPrimaries = {
-    (("-b" | "-c" | "-d" | "-e" | "-f" | "-g" | "-h" | "-k" | "-n" | "-p" | "-r" | "-s" | "-t" | "-w" | "-x" | "-z" | "-L" | "-O" | "-G" | "-S") ~ space+ ~ elviWord)
+    #block = ("-b" ~ space+ ~ elviWord)
+  | #character_special = ("-c" ~ space+ ~ elviWord)
+  | #directory_exists = ("-d" ~ space+ ~ elviWord)
+  | #file_exists = ("-e" ~ space+ ~ elviWord)
+  | #regular_file_exists = ("-f" ~ space+ ~ elviWord)
+  | #file_exists_group_id = ("-g" ~ space+ ~ elviWord)
+  | #symbolic_link = (("-h" | "-L") ~ space+ ~ elviWord)
+  | #sticky_bit_set = ("-k" ~ space+ ~ elviWord)
+  | #string_nonzero = ("-n" ~ space+ ~ elviWord)
+  | #named_pipe = ("-p" ~ space+ ~ elviWord)
+  | #readable_file = ("-r" ~ space+ ~ elviWord)
+  | #greater_than_zero_file = ("-s" ~ space+ ~ elviWord)
+  | #file_descriptor = ("-t" ~ space+ ~ elviWord)
+  | #file_exists_user_id = ("-u" ~ space+ ~ elviWord)
+  | #writable_file = ("-w" ~ space+ ~ elviWord)
+  | #executable_file = ("-x" ~ space+ ~ elviWord)
+  | #string_zero = ("-z" ~ space+ ~ elviWord)
+  | #efective_user_id_file = ("-O" ~ space+ ~ elviWord)
+  | #efective_group_id_file = ("-G" ~ space+ ~ elviWord)
+  | #socket_file_exists = ("-S" ~ space+ ~ elviWord)
 }
 
 builtinTestComparisons = {

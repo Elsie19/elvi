@@ -1,7 +1,7 @@
 use crate::internal::builtins;
 use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
-use crate::internal::tree::{change_variable, Actions, Builtins};
+use crate::internal::tree::{change_variable, Actions, Builtins, TestOptions};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -187,12 +187,14 @@ impl ElviParser {
 
     /// Handles the hash builtin.
     pub fn builtinHash(input: Node) -> Result<Actions> {
-        let possibles = match_nodes!(input.into_children();
-            [elviWord(stringo)] => Some(stringo),
-            [] => None,
-        );
+        // let possibles = match_nodes!(input.into_children();
+        //     [elviWord(stringo)] => Some(stringo),
+        //     [] => None,
+        // );
 
-        Ok(Actions::Builtin(Builtins::Hash(possibles)))
+        Ok(Actions::Builtin(Builtins::Test(
+            TestOptions::String1IsString2(("foo".to_string(), "bar".to_string())),
+        )))
     }
 
     /// Handles the cd builtin.
@@ -212,6 +214,7 @@ impl ElviParser {
             [builtinUnset(stringo)] => stringo,
             [builtinHash(stringo)] => stringo,
             [builtinCd(stringo)] => stringo,
+            [builtinHash(stringo)] => stringo,
         ))
     }
 
