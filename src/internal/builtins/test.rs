@@ -16,7 +16,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
             == s2.eval_escapes().eval_variables(variables))
         .into(),
         TestOptions::String1IsNotString2((s1, s2)) => {
-            { !builtin_test(TestOptions::String1IsString2((s1, s2)), variables) }.into()
+            !builtin_test(TestOptions::String1IsString2((s1, s2)), variables)
         }
         TestOptions::String1BeforeString2ASCII((s1, s2)) => {
             (s1.eval_escapes().eval_variables(variables).to_string()
@@ -68,13 +68,10 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .parse::<usize>()
                 .unwrap())
         .into(),
-        TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)) => {
-            !builtin_test(
-                TestOptions::Int1LessThanInt2Algebraically((n1, n2)),
-                variables,
-            )
-        }
-        .into(),
+        TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)) => !builtin_test(
+            TestOptions::Int1LessThanInt2Algebraically((n1, n2)),
+            variables,
+        ),
         TestOptions::Int1GreaterEqualInt2Algebraically((n1, n2)) => (n1
             .eval_escapes()
             .eval_variables(variables)
@@ -162,7 +159,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
             if let Ok(metadata) =
                 fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
             {
-                (metadata.permissions().readonly() == true).into()
+                (metadata.permissions().readonly()).into()
             } else {
                 false.into()
             }
@@ -261,7 +258,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 };
             (f1_meta.ino() == f2_meta.ino()).into()
         }
-        TestOptions::StringNotNull(foo) => todo!(),
+        TestOptions::StringNotNull(_foo) => todo!(),
         TestOptions::FileExistsOwnerEffectiveUserID(file) => {
             let uid = match fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
             {

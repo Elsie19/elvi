@@ -333,7 +333,7 @@ impl ElviParser {
                                 variables.set_ret(ReturnCode::ret(ret));
                             }
                             Builtins::Test(yo) => {
-                                let ret = builtins::test::builtin_test(yo, &mut variables).get();
+                                let ret = builtins::test::builtin_test(yo, &variables).get();
                                 variables.set_ret(ReturnCode::ret(ret));
                             }
                         },
