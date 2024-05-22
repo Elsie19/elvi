@@ -1,6 +1,9 @@
-use std::fs;
-use std::os::unix::fs::PermissionsExt;
+use std::fs::{self, File};
+use std::io::Read;
+use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
 use std::path::Path;
+
+use libc::isatty;
 
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::TestOptions;
@@ -50,19 +53,10 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .parse::<usize>()
                 .unwrap())
         .into(),
-        TestOptions::Int1NotEqualsInt2Algebraically((n1, n2)) => (n1
-            .eval_escapes()
-            .eval_variables(variables)
-            .to_string()
-            .parse::<usize>()
-            .unwrap()
-            != n2
-                .eval_escapes()
-                .eval_variables(variables)
-                .to_string()
-                .parse::<usize>()
-                .unwrap())
-        .into(),
+        TestOptions::Int1NotEqualsInt2Algebraically((n1, n2)) => !builtin_test(
+            TestOptions::Int1EqualsInt2Algebraically((n1, n2)),
+            variables,
+        ),
         TestOptions::Int1LessEqualInt2Algebraically((n1, n2)) => (n1
             .eval_escapes()
             .eval_variables(variables)
@@ -119,9 +113,6 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .is_dir()
                 .into()
         }
-        TestOptions::BlockFileExists(_file)
-        | TestOptions::CharacterFileExists(_file)
-        | TestOptions::GroupIDFlagSetExists(_file) => todo!(),
         TestOptions::SymbolicLinkExists(link) => {
             match fs::symlink_metadata(link.eval_escapes().eval_variables(variables).to_string()) {
                 Ok(metadata) => metadata.file_type().is_symlink().into(),
@@ -143,13 +134,160 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
             .to_string()
             .is_empty()
             .into(),
-        TestOptions::StringNonZero(stringo) => !<bool as Into<ReturnCode>>::into(
-            stringo
-                .eval_escapes()
-                .eval_variables(variables)
-                .to_string()
-                .is_empty(),
-        ),
-        _ => todo!(),
+        TestOptions::StringNonZero(stringo) => {
+            !builtin_test(TestOptions::StringNonZero(stringo), variables)
+        }
+        TestOptions::ReadableFileExists(file) => {
+            match File::open(file.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(mut file_p) => {
+                    // Let's read *1* byte
+                    let mut buffer = [0; 1];
+                    match file_p.read_exact(&mut buffer) {
+                        Ok(_) => true.into(),
+                        Err(_) => false.into(),
+                    }
+                }
+                Err(_) => false.into(),
+            }
+        }
+        TestOptions::FileExistsGreaterThanZero(file) => {
+            match fs::metadata(file.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(handle) => (handle.len() > 0).into(),
+                Err(_) => false.into(),
+            }
+        }
+        TestOptions::NamedPipeExists(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                metadata.file_type().is_fifo().into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::FileExistsWritable(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.permissions().readonly() == false).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::FileExistsExecutable(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.permissions().mode() & 0o111 != 0).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::BlockFileExists(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.file_type().is_block_device()).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::CharacterFileExists(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.file_type().is_char_device()).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::GroupIDFlagSetExists(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.permissions().mode() & 0x2000 != 0).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::FileExistsUserIDSet(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.permissions().mode() & 0x4000 != 0).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::FDDescriptorNumberOpened(number) => unsafe {
+            (isatty(
+                number
+                    .eval_escapes()
+                    .eval_variables(variables)
+                    .to_string()
+                    .parse()
+                    .expect("Could not convert to i32"),
+            ) != 0)
+                .into()
+        },
+        TestOptions::FileExistsSocket(file) => {
+            if let Ok(metadata) =
+                fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                (metadata.file_type().is_socket()).into()
+            } else {
+                false.into()
+            }
+        }
+        TestOptions::File1NewerThanFile2((f1, f2)) => {
+            let f1_meta =
+                match fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) {
+                    Ok(yay) => yay,
+                    Err(_) => return false.into(),
+                };
+            let f2_meta =
+                match fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) {
+                    Ok(yay) => yay,
+                    Err(_) => return false.into(),
+                };
+            (f1_meta.modified().unwrap() > f2_meta.modified().unwrap()).into()
+        }
+        TestOptions::File1OlderThanFile2((f1, f2)) => {
+            !builtin_test(TestOptions::File1NewerThanFile2((f1, f2)), variables)
+        }
+        TestOptions::File1SameAsFile2((f1, f2)) => {
+            let f1_meta =
+                match fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) {
+                    Ok(yay) => yay,
+                    Err(_) => return false.into(),
+                };
+            let f2_meta =
+                match fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) {
+                    Ok(yay) => yay,
+                    Err(_) => return false.into(),
+                };
+            (f1_meta.ino() == f2_meta.ino()).into()
+        }
+        TestOptions::StringNotNull(foo) => todo!(),
+        TestOptions::FileExistsOwnerEffectiveUserID(file) => {
+            let uid = match fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                Ok(yay) => yay.uid(),
+                Err(_) => return false.into(),
+            };
+            let current_uid = unsafe { libc::geteuid() };
+
+            (uid == current_uid).into()
+        }
+        TestOptions::FileExistsOwnerEffectiveGroupID(file) => {
+            let gid = match fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
+            {
+                Ok(yay) => yay.gid(),
+                Err(_) => return false.into(),
+            };
+            let current_gid = unsafe { libc::getegid() };
+
+            (gid == current_gid).into()
+        }
     }
 }
