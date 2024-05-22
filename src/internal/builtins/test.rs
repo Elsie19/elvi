@@ -1,4 +1,5 @@
 use std::fs;
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
 use crate::internal::status::ReturnCode;
@@ -103,7 +104,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
         TestOptions::RegularFileExists(file) => match fs::metadata(Path::new(
             &file.eval_escapes().eval_variables(variables).to_string(),
         )) {
-            Ok(metadata) => metadata.is_file().into(),
+            Ok(metadata) => metadata.is_file(),
             Err(_) => false,
         }
         .into(),
@@ -112,6 +113,43 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .exists()
                 .into()
         }
+        TestOptions::DirectoryExists(dir) => {
+            fs::metadata(dir.eval_escapes().eval_variables(variables).to_string())
+                .unwrap()
+                .is_dir()
+                .into()
+        }
+        TestOptions::BlockFileExists(_file)
+        | TestOptions::CharacterFileExists(_file)
+        | TestOptions::GroupIDFlagSetExists(_file) => todo!(),
+        TestOptions::SymbolicLinkExists(link) => {
+            match fs::symlink_metadata(link.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(metadata) => metadata.file_type().is_symlink().into(),
+                Err(_) => false.into(),
+            }
+        }
+        TestOptions::StickyBitSetExists(file) => {
+            match fs::metadata(file.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(metadata) => {
+                    let permissions = metadata.permissions();
+                    (permissions.mode() & 0o1000 != 0).into()
+                }
+                Err(_) => false.into(),
+            }
+        }
+        TestOptions::StringZero(stringo) => stringo
+            .eval_escapes()
+            .eval_variables(variables)
+            .to_string()
+            .is_empty()
+            .into(),
+        TestOptions::StringNonZero(stringo) => !<bool as Into<ReturnCode>>::into(
+            stringo
+                .eval_escapes()
+                .eval_variables(variables)
+                .to_string()
+                .is_empty(),
+        ),
         _ => todo!(),
     }
 }

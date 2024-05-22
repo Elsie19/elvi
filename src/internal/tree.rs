@@ -53,7 +53,7 @@ pub enum TestOptions {
     RegularFileExists(ElviType),
     /// `-g file`
     GroupIDFlagSetExists(ElviType),
-    /// `-h file`
+    /// `-h file` & `-L file`
     SymbolicLinkExists(ElviType),
     /// `-k file`
     StickyBitSetExists(ElviType),
@@ -75,8 +75,6 @@ pub enum TestOptions {
     FileExistsExecutable(ElviType),
     /// `-z string`
     StringZero(ElviType),
-    /// `-L file`
-    SymbolicLinkExistL(ElviType),
     /// `-O file`
     FileExistsOwnerEffectiveUserID(ElviType),
     /// `-G file`

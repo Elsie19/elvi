@@ -9,5 +9,5 @@ hash -r
 dir="/usr/share"
 cd "${dir}"
 dbg PWD
-[ -f "/home/henry/pass" ]
+[ -L "/home/henry/pass" ]
 # exit

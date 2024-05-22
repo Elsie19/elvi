@@ -61,3 +61,14 @@ impl From<bool> for ReturnCode {
         }
     }
 }
+
+impl std::ops::Not for ReturnCode {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self.val {
+            0 => Self { val: 1 },
+            _ => Self { val: 0 },
+        }
+    }
+}
