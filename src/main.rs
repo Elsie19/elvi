@@ -11,6 +11,10 @@
 //! To modify grammar to add your own non-POSIX creation, check out `src/parse/internals/` and
 //! make sure to look at [`pest_consume`] and [`pest_derive`] to understand how to both parse and
 //! create grammar!
+//!
+//! # Notes
+//! 1. Elvi is *not* a shell to be used for interactive purposes. It's sole purpose is to be a
+//!    command-line interpreter.
 
 pub mod internal;
 pub mod parse;
@@ -18,7 +22,7 @@ pub mod user_flags;
 
 use std::fs;
 
-use clap::Parser as ClapParser;
+use clap::{error::ErrorKind, CommandFactory, Parser as ClapParser};
 use parse::grammar::{ElviParser, Rule};
 use pest_consume::Parser;
 use user_flags::Args;
@@ -29,7 +33,18 @@ fn main() {
     let unparsed_file = if let Some(input) = args.group.read_from_input {
         input
     } else {
-        fs::read_to_string(args.group.file.unwrap()).expect("Could not read file")
+        match fs::read_to_string(&args.group.file.as_ref().unwrap()) {
+            Ok(yay) => yay,
+            Err(_) => Args::command()
+                .error(
+                    ErrorKind::ValueValidation,
+                    format!(
+                        "File `{}` does not exist.",
+                        args.group.file.unwrap().to_str().unwrap()
+                    ),
+                )
+                .exit(),
+        }
     };
 
     let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
