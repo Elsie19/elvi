@@ -1,7 +1,7 @@
 use crate::internal::builtins;
 use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
-use crate::internal::tree::{change_variable, Actions, Builtins, TestOptions};
+use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, TestOptions};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -67,7 +67,7 @@ impl ElviParser {
     /// Handles backtick substitution.
     pub fn backtickSubstitution(input: Node) -> Result<ElviType> {
         Ok(match_nodes!(input.into_children();
-            [backtickInner(stringo)] => stringo,
+            [backtickInner(backtick)] => backtick,
         ))
     }
 
@@ -81,24 +81,24 @@ impl ElviParser {
 
     pub fn builtinTestPrimaries(input: Node) -> Result<TestOptions> {
         Ok(match_nodes!(input.into_children();
-            [block # elviWord(stringo)] => TestOptions::BlockFileExists(stringo),
-            [character_special # elviWord(stringo)] => TestOptions::CharacterFileExists(stringo),
-            [directory_exists # elviWord(stringo)] => TestOptions::DirectoryExists(stringo),
-            [file_exists # elviWord(stringo)] => TestOptions::AnyFileExists(stringo),
-            [regular_file_exists # elviWord(stringo)] => TestOptions::RegularFileExists(stringo),
-            [file_exists_group_id # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveGroupID(stringo),
-            [symbolic_link # elviWord(stringo)] => TestOptions::SymbolicLinkExists(stringo),
-            [sticky_bit_set # elviWord(stringo)] => TestOptions::StickyBitSetExists(stringo),
-            [string_nonzero # elviWord(stringo)] => TestOptions::StringNonZero(stringo),
-            [named_pipe # elviWord(stringo)] => TestOptions::NamedPipeExists(stringo),
-            [readable_file # elviWord(stringo)] => TestOptions::ReadableFileExists(stringo),
-            [greater_than_zero_file # elviWord(stringo)] => TestOptions::FileExistsGreaterThanZero(stringo),
-            [file_descriptor # elviWord(stringo)] => TestOptions::FDDescriptorNumberOpened(stringo),
-            [file_exists_user_id # elviWord(stringo)] => TestOptions::FileExistsUserIDSet(stringo),
-            [writable_file # elviWord(stringo)] => TestOptions::FileExistsWritable(stringo),
-            [efective_user_id_file # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveUserID(stringo),
-            [efective_group_id_file # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveGroupID(stringo),
-            [socket_file_exists # elviWord(stringo)] => TestOptions::FileExistsSocket(stringo),
+            [block # elviWord(path)] => TestOptions::BlockFileExists(path),
+            [character_special # elviWord(path)] => TestOptions::CharacterFileExists(path),
+            [directory_exists # elviWord(path)] => TestOptions::DirectoryExists(path),
+            [file_exists # elviWord(path)] => TestOptions::AnyFileExists(path),
+            [regular_file_exists # elviWord(path)] => TestOptions::RegularFileExists(path),
+            [file_exists_group_id # elviWord(path)] => TestOptions::FileExistsOwnerEffectiveGroupID(path),
+            [symbolic_link # elviWord(path)] => TestOptions::SymbolicLinkExists(path),
+            [sticky_bit_set # elviWord(path)] => TestOptions::StickyBitSetExists(path),
+            [string_nonzero # elviWord(path)] => TestOptions::StringNonZero(path),
+            [named_pipe # elviWord(path)] => TestOptions::NamedPipeExists(path),
+            [readable_file # elviWord(path)] => TestOptions::ReadableFileExists(path),
+            [greater_than_zero_file # elviWord(path)] => TestOptions::FileExistsGreaterThanZero(path),
+            [file_descriptor # elviWord(path)] => TestOptions::FDDescriptorNumberOpened(path),
+            [file_exists_user_id # elviWord(path)] => TestOptions::FileExistsUserIDSet(path),
+            [writable_file # elviWord(path)] => TestOptions::FileExistsWritable(path),
+            [efective_user_id_file # elviWord(path)] => TestOptions::FileExistsOwnerEffectiveUserID(path),
+            [efective_group_id_file # elviWord(path)] => TestOptions::FileExistsOwnerEffectiveGroupID(path),
+            [socket_file_exists # elviWord(path)] => TestOptions::FileExistsSocket(path),
         ))
     }
 
@@ -108,12 +108,12 @@ impl ElviParser {
             [elviWord(stringo), string_not_equals # elviWord(stringo2)] => TestOptions::String1IsNotString2((stringo, stringo2)),
             [elviWord(stringo), ascii_comparison_lt # elviWord(stringo2)] => TestOptions::String1BeforeString2ASCII((stringo, stringo2)),
             [elviWord(stringo), ascii_comparison_gt # elviWord(stringo2)] => TestOptions::String1AfterString2ASCII((stringo, stringo2)),
-            [elviWord(stringo), integer_eq # elviWord(stringo2)] => TestOptions::Int1EqualsInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_ne # elviWord(stringo2)] => TestOptions::Int1NotEqualsInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_gt # elviWord(stringo2)] => TestOptions::Int1GreaterThanInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_ge # elviWord(stringo2)] => TestOptions::Int1GreaterEqualInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_lt # elviWord(stringo2)] => TestOptions::Int1LessThanInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_le # elviWord(stringo2)] => TestOptions::Int1LessEqualInt2Algebraically((stringo, stringo2)),
+            [elviWord(n1), integer_eq # elviWord(n2)] => TestOptions::Int1EqualsInt2Algebraically((n1, n2)),
+            [elviWord(n1), integer_ne # elviWord(n2)] => TestOptions::Int1NotEqualsInt2Algebraically((n1, n2)),
+            [elviWord(n1), integer_gt # elviWord(n2)] => TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)),
+            [elviWord(n1), integer_ge # elviWord(n2)] => TestOptions::Int1GreaterEqualInt2Algebraically((n1, n2)),
+            [elviWord(n1), integer_lt # elviWord(n2)] => TestOptions::Int1LessThanInt2Algebraically((n1, n2)),
+            [elviWord(n1), integer_le # elviWord(n2)] => TestOptions::Int1LessEqualInt2Algebraically((n1, n2)),
         ))
     }
 
@@ -219,7 +219,7 @@ impl ElviParser {
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
             [anyString(stringo)] => Some(stringo),
-            [elviNumber(stringo)] => Some(ElviType::String(stringo.to_string())),
+            [elviNumber(num)] => Some(ElviType::String(num.to_string())),
             [] => None,
         );
 
@@ -262,9 +262,25 @@ impl ElviParser {
         Ok(Actions::Command(vec!["dbgbar".to_string()]))
     }
 
+    /// Handles if statement conditions
+    pub fn ifStatementMatch(input: Node) -> Result<Actions> {
+        Ok(match_nodes!(input.into_children();
+            [builtinWrapper(built)] => built,
+        ))
+    }
+
     /// Handles if statements.
-    pub fn ifStatement(input: Node) -> Result<()> {
-        Ok(())
+    pub fn ifStatement(input: Node) -> Result<Actions> {
+        dbg!(&input.children());
+        Ok(match_nodes!(input.into_children();
+            [ifStatementMatch(condition), /* then_block # */statement(stmt)..] => Actions::IfStatement(Box::new(
+            Conditional {
+                condition: condition,
+                then_block: stmt.collect(),
+                else_block: None
+            }
+        ),
+        )))
     }
 
     /// Handles global statements.
@@ -278,7 +294,7 @@ impl ElviParser {
             },
             [builtinWrapper(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
-            // [ifStatement(var)] => Ok(var),
+            [ifStatement(stmt)] => Ok(stmt),
         )
     }
 
@@ -341,6 +357,9 @@ impl ElviParser {
                             println!("Running command {cmd:?}");
                         }
                         Actions::Null => {}
+                        Actions::IfStatement(if_stmt) => {
+                            dbg!(if_stmt);
+                        }
                     },
                     Err(oops) => {
                         eprintln!("{oops}");

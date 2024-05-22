@@ -17,6 +17,8 @@ pub enum Actions {
     Builtin(Builtins),
     /// Run a command.
     Command(Vec<String>),
+    /// If statement
+    IfStatement(Box<Conditional>),
     /// Do nothing.
     Null,
 }
@@ -36,6 +38,13 @@ pub enum Builtins {
     Cd(Option<ElviType>),
     /// Oh boy.
     Test(TestOptions),
+}
+
+#[derive(Debug)]
+pub struct Conditional {
+    pub condition: Actions,
+    pub then_block: Vec<Actions>,
+    pub else_block: Option<Vec<Actions>>,
 }
 
 #[derive(Debug)]

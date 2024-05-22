@@ -8,4 +8,7 @@ dbg oof
 hash -r
 dir="/usr/share"
 cd "${dir}"
-# exit
+if [ -f "/etc/resolv.conf" ]; then
+dbg PWD
+dbg HOME
+fi
