@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 /// Wrapper for a [`u16`] to represent an error code.
 pub struct ReturnCode {
     /// Actual error code.

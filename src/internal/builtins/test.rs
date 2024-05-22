@@ -162,7 +162,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
             if let Ok(metadata) =
                 fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
             {
-                (metadata.permissions().readonly() == false).into()
+                (metadata.permissions().readonly() == true).into()
             } else {
                 false.into()
             }
@@ -282,5 +282,38 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
 
             (gid == current_gid).into()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_file() {
+        let variables = Variables::default();
+        assert_eq!(
+            builtin_test(
+                TestOptions::RegularFileExists(crate::internal::variables::ElviType::String(
+                    "/etc/passwd".into()
+                )),
+                &variables
+            ),
+            true.into()
+        )
+    }
+
+    #[test]
+    fn writable_test() {
+        let variables = Variables::default();
+        assert_eq!(
+            builtin_test(
+                TestOptions::FileExistsWritable(crate::internal::variables::ElviType::String(
+                    "/etc/passwd".into()
+                )),
+                &variables
+            ),
+            false.into()
+        )
     }
 }

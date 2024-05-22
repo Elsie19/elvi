@@ -25,6 +25,14 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
             Ok(()) => {}
             Err(oops) => eprintln!("{oops}"),
         }
+        assert!(env::set_current_dir(
+            variables
+                .get_variable("HOME")
+                .unwrap()
+                .get_value()
+                .to_string()
+        )
+        .is_ok());
         return ReturnCode::ret(ReturnCode::SUCCESS);
     }
     // Atp we know we got something, so let's check if it's `-` or a path.
@@ -43,6 +51,14 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
+            assert!(env::set_current_dir(
+                variables
+                    .get_variable("PWD")
+                    .unwrap()
+                    .get_value()
+                    .to_string()
+            )
+            .is_ok());
             ReturnCode::ret(ReturnCode::SUCCESS)
         }
         patho => {

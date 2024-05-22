@@ -8,5 +8,4 @@ dbg oof
 hash -r
 dir="/usr/share"
 cd "${dir}"
-[ -f "/home/henry/pass" ]
 # exit
