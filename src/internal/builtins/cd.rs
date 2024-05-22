@@ -1,5 +1,5 @@
-use std::fs;
 use std::path::PathBuf;
+use std::{env, fs};
 
 use crate::internal::commands::CommandError;
 use crate::internal::status::ReturnCode;
@@ -91,6 +91,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
+            assert!(env::set_current_dir(to_cd).is_ok());
             ReturnCode::ret(ReturnCode::SUCCESS)
         }
     }
