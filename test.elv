@@ -11,4 +11,6 @@ cd "${dir}"
 if [ -f "/etc/resolv.conf" ]; then
     dbg PWD
     dbg HOME
+else
+    dbg PATH
 fi

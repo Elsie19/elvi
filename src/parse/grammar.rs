@@ -272,7 +272,8 @@ impl ElviParser {
     /// Handles if statements.
     pub fn ifStatement(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
-            [ifStatementMatch(condition), /* then_block # */statement(stmt)..] => Actions::IfStatement(Box::new(
+            // Condition + then_block
+            [ifStatementMatch(condition), statement(stmt)..] => Actions::IfStatement(Box::new(
             Conditional {
                 condition,
                 then_block: stmt.collect(),
@@ -327,6 +328,7 @@ impl ElviParser {
     }
 }
 
+/// Evaluates any given [`Actions`].
 pub fn eval(
     action: Actions,
     variables: &mut Variables,
@@ -380,7 +382,9 @@ pub fn eval(
         }
         Actions::Null => {}
         Actions::IfStatement(if_stmt) => {
+            // Run the condition
             eval(if_stmt.condition, variables, commands, subshells_in);
+            // Did we succeed?
             if variables
                 .get_variable("?")
                 .unwrap()
@@ -389,9 +393,15 @@ pub fn eval(
                 .get()
                 == ReturnCode::SUCCESS
             {
-                println!("WE GOT A SUCCESS BOYS");
+                for act in if_stmt.then_block {
+                    eval(act, variables, commands, subshells_in);
+                }
             } else {
-                eprintln!("You a failure");
+                if if_stmt.else_block.is_some() {
+                    for act in if_stmt.else_block.unwrap() {
+                        eval(act, variables, commands, subshells_in);
+                    }
+                }
             }
         }
     }
