@@ -337,7 +337,7 @@ pub fn eval(
 ) -> ReturnCode {
     match action {
         Actions::ChangeVariable((name, var)) => {
-            change_variable(variables, &commands, *subshells_in, name, &var);
+            change_variable(variables, commands, *subshells_in, name, &var);
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
@@ -359,21 +359,21 @@ pub fn eval(
             Builtins::Hash(mut flag) => {
                 // Let's just eval possible vars
                 if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_variables(&variables));
+                    flag = Some(flag.unwrap().eval_variables(variables));
                 }
-                let ret = builtins::hash::builtin_hash(flag, commands, &variables).get();
+                let ret = builtins::hash::builtin_hash(flag, commands, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Cd(mut flag) => {
                 // Let's just eval possible vars
                 if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_variables(&variables));
+                    flag = Some(flag.unwrap().eval_variables(variables));
                 }
                 let ret = builtins::cd::builtin_cd(flag, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Test(yo) => {
-                let ret = builtins::test::builtin_test(yo, &variables).get();
+                let ret = builtins::test::builtin_test(yo, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
         },
@@ -396,11 +396,9 @@ pub fn eval(
                 for act in if_stmt.then_block {
                     eval(act, variables, commands, subshells_in);
                 }
-            } else {
-                if if_stmt.else_block.is_some() {
-                    for act in if_stmt.else_block.unwrap() {
-                        eval(act, variables, commands, subshells_in);
-                    }
+            } else if if_stmt.else_block.is_some() {
+                for act in if_stmt.else_block.unwrap() {
+                    eval(act, variables, commands, subshells_in);
                 }
             }
         }

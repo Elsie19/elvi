@@ -1,3 +1,4 @@
+//! Contains user facing flags.
 use std::path::PathBuf;
 
 use clap::Parser;

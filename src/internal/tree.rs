@@ -36,14 +36,18 @@ pub enum Builtins {
     Hash(Option<ElviType>),
     /// Needs a path, empty, or dash.
     Cd(Option<ElviType>),
-    /// Oh boy.
+    /// Needs something to test.
     Test(TestOptions),
 }
 
 #[derive(Debug)]
+/// A struct for conditional execution.
 pub struct Conditional {
+    /// The primary condition to execute.
     pub condition: Actions,
+    /// The resulting code that is executed if [`Conditional::condition`] succeeds.
     pub then_block: Vec<Actions>,
+    /// Optional else block if [`Conditional::condition`] fails.
     pub else_block: Option<Vec<Actions>>,
 }
 
