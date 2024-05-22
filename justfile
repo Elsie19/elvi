@@ -2,7 +2,7 @@ default: build test
 
 # Builds a debug build
 build type=(""):
-    cargo build
+    cargo build {{type}}
 
 # Runs Elvi on `./test.elv`
 test: build
