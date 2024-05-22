@@ -55,9 +55,9 @@ impl FromStr for ReturnCode {
 impl From<bool> for ReturnCode {
     fn from(value: bool) -> Self {
         if value {
-            Self { val: 0 }
+            Self { val: Self::SUCCESS }
         } else {
-            Self { val: 1 }
+            Self { val: Self::FAILURE }
         }
     }
 }
@@ -67,8 +67,8 @@ impl std::ops::Not for ReturnCode {
 
     fn not(self) -> Self::Output {
         match self.val {
-            0 => Self { val: 1 },
-            _ => Self { val: 0 },
+            0 => Self { val: Self::FAILURE },
+            _ => Self { val: Self::SUCCESS },
         }
     }
 }

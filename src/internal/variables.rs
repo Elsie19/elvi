@@ -348,7 +348,6 @@ impl ElviType {
                         _ => unreachable!("Not possible."),
                     }
                 // Perchance could it be a user form?
-                //BUG: Will fail on ~foo because it expects something after.
                 } else if re.is_match(path.parent().unwrap().to_str().unwrap())
                     || re.is_match(path.to_str().unwrap())
                 {
