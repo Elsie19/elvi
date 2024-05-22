@@ -274,7 +274,7 @@ impl ElviParser {
         Ok(match_nodes!(input.into_children();
             [ifStatementMatch(condition), /* then_block # */statement(stmt)..] => Actions::IfStatement(Box::new(
             Conditional {
-                condition: condition,
+                condition,
                 then_block: stmt.collect(),
                 else_block: None
             }
@@ -307,59 +307,9 @@ impl ElviParser {
         for child in input.into_children() {
             if child.as_rule() != Rule::EOI {
                 match Self::statement(child) {
-                    Ok(yes) => match yes {
-                        Actions::ChangeVariable((name, var)) => {
-                            change_variable(&mut variables, &commands, subshells_in, name, &var);
-                        }
-                        Actions::Builtin(built) => match built {
-                            Builtins::Dbg(var) => {
-                                let ret = builtins::dbg::builtin_dbg(&var, &mut variables).get();
-                                variables.set_ret(ReturnCode::ret(ret));
-                            }
-                            Builtins::Exit(var) => {
-                                let ret = builtins::exit::builtin_exit(var);
-                                if subshells_in > 1 {
-                                    subshells_in -= 1;
-                                } else {
-                                    std::process::exit(ret.get().into());
-                                }
-                            }
-                            Builtins::Unset(var) => {
-                                let ret =
-                                    builtins::unset::builtin_unset(&var, &mut variables).get();
-                                variables.set_ret(ReturnCode::ret(ret));
-                            }
-                            Builtins::Hash(mut flag) => {
-                                // Let's just eval possible vars
-                                if flag.is_some() {
-                                    flag = Some(flag.unwrap().eval_variables(&variables));
-                                }
-                                let ret =
-                                    builtins::hash::builtin_hash(flag, &mut commands, &variables)
-                                        .get();
-                                variables.set_ret(ReturnCode::ret(ret));
-                            }
-                            Builtins::Cd(mut flag) => {
-                                // Let's just eval possible vars
-                                if flag.is_some() {
-                                    flag = Some(flag.unwrap().eval_variables(&variables));
-                                }
-                                let ret = builtins::cd::builtin_cd(flag, &mut variables).get();
-                                variables.set_ret(ReturnCode::ret(ret));
-                            }
-                            Builtins::Test(yo) => {
-                                let ret = builtins::test::builtin_test(yo, &variables).get();
-                                variables.set_ret(ReturnCode::ret(ret));
-                            }
-                        },
-                        Actions::Command(cmd) => {
-                            println!("Running command {cmd:?}");
-                        }
-                        Actions::Null => {}
-                        Actions::IfStatement(if_stmt) => {
-                            dbg!(if_stmt);
-                        }
-                    },
+                    Ok(yes) => {
+                        eval(yes, &mut variables, &mut commands, &mut subshells_in);
+                    }
                     Err(oops) => {
                         eprintln!("{oops}");
                         continue;
@@ -375,6 +325,81 @@ impl ElviParser {
 
         ReturnCode::ret(ret_value)
     }
+}
+
+pub fn eval(
+    action: Actions,
+    variables: &mut Variables,
+    commands: &mut Commands,
+    subshells_in: &mut u32,
+) -> ReturnCode {
+    match action {
+        Actions::ChangeVariable((name, var)) => {
+            change_variable(variables, &commands, *subshells_in, name, &var);
+        }
+        Actions::Builtin(built) => match built {
+            Builtins::Dbg(var) => {
+                let ret = builtins::dbg::builtin_dbg(&var, variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Exit(var) => {
+                let ret = builtins::exit::builtin_exit(var);
+                if *subshells_in > 1 {
+                    *subshells_in -= 1;
+                } else {
+                    std::process::exit(ret.get().into());
+                }
+            }
+            Builtins::Unset(var) => {
+                let ret = builtins::unset::builtin_unset(&var, variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Hash(mut flag) => {
+                // Let's just eval possible vars
+                if flag.is_some() {
+                    flag = Some(flag.unwrap().eval_variables(&variables));
+                }
+                let ret = builtins::hash::builtin_hash(flag, commands, &variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Cd(mut flag) => {
+                // Let's just eval possible vars
+                if flag.is_some() {
+                    flag = Some(flag.unwrap().eval_variables(&variables));
+                }
+                let ret = builtins::cd::builtin_cd(flag, variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Test(yo) => {
+                let ret = builtins::test::builtin_test(yo, &variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+        },
+        Actions::Command(cmd) => {
+            println!("Running command {cmd:?}");
+        }
+        Actions::Null => {}
+        Actions::IfStatement(if_stmt) => {
+            eval(if_stmt.condition, variables, commands, subshells_in);
+            if variables
+                .get_variable("?")
+                .unwrap()
+                .get_value()
+                .convert_err_type()
+                .get()
+                == ReturnCode::SUCCESS
+            {
+                println!("WE GOT A SUCCESS BOYS");
+            } else {
+                eprintln!("You a failure");
+            }
+        }
+    }
+    let ret_value = match variables.get_variable("?").unwrap().get_value() {
+        ElviType::ErrExitCode(x) => *x,
+        _ => unreachable!("How is $? defined as anything but ErrExitCode?????"),
+    };
+    ReturnCode::ret(ret_value)
 }
 
 #[cfg(test)]

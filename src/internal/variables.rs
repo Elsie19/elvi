@@ -310,6 +310,14 @@ impl ElviType {
         }
     }
 
+    /// Convert a [`ElviType::ErrExitCode`] into a [`ReturnCode`].
+    pub fn convert_err_type(&self) -> ReturnCode {
+        match self {
+            Self::ErrExitCode(val) => (*val).into(),
+            _ => unreachable!("What sorta idiot did that..."),
+        }
+    }
+
     /// Tilde substitution.
     ///
     /// # What it does

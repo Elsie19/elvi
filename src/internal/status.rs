@@ -62,6 +62,12 @@ impl From<bool> for ReturnCode {
     }
 }
 
+impl From<u16> for ReturnCode {
+    fn from(value: u16) -> Self {
+        Self { val: value }
+    }
+}
+
 impl std::ops::Not for ReturnCode {
     type Output = Self;
 
