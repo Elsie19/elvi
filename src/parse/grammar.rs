@@ -79,18 +79,8 @@ impl ElviParser {
         ))
     }
 
-    pub fn builtinTestComparisons(input: Node) -> Result<TestOptions> {
+    pub fn builtinTestPrimaries(input: Node) -> Result<TestOptions> {
         Ok(match_nodes!(input.into_children();
-            [elviWord(stringo), string_equals # elviWord(stringo2)] => TestOptions::String1IsString2((stringo, stringo2)),
-            [elviWord(stringo), string_not_equals # elviWord(stringo2)] => TestOptions::String1IsNotString2((stringo, stringo2)),
-            [elviWord(stringo), ascii_comparison_lt # elviWord(stringo2)] => TestOptions::String1BeforeString2ASCII((stringo, stringo2)),
-            [elviWord(stringo), ascii_comparison_gt # elviWord(stringo2)] => TestOptions::String1AfterString2ASCII((stringo, stringo2)),
-            [elviWord(stringo), integer_eq # elviWord(stringo2)] => TestOptions::Int1EqualsInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_ne # elviWord(stringo2)] => TestOptions::Int1NotEqualsInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_gt # elviWord(stringo2)] => TestOptions::Int1GreaterThanInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_ge # elviWord(stringo2)] => TestOptions::Int1GreaterEqualInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_lt # elviWord(stringo2)] => TestOptions::Int1LessThanInt2Algebraically((stringo, stringo2)),
-            [elviWord(stringo), integer_le # elviWord(stringo2)] => TestOptions::Int1LessEqualInt2Algebraically((stringo, stringo2)),
             [block # elviWord(stringo)] => TestOptions::BlockFileExists(stringo),
             [character_special # elviWord(stringo)] => TestOptions::CharacterFileExists(stringo),
             [directory_exists # elviWord(stringo)] => TestOptions::DirectoryExists(stringo),
@@ -112,10 +102,26 @@ impl ElviParser {
         ))
     }
 
+    pub fn builtinTestComparisons(input: Node) -> Result<TestOptions> {
+        Ok(match_nodes!(input.into_children();
+            [elviWord(stringo), string_equals # elviWord(stringo2)] => TestOptions::String1IsString2((stringo, stringo2)),
+            [elviWord(stringo), string_not_equals # elviWord(stringo2)] => TestOptions::String1IsNotString2((stringo, stringo2)),
+            [elviWord(stringo), ascii_comparison_lt # elviWord(stringo2)] => TestOptions::String1BeforeString2ASCII((stringo, stringo2)),
+            [elviWord(stringo), ascii_comparison_gt # elviWord(stringo2)] => TestOptions::String1AfterString2ASCII((stringo, stringo2)),
+            [elviWord(stringo), integer_eq # elviWord(stringo2)] => TestOptions::Int1EqualsInt2Algebraically((stringo, stringo2)),
+            [elviWord(stringo), integer_ne # elviWord(stringo2)] => TestOptions::Int1NotEqualsInt2Algebraically((stringo, stringo2)),
+            [elviWord(stringo), integer_gt # elviWord(stringo2)] => TestOptions::Int1GreaterThanInt2Algebraically((stringo, stringo2)),
+            [elviWord(stringo), integer_ge # elviWord(stringo2)] => TestOptions::Int1GreaterEqualInt2Algebraically((stringo, stringo2)),
+            [elviWord(stringo), integer_lt # elviWord(stringo2)] => TestOptions::Int1LessThanInt2Algebraically((stringo, stringo2)),
+            [elviWord(stringo), integer_le # elviWord(stringo2)] => TestOptions::Int1LessEqualInt2Algebraically((stringo, stringo2)),
+        ))
+    }
+
     /// Handles the builtin `test`.
     pub fn builtinTest(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinTestComparisons(results)] => Actions::Builtin(Builtins::Test(results)),
+            [builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(results)),
         ))
     }
 

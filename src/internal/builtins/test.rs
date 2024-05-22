@@ -100,13 +100,18 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .parse::<usize>()
                 .unwrap())
         .into(),
-        TestOptions::AnyFileExists(file) => match fs::metadata(Path::new(
+        TestOptions::RegularFileExists(file) => match fs::metadata(Path::new(
             &file.eval_escapes().eval_variables(variables).to_string(),
         )) {
             Ok(metadata) => metadata.is_file().into(),
             Err(_) => false,
         }
         .into(),
+        TestOptions::AnyFileExists(file) => {
+            (Path::new(&file.eval_escapes().eval_variables(variables).to_string()))
+                .exists()
+                .into()
+        }
         _ => todo!(),
     }
 }
