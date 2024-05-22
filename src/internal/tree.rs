@@ -70,7 +70,7 @@ pub enum TestOptions {
     /// `-u file`
     FileExistsUserIDSet(ElviType),
     /// `-w file`
-    FileExistsWrittable(ElviType),
+    FileExistsWritable(ElviType),
     /// `-x file`
     FileExistsExecutable(ElviType),
     /// `-z string`

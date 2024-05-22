@@ -51,3 +51,13 @@ impl FromStr for ReturnCode {
         Ok(ReturnCode { val: x })
     }
 }
+
+impl From<bool> for ReturnCode {
+    fn from(value: bool) -> Self {
+        if value {
+            Self { val: 0 }
+        } else {
+            Self { val: 1 }
+        }
+    }
+}

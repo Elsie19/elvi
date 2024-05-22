@@ -91,6 +91,24 @@ impl ElviParser {
             [elviWord(stringo), integer_ge # elviWord(stringo2)] => TestOptions::Int1GreaterEqualInt2Algebraically((stringo, stringo2)),
             [elviWord(stringo), integer_lt # elviWord(stringo2)] => TestOptions::Int1LessThanInt2Algebraically((stringo, stringo2)),
             [elviWord(stringo), integer_le # elviWord(stringo2)] => TestOptions::Int1LessEqualInt2Algebraically((stringo, stringo2)),
+            [block # elviWord(stringo)] => TestOptions::BlockFileExists(stringo),
+            [character_special # elviWord(stringo)] => TestOptions::CharacterFileExists(stringo),
+            [directory_exists # elviWord(stringo)] => TestOptions::DirectoryExists(stringo),
+            [file_exists # elviWord(stringo)] => TestOptions::AnyFileExists(stringo),
+            [regular_file_exists # elviWord(stringo)] => TestOptions::RegularFileExists(stringo),
+            [file_exists_group_id # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveGroupID(stringo),
+            [symbolic_link # elviWord(stringo)] => TestOptions::SymbolicLinkExists(stringo),
+            [sticky_bit_set # elviWord(stringo)] => TestOptions::StickyBitSetExists(stringo),
+            [string_nonzero # elviWord(stringo)] => TestOptions::StringNonZero(stringo),
+            [named_pipe # elviWord(stringo)] => TestOptions::NamedPipeExists(stringo),
+            [readable_file # elviWord(stringo)] => TestOptions::ReadableFileExists(stringo),
+            [greater_than_zero_file # elviWord(stringo)] => TestOptions::FileExistsGreaterThanZero(stringo),
+            [file_descriptor # elviWord(stringo)] => TestOptions::FDDescriptorNumberOpened(stringo),
+            [file_exists_user_id # elviWord(stringo)] => TestOptions::FileExistsUserIDSet(stringo),
+            [writable_file # elviWord(stringo)] => TestOptions::FileExistsWritable(stringo),
+            [efective_user_id_file # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveUserID(stringo),
+            [efective_group_id_file # elviWord(stringo)] => TestOptions::FileExistsOwnerEffectiveGroupID(stringo),
+            [socket_file_exists # elviWord(stringo)] => TestOptions::FileExistsSocket(stringo),
         ))
     }
 
@@ -309,7 +327,8 @@ impl ElviParser {
                                 variables.set_ret(ReturnCode::ret(ret));
                             }
                             Builtins::Test(yo) => {
-                                println!("Running the test command: {:?}", yo);
+                                let ret = builtins::test::builtin_test(yo, &mut variables).get();
+                                variables.set_ret(ReturnCode::ret(ret));
                             }
                         },
                         Actions::Command(cmd) => {

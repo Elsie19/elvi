@@ -41,6 +41,11 @@ pub mod builtins {
     /// Conforming to
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#hash>
     pub mod hash;
+    /// The `test` builtin.
+    ///
+    /// Conforming to
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#test>
+    pub mod test;
     /// The `unset` builtin.
     ///
     /// Conforming to
