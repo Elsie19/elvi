@@ -14,15 +14,23 @@
 
 pub mod internal;
 pub mod parse;
+pub mod user_flags;
 
 use std::fs;
 
+use clap::Parser as ClapParser;
 use parse::grammar::{ElviParser, Rule};
 use pest_consume::Parser;
+use user_flags::Args;
 
 #[doc(hidden)]
 fn main() {
-    let unparsed_file = fs::read_to_string("test.elv").expect("Could not read file");
+    let args = Args::parse();
+    let unparsed_file = if let Some(input) = args.group.read_from_input {
+        input
+    } else {
+        fs::read_to_string(args.group.file.unwrap()).expect("Could not read file")
+    };
 
     let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
         Ok(yay) => yay,

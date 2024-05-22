@@ -9,6 +9,6 @@ hash -r
 dir="/usr/share"
 cd "${dir}"
 if [ -f "/etc/resolv.conf" ]; then
-dbg PWD
-dbg HOME
+    dbg PWD
+    dbg HOME
 fi

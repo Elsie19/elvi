@@ -271,7 +271,6 @@ impl ElviParser {
 
     /// Handles if statements.
     pub fn ifStatement(input: Node) -> Result<Actions> {
-        dbg!(&input.children());
         Ok(match_nodes!(input.into_children();
             [ifStatementMatch(condition), /* then_block # */statement(stmt)..] => Actions::IfStatement(Box::new(
             Conditional {
