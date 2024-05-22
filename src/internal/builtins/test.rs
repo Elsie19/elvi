@@ -15,18 +15,16 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
         TestOptions::String1IsString2((s1, s2)) => (s1.eval_escapes().eval_variables(variables)
             == s2.eval_escapes().eval_variables(variables))
         .into(),
-        TestOptions::String1IsNotString2((s1, s2)) => (s1.eval_escapes().eval_variables(variables)
-            != s2.eval_escapes().eval_variables(variables))
-        .into(),
+        TestOptions::String1IsNotString2((s1, s2)) => {
+            { !builtin_test(TestOptions::String1IsString2((s1, s2)), variables) }.into()
+        }
         TestOptions::String1BeforeString2ASCII((s1, s2)) => {
             (s1.eval_escapes().eval_variables(variables).to_string()
                 > s2.eval_escapes().eval_variables(variables).to_string())
             .into()
         }
         TestOptions::String1AfterString2ASCII((s1, s2)) => {
-            (s1.eval_escapes().eval_variables(variables).to_string()
-                < s2.eval_escapes().eval_variables(variables).to_string())
-            .into()
+            !builtin_test(TestOptions::String1BeforeString2ASCII((s1, s2)), variables)
         }
         TestOptions::Int1EqualsInt2Algebraically((n1, n2)) => (n1
             .eval_escapes()
@@ -70,17 +68,12 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .parse::<usize>()
                 .unwrap())
         .into(),
-        TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)) => (n1
-            .eval_escapes()
-            .eval_variables(variables)
-            .to_string()
-            .parse::<usize>()
-            .unwrap()
-            > n2.eval_escapes()
-                .eval_variables(variables)
-                .to_string()
-                .parse::<usize>()
-                .unwrap())
+        TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)) => {
+            !builtin_test(
+                TestOptions::Int1LessThanInt2Algebraically((n1, n2)),
+                variables,
+            )
+        }
         .into(),
         TestOptions::Int1GreaterEqualInt2Algebraically((n1, n2)) => (n1
             .eval_escapes()
