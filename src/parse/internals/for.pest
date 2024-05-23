@@ -1,0 +1,7 @@
+// Main rules
+forLoop = { "for" ~ space+ ~ elviWord ~ (space+ ~ "in" ~ space+ ~ #condition = forLoopMatch)? ~ newline+ ~ (space+)? ~ "do" ~ (space+ | newline+) ~ (#inner_for = statement)+ ~ newline+ ~ (space+)? ~ "done" }
+
+forLoopMatch = ${
+    backtickSubstitution
+  | (elviWord ~ (WHITE_SPACE ~ elviWord)*)
+}

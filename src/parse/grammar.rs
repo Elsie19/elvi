@@ -218,7 +218,7 @@ impl ElviParser {
     /// Handles the echo builtin.
     pub fn builtinEcho(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [anyString(stringo)..] => Some(stringo.collect()),
+            [elviWord(stringo)..] => Some(stringo.collect()),
             [] => None,
         );
 
@@ -228,7 +228,7 @@ impl ElviParser {
     /// Handles the exit builtin.
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [anyString(stringo)] => Some(stringo),
+            [elviWord(stringo)] => Some(stringo),
             [elviNumber(num)] => Some(ElviType::String(num.to_string())),
             [] => None,
         );

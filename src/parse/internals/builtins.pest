@@ -1,12 +1,12 @@
 // Main grammars
 builtinDbg   = !{ "dbg" ~ space? ~ variableIdent }
 builtinUnset = !{ "unset" ~ space? ~ variableIdent }
-builtinExit  = !{ "exit" ~ space? ~ (anyString | elviNumber)? }
+builtinExit  = !{ "exit" ~ space? ~ (elviWord | elviNumber)? }
 builtinHash  = !{ "hash" ~ space? ~ elviWord? }
 builtinCd    = !{ "cd" ~ space? ~ elviWord? }
 // TODO: Add commands to `builtinTest` and also `-a` and `-o`
 builtinTest = !{ ("[" ~ space+ ~ (#invert = "!" ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]") | ("test" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons)) }
-builtinEcho = !{ "echo" ~ space? ~ (anyString+)? }
+builtinEcho = !{ "echo" ~ space? ~ (elviWord+)? }
 
 builtinTestPrimaries = {
     #block = ("-b" ~ space+ ~ elviWord)
