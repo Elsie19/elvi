@@ -23,6 +23,18 @@ impl ReturnCode {
         self.val
     }
 
+    /// Invert return code based on a boolean.
+    ///
+    /// `true` will invert.
+    /// `false` will not invert.
+    pub fn invert(self, invert: bool) -> Self {
+        if invert {
+            Self { val: !self.val }
+        } else {
+            Self { val: self.val }
+        }
+    }
+
     /// <https://tldp.org/LDP/abs/html/exitcodes.html#AEN23629>
     /// Will cap a given return value to within a range of 0-255.
     pub fn cap(self) -> u8 {

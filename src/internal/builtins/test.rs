@@ -10,22 +10,24 @@ use crate::internal::tree::TestOptions;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `test` builtin is run.
-pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
-    match to_do {
+pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> ReturnCode {
+    let ret = match to_do {
         TestOptions::String1IsString2((s1, s2)) => (s1.eval_escapes().eval_variables(variables)
             == s2.eval_escapes().eval_variables(variables))
         .into(),
         TestOptions::String1IsNotString2((s1, s2)) => {
-            !builtin_test(TestOptions::String1IsString2((s1, s2)), variables)
+            !builtin_test(invert, TestOptions::String1IsString2((s1, s2)), variables)
         }
         TestOptions::String1BeforeString2ASCII((s1, s2)) => {
             (s1.eval_escapes().eval_variables(variables).to_string()
                 > s2.eval_escapes().eval_variables(variables).to_string())
             .into()
         }
-        TestOptions::String1AfterString2ASCII((s1, s2)) => {
-            !builtin_test(TestOptions::String1BeforeString2ASCII((s1, s2)), variables)
-        }
+        TestOptions::String1AfterString2ASCII((s1, s2)) => !builtin_test(
+            invert,
+            TestOptions::String1BeforeString2ASCII((s1, s2)),
+            variables,
+        ),
         TestOptions::Int1EqualsInt2Algebraically((n1, n2)) => (n1
             .eval_escapes()
             .eval_variables(variables)
@@ -52,6 +54,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .unwrap())
         .into(),
         TestOptions::Int1NotEqualsInt2Algebraically((n1, n2)) => !builtin_test(
+            invert,
             TestOptions::Int1EqualsInt2Algebraically((n1, n2)),
             variables,
         ),
@@ -69,6 +72,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 .unwrap())
         .into(),
         TestOptions::Int1GreaterThanInt2Algebraically((n1, n2)) => !builtin_test(
+            invert,
             TestOptions::Int1LessThanInt2Algebraically((n1, n2)),
             variables,
         ),
@@ -125,7 +129,7 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
             .is_empty()
             .into(),
         TestOptions::StringNonZero(stringo) => {
-            !builtin_test(TestOptions::StringNonZero(stringo), variables)
+            !builtin_test(invert, TestOptions::StringNonZero(stringo), variables)
         }
         TestOptions::ReadableFileExists(file) => {
             match File::open(file.eval_escapes().eval_variables(variables).to_string()) {
@@ -242,9 +246,11 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
                 };
             (f1_meta.modified().unwrap() > f2_meta.modified().unwrap()).into()
         }
-        TestOptions::File1OlderThanFile2((f1, f2)) => {
-            !builtin_test(TestOptions::File1NewerThanFile2((f1, f2)), variables)
-        }
+        TestOptions::File1OlderThanFile2((f1, f2)) => !builtin_test(
+            invert,
+            TestOptions::File1NewerThanFile2((f1, f2)),
+            variables,
+        ),
         TestOptions::File1SameAsFile2((f1, f2)) => {
             let f1_meta =
                 match fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) {
@@ -279,7 +285,8 @@ pub fn builtin_test(to_do: TestOptions, variables: &Variables) -> ReturnCode {
 
             (gid == current_gid).into()
         }
-    }
+    };
+    ret.invert(invert)
 }
 
 #[cfg(test)]
@@ -291,6 +298,7 @@ mod tests {
         let variables = Variables::default();
         assert_eq!(
             builtin_test(
+                false,
                 TestOptions::RegularFileExists(crate::internal::variables::ElviType::String(
                     "/etc/passwd".into()
                 )),
@@ -305,6 +313,7 @@ mod tests {
         let variables = Variables::default();
         assert_eq!(
             builtin_test(
+                false,
                 TestOptions::FileExistsWritable(crate::internal::variables::ElviType::String(
                     "/etc/passwd".into()
                 )),

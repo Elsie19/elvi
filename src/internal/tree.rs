@@ -37,8 +37,8 @@ pub enum Builtins {
     Hash(Option<ElviType>),
     /// Needs a path, empty, or dash.
     Cd(Option<ElviType>),
-    /// Needs something to test.
-    Test(TestOptions),
+    /// Needs something to test and a bool (! for example).
+    Test(bool, TestOptions),
     /// Can take nothing or a list of stuff
     Echo(Option<Vec<ElviType>>),
 }

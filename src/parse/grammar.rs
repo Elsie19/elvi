@@ -120,8 +120,8 @@ impl ElviParser {
     /// Handles the builtin `test`.
     pub fn builtinTest(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
-            [builtinTestComparisons(results)] => Actions::Builtin(Builtins::Test(results)),
-            [builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(results)),
+            [builtinTestComparisons(results)] | [builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(false, results)),
+            [invert # builtinTestComparisons(results)] | [invert # builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(true, results)),
         ))
     }
 
@@ -393,8 +393,8 @@ pub fn eval(
                 let ret = builtins::cd::builtin_cd(flag, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
-            Builtins::Test(yo) => {
-                let ret = builtins::test::builtin_test(yo, variables).get();
+            Builtins::Test(invert, yo) => {
+                let ret = builtins::test::builtin_test(invert, yo, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Echo(text) => {
