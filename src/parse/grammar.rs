@@ -12,6 +12,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/builtins.pest"]
 #[grammar = "parse/internals/commands.pest"]
 #[grammar = "parse/internals/if.pest"]
+#[grammar = "parse/internals/for.pest"]
 #[grammar = "parse/internals/base.pest"]
 /// Global struct that implements the pest.rs parser ([`pest_derive`]).
 pub struct ElviParser;
