@@ -215,6 +215,16 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Unset(name)))
     }
 
+    /// Handles the echo builtin.
+    pub fn builtinEcho(input: Node) -> Result<Actions> {
+        let possibles = match_nodes!(input.into_children();
+            [anyString(stringo)..] => Some(stringo.collect()),
+            [] => None,
+        );
+
+        Ok(Actions::Builtin(Builtins::Echo(possibles)))
+    }
+
     /// Handles the exit builtin.
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
@@ -254,6 +264,7 @@ impl ElviParser {
             [builtinHash(stringo)] => stringo,
             [builtinCd(stringo)] => stringo,
             [builtinTest(stringo)] => stringo,
+            [builtinEcho(stringo)] => stringo,
         ))
     }
 
@@ -384,6 +395,10 @@ pub fn eval(
             }
             Builtins::Test(yo) => {
                 let ret = builtins::test::builtin_test(yo, variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Echo(text) => {
+                let ret = builtins::echo::builtin_echo(text, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
         },

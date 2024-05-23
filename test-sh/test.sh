@@ -9,8 +9,9 @@ hash -r
 dir="/usr/share"
 cd "${dir}"
 if [ -f "/etc/resolv.conf" ]; then
-    dbg PWD
-    dbg HOME
+    echo "${PWD}"
+    echo "${HOME}"
 else
+    echo "${PATH}"
     dbg PATH
 fi

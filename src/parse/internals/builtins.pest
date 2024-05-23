@@ -6,6 +6,7 @@ builtinHash  = !{ "hash" ~ space? ~ elviWord? }
 builtinCd    = !{ "cd" ~ space? ~ elviWord? }
 // TODO: Add commands to `builtinTest` and also `-a` and `-o`
 builtinTest = !{ ("[" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]") | ("test" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons)) }
+builtinEcho = !{ "echo" ~ space? ~ (anyString+)? }
 
 builtinTestPrimaries = {
     #block = ("-b" ~ space+ ~ elviWord)
@@ -44,4 +45,4 @@ builtinTestComparisons = {
 }
 
 // Wrapper grammar for any builtin
-builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest }
+builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest | builtinEcho }

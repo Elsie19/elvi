@@ -38,6 +38,8 @@ pub enum Builtins {
     Cd(Option<ElviType>),
     /// Needs something to test.
     Test(TestOptions),
+    /// Can take nothing or a list of stuff
+    Echo(Option<Vec<ElviType>>),
 }
 
 #[derive(Debug)]

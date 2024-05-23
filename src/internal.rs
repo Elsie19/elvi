@@ -31,6 +31,15 @@ pub mod builtins {
     /// This builtin is not in the POSIX spec and is an addition to Elvi. It should function mostly
     /// like `declare -p` from Bash, but not always.
     pub mod dbg;
+    /// The `echo` builtin.
+    ///
+    /// Conforming to
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#echo>
+    ///
+    /// # Notes
+    /// Currently does not implement the following flags/behaviors:
+    /// 1. `-n` flag no newline.
+    pub mod echo;
     /// The `exit` builtin.
     ///
     /// Conforming to
