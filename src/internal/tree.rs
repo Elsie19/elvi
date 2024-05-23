@@ -2,6 +2,7 @@ use std::io::Write;
 use std::{io, process::Command};
 
 use crate::internal::commands::CommandError;
+use crate::internal::status::ReturnCode;
 
 use super::{
     commands::{Commands, ExternalCommand},
@@ -152,7 +153,15 @@ pub fn change_variable(
             }
             match variables.set_variable(name, var) {
                 Ok(()) => {}
-                Err(oops) => eprintln!("{oops}"),
+                // Now in
+                // <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_08_01>,
+                // it says that a variable assignment error on the interactive shell can continue,
+                // but during a non-interactive shell, it must exact, and since Elvi is solely a
+                // non-interactive shell, that's what we'll do.
+                Err(oops) => {
+                    eprintln!("{oops}");
+                    std::process::exit(ReturnCode::MISUSE.into());
+                }
             }
         }
         ElviType::CommandSubstitution(x) => {
@@ -218,7 +227,14 @@ pub fn change_variable(
                     var.change_contents(ElviType::String(
                         // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
                         // assignment if it comes up.
-                        std::str::from_utf8(&cmd.stdout).unwrap().to_string(),
+                        std::str::from_utf8(&cmd.stdout)
+                            .unwrap()
+                            // This is to conform to
+                            // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,
+                            // specifically the part about trailing newlines deleted. This is from
+                            // the bash manual but it is the same in POSIX, I've checked.
+                            .trim_end_matches('\n')
+                            .to_string(),
                     ))
                     .clone(),
                 ) {
