@@ -1,5 +1,5 @@
 // Main rules
-ifStatement = { "if" ~ space+ ~ ifStatementMatch ~ newline+ ~ (space+)? ~ "then" ~ (space+ | newline+) ~ #then_block = (statement+) ~ newline+ ~ (space+)? ~ "fi" }
+ifStatement = { "if" ~ space+ ~ ifStatementMatch ~ newline+ ~ (space+)? ~ "then" ~ (space+ | newline+) ~ (#then_block = statement)+ ~ (newline+ ~ "else" ~ newline+ ~ (#else_block = statement)+)? ~ newline+ ~ (space+)? ~ "fi" }
 
 ifStatementMatch = ${
     backtickSubstitution

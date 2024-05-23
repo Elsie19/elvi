@@ -273,14 +273,24 @@ impl ElviParser {
     pub fn ifStatement(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             // Condition + then_block
-            [ifStatementMatch(condition), statement(stmt)..] => Actions::IfStatement(Box::new(
+            [ifStatementMatch(condition), then_block # statement(stmt)..] => Actions::IfStatement(Box::new(
             Conditional {
                 condition,
                 then_block: stmt.collect(),
                 else_block: None
             }
         ),
-        )))
+        ),
+            // Condition + then_block + else_block
+            [ifStatementMatch(condition), then_block # statement(stmt).., else_block # statement(else_part)..] => Actions::IfStatement(Box::new(
+                        Conditional {
+                            condition,
+                            then_block: stmt.collect(),
+                            else_block: Some(else_part.collect())
+                        }
+                    ),
+                    )
+                ))
     }
 
     /// Handles global statements.
