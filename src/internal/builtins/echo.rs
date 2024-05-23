@@ -11,6 +11,6 @@ pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> Retur
     for part in text.unwrap() {
         to_print.push(part.eval_escapes().eval_variables(variables).to_string());
     }
-    println!("{}", to_print.join(" ").to_string());
-    return ReturnCode::ret(ReturnCode::SUCCESS);
+    println!("{}", to_print.join(" "));
+    ReturnCode::ret(ReturnCode::SUCCESS)
 }

@@ -33,7 +33,7 @@ fn main() {
     let unparsed_file = if let Some(input) = args.group.read_from_input {
         input
     } else {
-        match fs::read_to_string(&args.group.file.as_ref().unwrap()) {
+        match fs::read_to_string(args.group.file.as_ref().unwrap()) {
             Ok(yay) => yay,
             Err(_) => Args::command()
                 .error(
