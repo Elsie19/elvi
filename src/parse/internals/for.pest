@@ -3,5 +3,5 @@ forLoop = { "for" ~ space+ ~ elviWord ~ (space+ ~ "in" ~ space+ ~ #condition = f
 
 forLoopMatch = ${
     backtickSubstitution
-  | (elviWord ~ (WHITE_SPACE ~ elviWord)*)
+  | (elviWord ~ (space+ ~ elviWord)*)
 }

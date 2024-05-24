@@ -12,7 +12,7 @@ space = _{ (" " | "\t") }
 elviNumber = { ASCII_DIGIT+ }
 
 elviWord       = { anyString | elviSingleWord }
-elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~")+ }
+elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*")+ }
 
 // `program` is comprised of statements.
 statement = {
