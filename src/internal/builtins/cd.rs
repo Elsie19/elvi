@@ -98,7 +98,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
             match variables.set_variable(
                 "PWD".to_string(),
                 Variable::oneshot_var(
-                    ElviType::String(to_cd.to_str().unwrap().to_string()),
+                    &ElviType::String(to_cd.to_str().unwrap().to_string()),
                     crate::internal::variables::ElviMutable::Normal,
                     crate::internal::variables::ElviGlobal::Global,
                     (0, 0),

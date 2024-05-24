@@ -129,7 +129,7 @@ impl Variables {
         self.vars.insert(
             "?".into(),
             Variable::oneshot_var(
-                ElviType::ErrExitCode(code.get()),
+                &ElviType::ErrExitCode(code.get()),
                 ElviMutable::ReadonlyUnsettable,
                 ElviGlobal::Global,
                 (0, 0),
@@ -257,13 +257,13 @@ impl Variable {
 
     /// Return a variable template with all options available.
     pub fn oneshot_var(
-        contents: ElviType,
+        contents: &ElviType,
         modification_status: ElviMutable,
         shell_lvl: ElviGlobal,
         line: (usize, usize),
     ) -> Self {
         Self {
-            contents,
+            contents: contents.clone(),
             modification_status,
             shell_lvl,
             line,

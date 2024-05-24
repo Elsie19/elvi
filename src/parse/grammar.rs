@@ -1,7 +1,7 @@
 use crate::internal::builtins;
 use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
-use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, TestOptions};
+use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, Loop, TestOptions};
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -160,7 +160,7 @@ impl ElviParser {
         Ok((
             name_pair.to_string(),
             Variable::oneshot_var(
-                variable_contents.unwrap(),
+                &variable_contents.unwrap(),
                 ElviMutable::Normal,
                 ElviGlobal::Normal(1),
                 lines,
@@ -182,7 +182,7 @@ impl ElviParser {
         Ok((
             name_pair.to_string(),
             Variable::oneshot_var(
-                variable_contents.unwrap(),
+                &variable_contents.unwrap(),
                 ElviMutable::Readonly,
                 ElviGlobal::Normal(1),
                 lines,
@@ -305,6 +305,22 @@ impl ElviParser {
                 ))
     }
 
+    /// Handles the inner matching of for loops
+    pub fn forLoopMatch(input: Node) -> Result<ElviType> {
+        Ok(match_nodes!(input.into_children();
+            [backtickSubstitution(tick)] => tick,
+            [elviWord(word)] => word,
+        ))
+    }
+
+    /// Handles for loops.
+    pub fn forLoop(input: Node) -> Result<Actions> {
+        Ok(match_nodes!(input.into_children();
+            // When we have loop contents
+            [variable # elviWord(var), loop_match # forLoopMatch(loop_match).., inner_for # statement(stmt)..] => Actions::ForLoop(Loop { variable: var, elements: loop_match.collect(), do_block: stmt.collect() })
+        ))
+    }
+
     /// Handles global statements.
     pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
@@ -317,6 +333,7 @@ impl ElviParser {
             [builtinWrapper(var)] => Ok(var),
             // [externalCommand(var)] => Ok(var),
             [ifStatement(stmt)] => Ok(stmt),
+            [forLoop(stmt)] => Ok(stmt),
         )
     }
 
@@ -420,11 +437,56 @@ pub fn eval(
                 == ReturnCode::SUCCESS
             {
                 for act in if_stmt.then_block {
-                    eval(act, variables, commands, subshells_in);
+                    let ret = eval(act, variables, commands, subshells_in);
+                    variables.set_ret(ret);
                 }
             } else if if_stmt.else_block.is_some() {
                 for act in if_stmt.else_block.unwrap() {
-                    eval(act, variables, commands, subshells_in);
+                    let ret = eval(act, variables, commands, subshells_in);
+                    variables.set_ret(ret);
+                }
+            }
+        }
+        Actions::ForLoop(loop_things) => {
+            for var in &loop_things.elements {
+                // Ok so now I want to update the variable if it exists before, and if not, create a
+                // new variable.
+                if variables
+                    .get_variable(&loop_things.variable.to_string())
+                    .is_some()
+                {
+                    let template = variables
+                        .get_variable(&loop_things.variable.to_string())
+                        .unwrap();
+                    match variables.set_variable(
+                        loop_things.variable.to_string(),
+                        Variable::oneshot_var(
+                            &var,
+                            template.get_modification_status(),
+                            template.get_lvl(),
+                            template.get_line(),
+                        ),
+                    ) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            eprintln!("{e}");
+                            std::process::exit(1);
+                        }
+                    }
+                } else {
+                    variables.set_variable(
+                        loop_things.variable.to_string(),
+                        Variable::oneshot_var(
+                            &var,
+                            ElviMutable::Normal,
+                            ElviGlobal::Global,
+                            (0, 0),
+                        ),
+                    ).unwrap() /* I'm reasonably confident that this won't fail */;
+                }
+                for act in &loop_things.do_block {
+                    let ret = eval(act.clone(), variables, commands, subshells_in);
+                    variables.set_ret(ret);
                 }
             }
         }

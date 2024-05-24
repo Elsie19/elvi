@@ -9,7 +9,7 @@ use super::{
     variables::{ElviGlobal, ElviType, Variable, Variables},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// A list of possible actions a line can cause.
 pub enum Actions {
     /// Change/create a variable.
@@ -20,11 +20,13 @@ pub enum Actions {
     Command(Vec<String>),
     /// If statement
     IfStatement(Box<Conditional>),
+    /// For loop
+    ForLoop(Loop),
     /// Do nothing.
     Null,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// A list of builtins and their parameters.
 pub enum Builtins {
     /// Just needs a variable name.
@@ -43,7 +45,7 @@ pub enum Builtins {
     Echo(Option<Vec<ElviType>>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// A struct for conditional execution.
 pub struct Conditional {
     /// The primary condition to execute.
@@ -54,7 +56,18 @@ pub struct Conditional {
     pub else_block: Option<Vec<Actions>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+/// A struct for loop execution.
+pub struct Loop {
+    /// Variable to update
+    pub variable: ElviType,
+    /// Vector of elements to loop over.
+    pub elements: Vec<ElviType>,
+    /// The resulting code that is executed every [`Loop::elements`].
+    pub do_block: Vec<Actions>,
+}
+
+#[derive(Debug, Clone)]
 /// A list of things `test` can do.
 pub enum TestOptions {
     /// `-b file`
@@ -181,7 +194,7 @@ pub fn change_variable(
                 match variables.set_variable(
                     name,
                     Variable::oneshot_var(
-                        ElviType::String(String::new()),
+                        &ElviType::String(String::new()),
                         var.get_modification_status(),
                         var.get_lvl(),
                         var.get_line(),

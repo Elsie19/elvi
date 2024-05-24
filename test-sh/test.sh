@@ -14,3 +14,7 @@ else
     echo "${PATH}"
     dbg PATH
 fi
+
+for i in "foo" "bar" "baz"; do
+    echo "${i}"
+done
