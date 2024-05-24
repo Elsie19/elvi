@@ -148,15 +148,14 @@ pub fn change_variable(
     commands: &Commands,
     lvl: u32,
     name: String,
-    var: &Variable,
+    var: &mut Variable,
 ) {
     // Makes shit easier to deal with.
-    let mut var = var.clone();
     match var.get_value() {
         goopy @ ElviType::VariableSubstitution(_) => {
             // Goopy will save us!!!
             var.change_contents(goopy.eval_variables(variables));
-            change_variable(variables, commands, lvl, name, &var);
+            change_variable(variables, commands, lvl, name, var);
         }
         ElviType::String(_we_dont_care) => {
             // First let's get the level because while parsing we assume a certain variable level that is
@@ -164,7 +163,7 @@ pub fn change_variable(
             if var.get_lvl() != ElviGlobal::Global {
                 var.change_lvl(lvl);
             }
-            match variables.set_variable(name, var) {
+            match variables.set_variable(name, var.to_owned()) {
                 Ok(()) => {}
                 // Now in
                 // <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_08_01>,

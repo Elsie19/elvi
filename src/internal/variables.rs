@@ -144,14 +144,12 @@ impl Variables {
     /// [`ElviMutable::ReadonlyUnsettable`].
     pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
         if let Some(value) = self.vars.get(&name) {
-            let le_lines = value.clone();
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-                    self.set_ret(ReturnCode::ret(ReturnCode::FAILURE));
                     Err(VariableError::Readonly {
                         name,
-                        line: le_lines.line.0,
-                        column: le_lines.line.1,
+                        line: value.line.0,
+                        column: value.line.1,
                     })
                 }
                 ElviMutable::Normal => {
