@@ -8,6 +8,7 @@ use std::{
     collections::HashMap,
     env,
     path::{Path, PathBuf},
+    process,
 };
 
 use super::status::ReturnCode;
@@ -443,10 +444,13 @@ impl ElviType {
                             //TODO: Work on parameter expansion, ugh.
                             let tasty_var: String =
                                 chars_of.by_ref().take_while(|&c| c != '}').collect();
-                            if let Some(woot) = vars.get_variable(&tasty_var) {
-                                // This is the magic of the entire function lol. Bask in its
-                                // glory!!
-                                back_to_string.push_str(woot.get_value().to_string().as_str())
+                            // So here we have a list of expanded special vars, but assuming that
+                            // there are no special vars, we got len() == 0.
+                            let expanded_out = self.eval_special_variable(&tasty_var, vars);
+                            if !expanded_out.is_empty() {
+                                for part in expanded_out {
+                                    back_to_string.push_str(part.as_str());
+                                }
                             }
                             continue;
                         } else {
@@ -462,10 +466,13 @@ impl ElviType {
                                 .by_ref()
                                 // We don't wanna consume the character it fails on, otherwise we'd use
                                 // take_while() instead.
-                                .peeking_take_while(|&c| c != ' ' && c != '-' && c != '\\')
+                                .peeking_take_while(|&c| c != ' ' && c != '\\')
                                 .collect();
-                            if let Some(woot) = vars.get_variable(&tasty_var) {
-                                back_to_string.push_str(woot.get_value().to_string().as_str())
+                            let expanded_out = self.eval_special_variable(&tasty_var, vars);
+                            if !expanded_out.is_empty() {
+                                for part in expanded_out {
+                                    back_to_string.push_str(part.as_str());
+                                }
                             }
                         }
                     }
@@ -474,6 +481,35 @@ impl ElviType {
             }
             default => default.clone(),
         }
+    }
+
+    /// This is for
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#2.5.2>
+    /// We also do variable expansion regardless in here.
+    pub fn eval_special_variable(&self, var: &str, variables: &Variables) -> Vec<String> {
+        let mut ret_vec = vec![];
+        match var {
+            //TODO: Do `${@}`
+            "$" => {
+                ret_vec.push(process::id().to_string());
+            }
+            //BUG: Only gives process name, not running script name
+            "0" => {
+                ret_vec.push(
+                    std::env::current_exe()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                        .to_string(),
+                );
+            }
+            default => {
+                if let Some(woot) = variables.get_variable(default) {
+                    ret_vec.push(woot.get_value().to_string());
+                }
+            }
+        }
+        ret_vec
     }
 }
 
@@ -492,7 +528,7 @@ impl fmt::Display for ElviType {
 impl Default for Variable {
     fn default() -> Self {
         Self {
-            contents: ElviType::String("".to_string()),
+            contents: ElviType::String(String::from("")),
             modification_status: ElviMutable::Normal,
             shell_lvl: ElviGlobal::Global,
             line: (0, 0),

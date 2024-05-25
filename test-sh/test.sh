@@ -19,6 +19,4 @@ for i in "foo" "bar" "baz"; do
     echo "${i}"
 done
 
-for ooo; do
-    echo "${ooo}"
-done
+echo "My PID is $$ and current process is $0"

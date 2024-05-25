@@ -15,3 +15,6 @@ pest_consume = { git = "https://github.com/Nadrieril/pest_consume.git" }
 pest_derive = { version = "2.7.10", features = ["grammar-extras"] }
 regex = "1.10.4"
 snailquote = "0.3.1"
+
+[profile.release]
+lto = true

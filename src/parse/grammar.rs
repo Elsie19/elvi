@@ -463,7 +463,7 @@ pub fn eval(
                     match variables.set_variable(
                         loop_things.variable.to_string(),
                         Variable::oneshot_var(
-                            &var,
+                            var,
                             template.get_modification_status(),
                             template.get_lvl(),
                             template.get_line(),
@@ -479,7 +479,7 @@ pub fn eval(
                     variables.set_variable(
                         loop_things.variable.to_string(),
                         Variable::oneshot_var(
-                            &var,
+                            var,
                             ElviMutable::Normal,
                             ElviGlobal::Global,
                             (0, 0),
