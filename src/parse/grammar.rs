@@ -317,7 +317,9 @@ impl ElviParser {
     pub fn forLoop(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             // When we have loop contents
-            [variable # elviWord(var), loop_match # forLoopMatch(loop_match).., inner_for # statement(stmt)..] => Actions::ForLoop(Loop { variable: var, elements: loop_match.collect(), do_block: stmt.collect() })
+            [variable # elviWord(var), loop_match # forLoopMatch(loop_match).., inner_for # statement(stmt)..] => Actions::ForLoop(Loop { variable: var, elements: loop_match.collect(), do_block: stmt.collect() }),
+            // When we don't
+            [variable # elviWord(var), inner_for # statement(stmt)..] => Actions::ForLoop(Loop { variable: var, elements: vec![ElviType::VariableSubstitution("${@}".to_string())], do_block: stmt.collect() })
         ))
     }
 

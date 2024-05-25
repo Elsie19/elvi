@@ -18,3 +18,7 @@ fi
 for i in "foo" "bar" "baz"; do
     echo "${i}"
 done
+
+for ooo; do
+    echo "${ooo}"
+done
