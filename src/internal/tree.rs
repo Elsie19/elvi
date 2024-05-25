@@ -233,7 +233,6 @@ pub fn change_variable(
                 if !cmd.stderr.is_empty() {
                     io::stderr().write_all(&cmd.stderr).unwrap();
                 }
-                let mut var = var.clone();
                 match variables.set_variable(
                     name,
                     var.change_contents(ElviType::String(

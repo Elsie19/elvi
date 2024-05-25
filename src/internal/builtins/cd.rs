@@ -13,7 +13,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
     if flag.is_none() {
         match variables.set_variable(
             "OLDPWD".to_string(),
-            variables.get_variable("PWD").unwrap().clone(),
+            variables.get_variable("PWD").unwrap().to_owned(),
         ) {
             Ok(()) => {}
             Err(oops) => eprintln!("{oops}"),
