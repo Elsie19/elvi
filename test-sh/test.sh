@@ -20,4 +20,7 @@ for i in "foo" "bar" "baz"; do
 done
 
 echo "My PID is $$ and current process is $0"
-fooo
+
+for i in ~/Projects/*; do
+    echo "${i}"
+done

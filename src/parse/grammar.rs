@@ -450,7 +450,17 @@ pub fn eval(
             }
         }
         Actions::ForLoop(loop_things) => {
-            for var in &loop_things.elements {
+            let mut new_loop_elements = vec![];
+            for element in &loop_things.elements {
+                for entry in element
+                    .tilde_expansion(&variables)
+                    .eval_variables(&variables)
+                    .expand_globs()
+                {
+                    new_loop_elements.push(entry);
+                }
+            }
+            for var in &new_loop_elements {
                 // Ok so now I want to update the variable if it exists before, and if not, create a
                 // new variable.
                 if variables

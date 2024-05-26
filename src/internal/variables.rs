@@ -1,5 +1,6 @@
 use core::fmt;
 use custom_error::custom_error;
+use glob::glob;
 use homedir::get_home;
 use pest_consume::Itertools;
 use regex::Regex;
@@ -333,7 +334,7 @@ impl ElviType {
     /// Requires bare string.
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
-            Self::String(le_string) | Self::VariableSubstitution(le_string) => {
+            Self::String(le_string) => {
                 let re = Regex::new(r"^~([a-z_][a-z0-9_]{0,30})").unwrap();
                 let path = PathBuf::from(le_string);
                 // So in POSIX, you can have two (*three) forms:
@@ -509,6 +510,41 @@ impl ElviType {
                     ret_vec.push(woot.get_value().to_string());
                 }
             }
+        }
+        ret_vec
+    }
+
+    /// Expand globs using [`glob()`].
+    ///
+    /// # Notes
+    /// This function will return a list of paths it matches against, but if it does not match
+    /// anything, it will return the literal string that it received.
+    pub fn expand_globs(&self) -> Vec<Self> {
+        let mut ret_vec = vec![];
+        match glob(&self.to_string()) {
+            Ok(paths) => {
+                for patho in paths {
+                    match patho {
+                        Ok(yay) => {
+                            ret_vec.push(ElviType::String(yay.to_str().unwrap().to_string()))
+                        }
+                        Err(boo) => eprintln!("{boo}"),
+                    }
+                }
+                // So because of the [`glob`] library, any path that doesn't match a filesystem
+                // path will be silently skipped, so what we're doing here is checking if that
+                // event happened, and pushing the literal string back, to conform to:
+                // ```shell
+                // for i in /foobar/*; do
+                //   echo "${i}"
+                // done
+                // # Prints: /foobar/*
+                // ```
+                if ret_vec.len() == 0 {
+                    ret_vec.push(ElviType::String(self.to_string()));
+                }
+            }
+            Err(oof) => eprintln!("{oof}"),
         }
         ret_vec
     }
