@@ -494,6 +494,7 @@ impl ElviType {
                 ret_vec.push(process::id().to_string());
             }
             //BUG: Only gives process name, not running script name
+            // How should we get the script name though? Maybe through user_info from pest_consume?
             "0" => {
                 ret_vec.push(
                     std::env::current_exe()

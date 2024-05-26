@@ -47,15 +47,21 @@ fn main() {
         }
     };
 
+    // Check if we can successfully parse the script on first go.
     let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
         Ok(yay) => yay,
         Err(oof) => {
-            eprintln!("{oof}");
+            eprintln!(
+                "{}",
+                oof.with_path(args.group.file.unwrap().to_str().unwrap())
+            );
             std::process::exit(1);
         }
     };
 
+    // Get the only top-level `statement`.
     let raw_parse = raw_parse.single().unwrap();
 
+    // Run it.
     std::process::exit(ElviParser::program(raw_parse).get().into());
 }
