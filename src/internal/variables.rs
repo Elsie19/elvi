@@ -4,7 +4,6 @@ use glob::glob;
 use homedir::get_home;
 use pest_consume::Itertools;
 use regex::Regex;
-use snailquote::unescape;
 use std::{
     collections::HashMap,
     env,
@@ -299,12 +298,11 @@ impl Variable {
 }
 
 impl ElviType {
-    /// Return an escaped string using [`snailquote::unescape`].
+    /// Return an escaped string using [`backslash::escape_ascii`].
     pub fn eval_escapes(&self) -> Self {
         match self {
-            Self::String(le_string) => Self::String(unescape(le_string).unwrap()),
             Self::VariableSubstitution(le_string) => {
-                Self::VariableSubstitution(unescape(le_string).unwrap())
+                Self::VariableSubstitution(backslash::escape_ascii(le_string).unwrap())
             }
             default => default.clone(),
         }

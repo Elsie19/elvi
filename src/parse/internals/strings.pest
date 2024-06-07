@@ -8,4 +8,4 @@ anyString = ${ singleQuoteString | doubleQuoteString }
 // Helper rules
 doubleInner = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ doubleInner)? }
 singleInner = @{ (!("'") ~ ANY)* }
-escape      = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" | "$") }
+escape      = @{ "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t" | "c" | "$") }

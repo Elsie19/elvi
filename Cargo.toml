@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+backslash = "0.2.0"
 clap = { version = "4.5.4", features = ["derive"] }
 custom_error = "1.9.2"
 glob = "0.3.1"
@@ -15,7 +16,6 @@ pest = "2.7.10"
 pest_consume = { git = "https://github.com/Nadrieril/pest_consume.git" }
 pest_derive = { version = "2.7.10", features = ["grammar-extras"] }
 regex = "1.10.4"
-snailquote = "0.3.1"
 
 [profile.release]
 lto = true
