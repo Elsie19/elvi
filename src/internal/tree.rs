@@ -52,6 +52,8 @@ pub struct Conditional {
     pub condition: Actions,
     /// The resulting code that is executed if [`Conditional::condition`] succeeds.
     pub then_block: Vec<Actions>,
+    /// The resulting code that is tested and executed if the condition inside succeeds.
+    pub elif_block: Option<Vec<Conditional>>,
     /// Optional else block if [`Conditional::condition`] fails.
     pub else_block: Option<Vec<Actions>>,
 }

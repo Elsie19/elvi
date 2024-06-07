@@ -289,6 +289,7 @@ impl ElviParser {
             Conditional {
                 condition,
                 then_block: stmt.collect(),
+                elif_block: None,
                 else_block: None
             }
         ),
@@ -298,6 +299,7 @@ impl ElviParser {
                         Conditional {
                             condition,
                             then_block: stmt.collect(),
+                            elif_block: None,
                             else_block: Some(else_part.collect())
                         }
                     ),
