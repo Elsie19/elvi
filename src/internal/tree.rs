@@ -180,7 +180,7 @@ pub fn change_variable(
         }
         ElviType::CommandSubstitution(x) => {
             //TODO: Interpolate the variables if any
-            let cmd_to_run = ExternalCommand::string_to_command(x);
+            let cmd_to_run: ExternalCommand = x.into();
             // Set variable to empty if we can't get the command
             if commands.get_path(&cmd_to_run.cmd).is_none() {
                 eprintln!(

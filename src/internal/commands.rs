@@ -30,6 +30,12 @@ pub struct ExternalCommand {
     pub args: Option<Vec<String>>,
 }
 
+impl From<&String> for ExternalCommand {
+    fn from(value: &String) -> Self {
+        Self::string_to_command(value)
+    }
+}
+
 impl Commands {
     /// Generate a list of commands from a path variable.
     pub fn generate(variables: &Variables) -> Self {
