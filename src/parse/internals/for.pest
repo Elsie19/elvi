@@ -2,6 +2,7 @@
 forLoop = { "for" ~ space+ ~ #variable = elviWord ~ (space+ ~ "in" ~ space+ ~ (#loop_match = forLoopMatch ~ (space+ ~ #loop_match = forLoopMatch)*))? ~ newline+ ~ (space+)? ~ "do" ~ (space+ | newline+) ~ (#inner_for = statement)+ ~ newline+ ~ (space+)? ~ "done" }
 
 forLoopMatch = ${
-    backtickSubstitution
-  | elviWord
+    backtickSubstitution // We do the + here so we can differentiate between "${foo}"/* and "${foo}" /*
+
+  | elviWord+
 }
