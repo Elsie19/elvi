@@ -553,11 +553,12 @@ impl ElviType {
 impl fmt::Display for ElviType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ElviType::String(x) | ElviType::VariableSubstitution(x) => write!(f, "{}", x),
+            ElviType::String(x)
+            | ElviType::VariableSubstitution(x)
+            | ElviType::CommandSubstitution(x) => write!(f, "{}", x),
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
-            ElviType::CommandSubstitution(x) => write!(f, "{x}"),
         }
     }
 }
@@ -573,6 +574,7 @@ impl Default for Variable {
     }
 }
 
+#[derive(Debug, Clone)]
 /// Struct for global arguments
 pub struct Arguments {
     pub args: Vec<String>,

@@ -20,7 +20,7 @@ pub mod internal;
 pub mod parse;
 pub mod user_flags;
 
-use std::fs;
+use std::{env, fs};
 
 use clap::{error::ErrorKind, CommandFactory, Parser as ClapParser};
 use internal::variables::Arguments;
@@ -31,7 +31,7 @@ use user_flags::Args;
 #[doc(hidden)]
 fn main() {
     let args = Args::parse();
-    let unparsed_file = if let Some(input) = args.group.read_from_input {
+    let unparsed_file = if let Some(input) = args.group.read_from_input.clone() {
         input
     } else {
         match fs::read_to_string(args.group.file.as_ref().unwrap()) {
@@ -48,12 +48,23 @@ fn main() {
         }
     };
 
-    let positionals: Arguments = if args.positionals.is_some() {
-        args.positionals.unwrap()
+    let var_zero = if args.group.read_from_input.is_some() {
+        env::current_exe().unwrap().to_str().unwrap().to_string()
     } else {
-        vec![]
+        args.group
+            .file
+            .as_ref()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
+    };
+
+    let mut positionals: Arguments = vec![var_zero].into();
+
+    if args.positionals.is_some() {
+        positionals.args.append(&mut args.positionals.unwrap());
     }
-    .into();
 
     // Check if we can successfully parse the script on first go.
     let raw_parse =

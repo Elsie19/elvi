@@ -347,6 +347,8 @@ impl ElviParser {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
 
+        let positional_arguments = input.user_data();
+
         let mut subshells_in = 1;
 
         for child in input.into_children() {
