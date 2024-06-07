@@ -23,6 +23,7 @@ pub mod user_flags;
 use std::fs;
 
 use clap::{error::ErrorKind, CommandFactory, Parser as ClapParser};
+use internal::variables::Arguments;
 use parse::grammar::{ElviParser, Rule};
 use pest_consume::Parser;
 use user_flags::Args;
@@ -47,17 +48,25 @@ fn main() {
         }
     };
 
+    let positionals: Arguments = if args.positionals.is_some() {
+        args.positionals.unwrap()
+    } else {
+        vec![]
+    }
+    .into();
+
     // Check if we can successfully parse the script on first go.
-    let raw_parse = match ElviParser::parse(Rule::program, &unparsed_file) {
-        Ok(yay) => yay,
-        Err(oof) => {
-            eprintln!(
-                "{}",
-                oof.with_path(args.group.file.unwrap().to_str().unwrap())
-            );
-            std::process::exit(1);
-        }
-    };
+    let raw_parse =
+        match ElviParser::parse_with_userdata(Rule::program, &unparsed_file, &positionals) {
+            Ok(yay) => yay,
+            Err(oof) => {
+                eprintln!(
+                    "{}",
+                    oof.with_path(args.group.file.unwrap().to_str().unwrap())
+                );
+                std::process::exit(1);
+            }
+        };
 
     // Get the only top-level `statement`.
     let raw_parse = raw_parse.single().unwrap();

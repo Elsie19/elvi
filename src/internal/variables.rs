@@ -572,3 +572,14 @@ impl Default for Variable {
         }
     }
 }
+
+/// Struct for global arguments
+pub struct Arguments {
+    pub args: Vec<String>,
+}
+
+impl From<Vec<String>> for Arguments {
+    fn from(value: Vec<String>) -> Self {
+        Self { args: value }
+    }
+}

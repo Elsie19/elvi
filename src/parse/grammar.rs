@@ -2,6 +2,7 @@ use crate::internal::builtins;
 use crate::internal::commands::Commands;
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, Loop, TestOptions};
+use crate::internal::variables::Arguments;
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
 use pest_consume::{match_nodes, Error, Parser};
 
@@ -18,7 +19,7 @@ use pest_consume::{match_nodes, Error, Parser};
 pub struct ElviParser;
 
 type Result<T> = std::result::Result<T, Error<Rule>>;
-type Node<'i> = pest_consume::Node<'i, Rule, ()>;
+type Node<'i, 'a> = pest_consume::Node<'i, Rule, &'a Arguments>;
 
 // This is the other half of the parser, using pest_consume.
 #[pest_consume::parser]

@@ -9,6 +9,9 @@ use clap::Parser;
 pub struct Args {
     #[clap(flatten)]
     pub group: Group,
+
+    /// Positional variables
+    pub positionals: Option<Vec<String>>,
 }
 
 #[derive(Debug, clap::Args)]
