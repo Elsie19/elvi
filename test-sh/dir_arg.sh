@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Check if a directory was provided as an argument
+echo "1 is '${1}'"
 if [ -z "$1" ]; then
     echo "Usage: $0 <directory>"
     exit 1

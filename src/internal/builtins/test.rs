@@ -129,7 +129,7 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             .is_empty()
             .into(),
         TestOptions::StringNonZero(stringo) => {
-            !builtin_test(invert, TestOptions::StringNonZero(stringo), variables)
+            !builtin_test(invert, TestOptions::StringZero(stringo), variables)
         }
         TestOptions::ReadableFileExists(file) => {
             match File::open(file.eval_escapes().eval_variables(variables).to_string()) {
