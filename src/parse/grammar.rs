@@ -92,6 +92,7 @@ impl ElviParser {
             [symbolic_link # elviWord(path)] => TestOptions::SymbolicLinkExists(path),
             [sticky_bit_set # elviWord(path)] => TestOptions::StickyBitSetExists(path),
             [string_nonzero # elviWord(path)] => TestOptions::StringNonZero(path),
+            [string_zero # elviWord(path)] => TestOptions::StringZero(path),
             [named_pipe # elviWord(path)] => TestOptions::NamedPipeExists(path),
             [readable_file # elviWord(path)] => TestOptions::ReadableFileExists(path),
             [greater_than_zero_file # elviWord(path)] => TestOptions::FileExistsGreaterThanZero(path),
