@@ -102,10 +102,10 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
                 .into()
         }
         TestOptions::DirectoryExists(dir) => {
-            fs::metadata(dir.eval_escapes().eval_variables(variables).to_string())
-                .unwrap()
-                .is_dir()
-                .into()
+            match fs::metadata(dir.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(metadata) => metadata.is_dir().into(),
+                Err(_) => false.into(),
+            }
         }
         TestOptions::SymbolicLinkExists(link) => {
             match fs::symlink_metadata(link.eval_escapes().eval_variables(variables).to_string()) {
