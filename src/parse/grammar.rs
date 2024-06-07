@@ -349,6 +349,20 @@ impl ElviParser {
 
         let positional_arguments = input.user_data();
 
+        for (idx, elem) in positional_arguments.args.iter().enumerate() {
+            variables
+                .set_variable(
+                    idx.to_string(),
+                    Variable::oneshot_var(
+                        &ElviType::String(elem.to_string()),
+                        ElviMutable::Normal,
+                        ElviGlobal::Global,
+                        (0, 0),
+                    ),
+                )
+                .unwrap();
+        }
+
         let mut subshells_in = 1;
 
         for child in input.into_children() {
@@ -458,8 +472,8 @@ pub fn eval(
             let mut new_loop_elements = vec![];
             for element in &loop_things.elements {
                 for entry in element
-                    .tilde_expansion(&variables)
-                    .eval_variables(&variables)
+                    .tilde_expansion(variables)
+                    .eval_variables(variables)
                     .expand_globs()
                 {
                     new_loop_elements.push(entry);

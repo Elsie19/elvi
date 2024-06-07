@@ -400,9 +400,7 @@ impl ElviType {
                     // We don't and the caller is an idiot. Congrats: here's your string back to
                     // you. Fuck you.
                     match self {
-                        goopy @ Self::String(_) | goopy @ Self::VariableSubstitution(_) => {
-                            goopy.clone()
-                        }
+                        goopy @ (Self::String(_) | Self::VariableSubstitution(_)) => goopy.clone(),
                         _ => unreachable!(
                             "We already matched above. How did self change? It's immutable????"
                         ),
@@ -540,7 +538,7 @@ impl ElviType {
                 // done
                 // # Prints: /foobar/*
                 // ```
-                if ret_vec.len() == 0 {
+                if ret_vec.is_empty() {
                     ret_vec.push(ElviType::String(self.to_string()));
                 }
             }
