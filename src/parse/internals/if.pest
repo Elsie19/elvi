@@ -1,8 +1,8 @@
 // Main rules
-ifStatement = {
+ifStatement = ${
     "if" ~ space+ ~ ifStatementMatch ~ newline+ ~ (space+)? ~ "then"
         ~ (space+ | newline+) ~ (#then_block = statement)+
-        ~ (newline+ ~ "else" ~ newline+
+        ~ (newline+ ~ (space+)? ~ "else" ~ newline+
         ~ (#else_block = statement)+)? ~ newline+ ~ (space+)? ~ "fi" }
 
 ifStatementMatch = ${
