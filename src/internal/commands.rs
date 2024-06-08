@@ -18,7 +18,7 @@ custom_error! { pub CommandError
 /// Global list of commands.
 pub struct Commands {
     /// Hashmap of the name of a command, and the path to its executable.
-    cmds: HashMap<String, PathBuf>,
+    pub cmds: HashMap<String, PathBuf>,
 }
 
 #[derive(Debug, Clone)]

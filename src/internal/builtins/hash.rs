@@ -22,7 +22,7 @@ pub fn builtin_hash(
             return ReturnCode::ret(ReturnCode::FAILURE);
         }
     } else {
-        for (cmd, patho) in commands.clone().into_iter() {
+        for (cmd, patho) in commands.cmds.iter() {
             println!("{}={}", cmd, patho.display());
         }
     }
