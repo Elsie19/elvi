@@ -293,6 +293,7 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::internal::variables::ElviType;
 
     #[test]
     fn test_file() {
@@ -300,9 +301,7 @@ mod tests {
         assert_eq!(
             builtin_test(
                 false,
-                TestOptions::RegularFileExists(crate::internal::variables::ElviType::String(
-                    "/etc/passwd".into()
-                )),
+                TestOptions::RegularFileExists(ElviType::String("/etc/passwd".into())),
                 &variables
             ),
             true.into()
@@ -315,12 +314,26 @@ mod tests {
         assert_eq!(
             builtin_test(
                 false,
-                TestOptions::FileExistsWritable(crate::internal::variables::ElviType::String(
-                    "/etc/passwd".into()
-                )),
+                TestOptions::FileExistsWritable(ElviType::String("/etc/passwd".into())),
                 &variables
             ),
             false.into()
+        )
+    }
+
+    #[test]
+    fn test_strings_equals() {
+        let variables = Variables::default();
+        assert_eq!(
+            builtin_test(
+                false,
+                TestOptions::String1IsString2((
+                    ElviType::String("foo".into()),
+                    ElviType::String("foo".into()),
+                )),
+                &variables,
+            ),
+            true.into()
         )
     }
 }
