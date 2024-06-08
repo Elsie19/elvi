@@ -492,7 +492,7 @@ pub fn eval(
                             template.get_line(),
                         ),
                     ) {
-                        Ok(_) => {}
+                        Ok(()) => {}
                         Err(e) => {
                             eprintln!("{e}");
                             std::process::exit(ReturnCode::FAILURE.into());
@@ -509,7 +509,7 @@ pub fn eval(
                         ),
                     ).unwrap() /* I'm reasonably confident that this won't fail */;
                 }
-                for act in loop_things.do_block.iter() {
+                for act in &loop_things.do_block {
                     let ret = eval(act.to_owned(), variables, commands, subshells_in);
                     variables.set_ret(ret);
                 }
