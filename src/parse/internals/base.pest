@@ -16,5 +16,5 @@ elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*")+ }
 
 // `program` is comprised of statements.
 statement = {
-    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop)
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop | externalCommand)
 }
