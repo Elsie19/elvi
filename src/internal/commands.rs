@@ -3,6 +3,7 @@ use pest_consume::Itertools;
 use std::{
     collections::{hash_map::IntoIter, HashMap},
     fs,
+    ops::Deref,
     path::PathBuf,
 };
 
@@ -30,12 +31,6 @@ pub struct ExternalCommand {
     pub cmd: String,
     /// Arguments (if any).
     pub args: Option<Vec<String>>,
-}
-
-impl From<&String> for ExternalCommand {
-    fn from(value: &String) -> Self {
-        Self::into(value.into())
-    }
 }
 
 impl Commands {
@@ -81,8 +76,9 @@ impl IntoIterator for Commands {
     }
 }
 
-impl From<&str> for ExternalCommand {
-    fn from(value: &str) -> Self {
+impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
+    fn from(value: &T) -> Self {
+        let value = value as &str;
         let split_up = value.split(' ').collect_vec();
         let cmd = (*split_up.first().unwrap()).to_string();
         if split_up.len() == 1 {
