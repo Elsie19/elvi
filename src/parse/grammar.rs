@@ -445,7 +445,7 @@ pub fn eval(
             }
         },
         Actions::Command(cmd) => {
-            println!("Running command {cmd:?}");
+            todo!("Implement universal command running. Pull from current backticks");
         }
         Actions::Null => {}
         Actions::IfStatement(if_stmt) => {

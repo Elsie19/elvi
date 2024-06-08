@@ -37,6 +37,14 @@ pub enum ElviType {
     /// A type that signifies the need to evaluate variables. This will have to be converted to
     /// [`ElviType::String`] when it is seen. By nature, it has to be a double quoted string.
     VariableSubstitution(String),
+    /// A string that may or may not be needed to expand.
+    ///
+    /// ```bash
+    /// foo
+    /// ${bang}
+    /// $borp
+    /// ```
+    BareString(String),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -335,7 +343,7 @@ impl ElviType {
     /// *never* encounter this, and if you do, you have bigger issues than a panic.
     ///
     /// # Notes
-    /// Requires bare string.
+    /// Requires [`ElviType::String`].
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
             Self::String(le_string) => {
@@ -380,7 +388,7 @@ impl ElviType {
                             None => match self {
                                 // We should return the literal path they provided
                                 Self::String(_) => {
-                                    return Self::String(path.to_str().unwrap().to_string())
+                                    return Self::String(path.to_str().unwrap().to_string());
                                 }
                                 Self::VariableSubstitution(_) => {
                                     return Self::VariableSubstitution(
@@ -545,7 +553,8 @@ impl fmt::Display for ElviType {
         match self {
             ElviType::String(x)
             | ElviType::VariableSubstitution(x)
-            | ElviType::CommandSubstitution(x) => write!(f, "{}", x),
+            | ElviType::CommandSubstitution(x)
+            | ElviType::BareString(x) => write!(f, "{}", x),
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
