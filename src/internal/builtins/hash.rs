@@ -23,7 +23,7 @@ pub fn builtin_hash(
         }
     } else {
         for (cmd, patho) in commands.clone().into_iter() {
-            println!("{}={}", cmd, patho.into_os_string().to_str().unwrap());
+            println!("{}={}", cmd, patho.display());
         }
     }
     ReturnCode::ret(ReturnCode::SUCCESS)
