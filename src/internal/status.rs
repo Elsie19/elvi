@@ -30,11 +30,19 @@ impl ReturnCode {
     pub fn invert(self, invert: bool) -> Self {
         if invert {
             Self {
-                val: if self.val == 0 { 1 } else { 0 },
+                val: if self.val == Self::SUCCESS {
+                    Self::FAILURE
+                } else {
+                    Self::SUCCESS
+                },
             }
         } else {
             Self {
-                val: if self.val == 0 { 0 } else { 1 },
+                val: if self.val == Self::SUCCESS {
+                    Self::SUCCESS
+                } else {
+                    Self::FAILURE
+                },
             }
         }
     }
