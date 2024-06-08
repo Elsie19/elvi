@@ -509,8 +509,8 @@ pub fn eval(
                         ),
                     ).unwrap() /* I'm reasonably confident that this won't fail */;
                 }
-                for act in &loop_things.do_block {
-                    let ret = eval(act.clone(), variables, commands, subshells_in);
+                for act in loop_things.do_block.iter() {
+                    let ret = eval(act.to_owned(), variables, commands, subshells_in);
                     variables.set_ret(ret);
                 }
             }
