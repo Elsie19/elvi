@@ -29,9 +29,13 @@ impl ReturnCode {
     /// `false` will not invert.
     pub fn invert(self, invert: bool) -> Self {
         if invert {
-            Self { val: !self.val }
+            Self {
+                val: if self.val == 0 { 1 } else { 0 },
+            }
         } else {
-            Self { val: self.val }
+            Self {
+                val: if self.val == 0 { 0 } else { 1 },
+            }
         }
     }
 
@@ -47,8 +51,11 @@ impl ReturnCode {
     pub const FAILURE: u16 = 1;
     /// Misuse of a builtin shall return 2.
     pub const MISUSE: u16 = 2;
+    /// A script cannot be executed due to permission errors.
+    pub const PERMISSION_DENIED: u16 = 126;
     /// A command not found in PATH that is called shall return 127.
     pub const COMMAND_NOT_FOUND: u16 = 127;
+    /// When ctrl-C is called on a script.
     pub const CTRL_C: u16 = 130;
 }
 

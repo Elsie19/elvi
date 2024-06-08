@@ -350,6 +350,7 @@ impl ElviParser {
 
         let positional_arguments = input.user_data();
 
+        // Set all the positional variables once.
         for (idx, elem) in positional_arguments.args.iter().enumerate() {
             variables
                 .set_variable(
@@ -380,12 +381,7 @@ impl ElviParser {
             }
         }
 
-        let ret_value = match variables.get_variable("?").unwrap().get_value() {
-            ElviType::ErrExitCode(x) => *x,
-            _ => unreachable!("How is $? defined as anything but ErrExitCode?????"),
-        };
-
-        ReturnCode::ret(ret_value)
+        ReturnCode::ret(variables.get_ret().convert_err_type().get())
     }
 }
 
@@ -420,7 +416,7 @@ pub fn eval(
             Builtins::Hash(mut flag) => {
                 // Let's just eval possible vars
                 if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_variables(variables));
+                    flag = Some(flag.unwrap().eval_escapes().eval_variables(variables));
                 }
                 let ret = builtins::hash::builtin_hash(flag, commands, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
@@ -428,7 +424,7 @@ pub fn eval(
             Builtins::Cd(mut flag) => {
                 // Let's just eval possible vars
                 if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_variables(variables));
+                    flag = Some(flag.unwrap().eval_escapes().eval_variables(variables));
                 }
                 let ret = builtins::cd::builtin_cd(flag, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
@@ -450,14 +446,7 @@ pub fn eval(
             // Run the condition
             eval(if_stmt.condition, variables, commands, subshells_in);
             // Did we succeed?
-            if variables
-                .get_variable("?")
-                .unwrap()
-                .get_value()
-                .convert_err_type()
-                .get()
-                == ReturnCode::SUCCESS
-            {
+            if variables.get_ret().convert_err_type().get() == ReturnCode::SUCCESS {
                 for act in if_stmt.then_block {
                     let ret = eval(act, variables, commands, subshells_in);
                     variables.set_ret(ret);
@@ -502,7 +491,7 @@ pub fn eval(
                         Ok(_) => {}
                         Err(e) => {
                             eprintln!("{e}");
-                            std::process::exit(1);
+                            std::process::exit(ReturnCode::FAILURE.into());
                         }
                     }
                 } else {
@@ -523,11 +512,7 @@ pub fn eval(
             }
         }
     }
-    let ret_value = match variables.get_variable("?").unwrap().get_value() {
-        ElviType::ErrExitCode(x) => *x,
-        _ => unreachable!("How is $? defined as anything but ErrExitCode?????"),
-    };
-    ReturnCode::ret(ret_value)
+    ReturnCode::ret(variables.get_ret().convert_err_type().get())
 }
 
 #[cfg(test)]

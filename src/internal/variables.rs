@@ -138,6 +138,12 @@ impl Variables {
         );
     }
 
+    /// Quick function to pull `$?`.
+    pub fn get_ret(&self) -> ElviType {
+        // This cannot fail on unwrap unless something awful happened.
+        self.vars.get("?").unwrap().get_value().to_owned()
+    }
+
     /// Set a given variable.
     ///
     /// # Errors
@@ -386,7 +392,7 @@ impl ElviType {
                         },
                         Err(oof) => panic!("Could not obtain this home directory LMAO {oof}"),
                     };
-                    let final_cd = user_path.join(path.strip_prefix(format!("~{}", user)).unwrap());
+                    let final_cd = user_path.join(path.strip_prefix(format!("~{user}")).unwrap());
                     match self {
                         Self::String(_) => Self::String(final_cd.to_str().unwrap().to_string()),
                         Self::VariableSubstitution(_) => {
@@ -510,7 +516,7 @@ impl ElviType {
                 for patho in paths {
                     match patho {
                         Ok(yay) => {
-                            ret_vec.push(ElviType::String(yay.to_str().unwrap().to_string()))
+                            ret_vec.push(ElviType::String(yay.to_str().unwrap().to_string()));
                         }
                         Err(boo) => eprintln!("{boo}"),
                     }
@@ -550,7 +556,7 @@ impl fmt::Display for ElviType {
 impl Default for Variable {
     fn default() -> Self {
         Self {
-            contents: ElviType::String(String::from("")),
+            contents: ElviType::String(String::new()),
             modification_status: ElviMutable::Normal,
             shell_lvl: ElviGlobal::Global,
             line: (0, 0),

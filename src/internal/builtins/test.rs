@@ -103,8 +103,8 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
         }
         TestOptions::DirectoryExists(dir) => {
             match fs::metadata(dir.eval_escapes().eval_variables(variables).to_string()) {
-                Ok(metadata) => !metadata.is_dir(),
-                Err(_) => !false,
+                Ok(metadata) => metadata.is_dir(),
+                Err(_) => false,
             }
             .into()
         }
@@ -138,7 +138,7 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
                     // Let's read *1* byte
                     let mut buffer = [0; 1];
                     match file_p.read_exact(&mut buffer) {
-                        Ok(_) => true.into(),
+                        Ok(()) => true.into(),
                         Err(_) => false.into(),
                     }
                 }
@@ -235,16 +235,8 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             }
         }
         TestOptions::File1NewerThanFile2((f1, f2)) => {
-            let f1_meta =
-                match fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) {
-                    Ok(yay) => yay,
-                    Err(_) => return false.into(),
-                };
-            let f2_meta =
-                match fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) {
-                    Ok(yay) => yay,
-                    Err(_) => return false.into(),
-                };
+            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
+            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
             (f1_meta.modified().unwrap() > f2_meta.modified().unwrap()).into()
         }
         TestOptions::File1OlderThanFile2((f1, f2)) => !builtin_test(
@@ -253,16 +245,8 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             variables,
         ),
         TestOptions::File1SameAsFile2((f1, f2)) => {
-            let f1_meta =
-                match fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) {
-                    Ok(yay) => yay,
-                    Err(_) => return false.into(),
-                };
-            let f2_meta =
-                match fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) {
-                    Ok(yay) => yay,
-                    Err(_) => return false.into(),
-                };
+            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
+            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
             (f1_meta.ino() == f2_meta.ino()).into()
         }
         TestOptions::StringNotNull(_foo) => todo!(),
@@ -332,6 +316,32 @@ mod tests {
                     ElviType::String("foo".into()),
                 )),
                 &variables,
+            ),
+            true.into()
+        )
+    }
+
+    #[test]
+    fn directory_exists() {
+        let variables = Variables::default();
+        assert_eq!(
+            builtin_test(
+                false,
+                TestOptions::DirectoryExists(ElviType::String("/etc/".into())),
+                &variables
+            ),
+            true.into()
+        )
+    }
+
+    #[test]
+    fn directory_not_exists() {
+        let variables = Variables::default();
+        assert_eq!(
+            builtin_test(
+                true,
+                TestOptions::DirectoryExists(ElviType::String("/not_exists/".into())),
+                &variables
             ),
             true.into()
         )

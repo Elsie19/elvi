@@ -23,7 +23,7 @@ pub mod user_flags;
 use std::{env, fs};
 
 use clap::{error::ErrorKind, CommandFactory, Parser as ClapParser};
-use internal::variables::Arguments;
+use internal::{status::ReturnCode, variables::Arguments};
 use parse::grammar::{ElviParser, Rule};
 use pest_consume::Parser;
 use user_flags::Args;
@@ -46,6 +46,12 @@ fn main() {
                 )
                 .exit(),
         }
+    };
+
+    let file = if let Some(ref v) = args.group.file {
+        v.to_str().unwrap()
+    } else {
+        "stdin"
     };
 
     let var_zero = if args.group.read_from_input.is_some() {
@@ -71,11 +77,8 @@ fn main() {
         match ElviParser::parse_with_userdata(Rule::program, &unparsed_file, &positionals) {
             Ok(yay) => yay,
             Err(oof) => {
-                eprintln!(
-                    "{}",
-                    oof.with_path(args.group.file.unwrap().to_str().unwrap())
-                );
-                std::process::exit(1);
+                eprintln!("{}", oof.with_path(file));
+                std::process::exit(ReturnCode::MISUSE.into());
             }
         };
 
