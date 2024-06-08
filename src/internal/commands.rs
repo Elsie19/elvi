@@ -8,10 +8,10 @@ use std::{
 
 use super::variables::{ElviType, Variables};
 
-custom_error! {pub CommandError
-    NotFound{name:String} = "elvi: {name}: not found",
-    SubCommandNotFound{name:String, cmd:String} = "elvi: {name}: {cmd}: not found",
-    CannotCd{name:String, path:String} = "elvi: {name}: can't cd to {path}",
+custom_error! { pub CommandError
+    NotFound {name: String} = "elvi: {name}: not found",
+    SubCommandNotFound {name: &'static str, cmd: String} = "elvi: {name}: {cmd}: not found",
+    CannotCd {name: String, path: String} = "elvi: {name}: can't cd to {path}",
 }
 
 #[derive(Debug, Clone)]
@@ -32,7 +32,7 @@ pub struct ExternalCommand {
 
 impl From<&String> for ExternalCommand {
     fn from(value: &String) -> Self {
-        Self::string_to_command(value)
+        Self::into(value.into())
     }
 }
 
@@ -79,18 +79,9 @@ impl IntoIterator for Commands {
     }
 }
 
-impl ExternalCommand {
-    /// Convert a string into an [`ExternalCommand`].
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// # use ExternalCommand;
-    /// let cmd = ExternalCommand::string_to_command("ls -l /");
-    /// let cmd_without_args = ExternalCommand::string_to_command("touch");
-    /// ```
-    pub fn string_to_command(cmd: &str) -> Self {
-        let split_up = cmd.split(' ').collect_vec();
+impl From<&str> for ExternalCommand {
+    fn from(value: &str) -> Self {
+        let split_up = value.split(' ').collect_vec();
         let cmd = (*split_up.first().unwrap()).to_string();
         if split_up.len() == 1 {
             Self { cmd, args: None }

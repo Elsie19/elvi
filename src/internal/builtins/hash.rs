@@ -15,7 +15,7 @@ pub fn builtin_hash(
             eprintln!(
                 "{}",
                 CommandError::SubCommandNotFound {
-                    name: "hash".to_string(),
+                    name: "hash",
                     cmd: flag.unwrap().to_string(),
                 }
             );
@@ -23,7 +23,7 @@ pub fn builtin_hash(
         }
     } else {
         for (cmd, patho) in commands.clone().into_iter() {
-            println!("{}={}", cmd, patho.into_os_string().into_string().unwrap());
+            println!("{}={}", cmd, patho.into_os_string().to_str().unwrap());
         }
     }
     ReturnCode::ret(ReturnCode::SUCCESS)

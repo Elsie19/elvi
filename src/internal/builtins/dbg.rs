@@ -10,7 +10,7 @@ pub fn builtin_dbg(name: &str, variables: &mut Variables) -> ReturnCode {
             "{}",
             VariableError::NoSuchVariable {
                 name: name.to_string(),
-                caller: "dbg".to_string()
+                caller: "dbg"
             }
         );
         return ReturnCode::ret(ReturnCode::FAILURE);

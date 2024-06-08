@@ -14,9 +14,9 @@ use std::{
 use super::status::ReturnCode;
 
 custom_error! {pub VariableError
-    Readonly{name:String, line:usize, column:usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')",
-    IllegalNumber{name:String, caller:String} = "elvi: {caller}: Illegal number: {name})",
-    NoSuchVariable{name:String, caller:String} = "{caller}: no such variable: {name})",
+    Readonly {name: String, line: usize, column: usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')",
+    IllegalNumber {name: String, caller: &'static str} = "elvi: {caller}: Illegal number: {name})",
+    NoSuchVariable {name: String, caller: &'static str} = "{caller}: no such variable: {name})",
 }
 
 #[derive(Debug, Clone, PartialEq)]

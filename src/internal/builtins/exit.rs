@@ -19,7 +19,7 @@ pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
                     "{}",
                     VariableError::IllegalNumber {
                         name: yo.to_string(),
-                        caller: "exit".to_string()
+                        caller: "exit"
                     }
                 );
                 ReturnCode::ret(ReturnCode::MISUSE)
