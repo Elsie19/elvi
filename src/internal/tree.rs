@@ -17,7 +17,7 @@ pub enum Actions {
     /// Execute a builtin.
     Builtin(Builtins),
     /// Run a command.
-    Command(Vec<String>),
+    Command(Vec<ElviType>),
     /// If statement
     IfStatement(Box<Conditional>),
     /// For loop

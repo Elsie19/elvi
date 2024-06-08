@@ -21,6 +21,8 @@ pub struct Commands {
     pub cmds: HashMap<String, PathBuf>,
 }
 
+/// According to
+/// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01>
 #[derive(Debug, Clone)]
 /// Struct to make handling external commands easier.
 pub struct ExternalCommand {

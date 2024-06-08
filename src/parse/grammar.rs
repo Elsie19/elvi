@@ -277,7 +277,9 @@ impl ElviParser {
 
     /// Handles any external command.
     pub fn externalCommand(input: Node) -> Result<Actions> {
-        Ok(Actions::Command(vec!["dbgbar".to_string()]))
+        Ok(match_nodes!(input.into_children();
+            [elviWord(yep)..] => Actions::Command(yep.collect()),
+        ))
     }
 
     /// Handles if statement conditions
@@ -341,7 +343,7 @@ impl ElviParser {
                 Ok(Actions::ChangeVariable(var))
             },
             [builtinWrapper(var)] => Ok(var),
-            // [externalCommand(var)] => Ok(var),
+            [externalCommand(var)] => Ok(var),
             [ifStatement(stmt)] => Ok(stmt),
             [forLoop(stmt)] => Ok(stmt),
         )
