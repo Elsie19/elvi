@@ -89,13 +89,13 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
                 .parse::<usize>()
                 .unwrap())
         .into(),
-        TestOptions::RegularFileExists(file) => match fs::metadata(Path::new(
-            &file.eval_escapes().eval_variables(variables).to_string(),
-        )) {
-            Ok(metadata) => metadata.is_file(),
-            Err(_) => false,
+        TestOptions::RegularFileExists(file) => {
+            match fs::metadata(file.eval_escapes().eval_variables(variables).to_string()) {
+                Ok(metadata) => metadata.is_file(),
+                Err(_) => false,
+            }
+            .into()
         }
-        .into(),
         TestOptions::AnyFileExists(file) => {
             (Path::new(&file.eval_escapes().eval_variables(variables).to_string()))
                 .exists()
@@ -103,9 +103,10 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
         }
         TestOptions::DirectoryExists(dir) => {
             match fs::metadata(dir.eval_escapes().eval_variables(variables).to_string()) {
-                Ok(metadata) => metadata.is_dir().into(),
-                Err(_) => false.into(),
+                Ok(metadata) => !metadata.is_dir(),
+                Err(_) => !false,
             }
+            .into()
         }
         TestOptions::SymbolicLinkExists(link) => {
             match fs::symlink_metadata(link.eval_escapes().eval_variables(variables).to_string()) {

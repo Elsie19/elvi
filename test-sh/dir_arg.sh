@@ -16,7 +16,7 @@ if [ ! -d "$DIRECTORY" ]; then
 fi
 
 # Loop through all the files in the directory
-for FILE in "$DIRECTORY"; do
+for FILE in "$DIRECTORY"/*; do
     if [ -f "$FILE" ]; then
         echo "$FILE is a regular file."
     else
