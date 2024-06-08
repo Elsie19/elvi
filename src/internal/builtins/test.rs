@@ -271,7 +271,11 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             (gid == current_gid).into()
         }
     };
-    ret.invert(invert)
+    if invert {
+        !ret
+    } else {
+        ret
+    }
 }
 
 #[cfg(test)]

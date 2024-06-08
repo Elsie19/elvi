@@ -5,9 +5,10 @@ builtinExit  = !{ "exit" ~ space? ~ (elviWord | elviNumber)? }
 builtinHash  = !{ "hash" ~ space? ~ elviWord? }
 builtinCd    = !{ "cd" ~ space? ~ elviWord? }
 // TODO: Add commands to `builtinTest` and also `-a` and `-o`
-builtinTest = !{ ("[" ~ space+ ~ (#invert = "!" ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]") | ("test" ~ space+ ~ (builtinTestPrimaries | builtinTestComparisons)) }
+builtinTest = !{ ("[" ~ space+ ~ (builtinTestInvert ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]") | ("test" ~ space+ ~ (builtinTestInvert ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons)) }
 builtinEcho = !{ "echo" ~ space? ~ (elviWord+)? }
 
+builtinTestInvert    = { #invert = "!" }
 builtinTestPrimaries = {
     #block = ("-b" ~ space+ ~ elviWord)
   | #character_special = ("-c" ~ space+ ~ elviWord)

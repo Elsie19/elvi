@@ -120,11 +120,15 @@ impl ElviParser {
         ))
     }
 
+    pub fn builtinTestInvert(_input: Node) -> Result<bool> {
+        Ok(true)
+    }
+
     /// Handles the builtin `test`.
     pub fn builtinTest(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinTestComparisons(results)] | [builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(false, results)),
-            [invert # builtinTestComparisons(results)] | [invert # builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(true, results)),
+            [builtinTestInvert(_char), builtinTestComparisons(results)] | [builtinTestInvert(_char), builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(true, results)),
         ))
     }
 
