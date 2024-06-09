@@ -445,6 +445,15 @@ pub fn eval(
             }
         },
         Actions::Command(cmd) => {
+            let mut expanded = vec![];
+            for part in cmd {
+                expanded.push(
+                    part.tilde_expansion(variables)
+                        .eval_escapes()
+                        .eval_variables(variables),
+                )
+            }
+            println!("Running {:?}", expanded);
             todo!("Implement universal command running. Pull from current backticks");
         }
         Actions::Null => {}

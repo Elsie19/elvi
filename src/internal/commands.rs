@@ -4,15 +4,21 @@ use std::{
     collections::{hash_map::IntoIter, HashMap},
     fs,
     ops::Deref,
+    os::unix::fs::PermissionsExt,
     path::PathBuf,
+    process::Command,
 };
 
-use super::variables::{ElviType, Variables};
+use super::{
+    status::ReturnCode,
+    variables::{ElviType, Variables},
+};
 
 custom_error! { pub CommandError
     NotFound {name: String} = "elvi: {name}: not found",
     SubCommandNotFound {name: &'static str, cmd: String} = "elvi: {name}: {cmd}: not found",
     CannotCd {name: String, path: String} = "elvi: {name}: can't cd to {path}",
+    PermissionDenied {path: String} = "elvi: {path}: Permission denied",
 }
 
 #[derive(Debug, Clone)]
@@ -22,13 +28,14 @@ pub struct Commands {
     pub cmds: HashMap<String, PathBuf>,
 }
 
-/// According to
-/// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01>
 #[derive(Debug, Clone)]
 /// Struct to make handling external commands easier.
+///
+/// According to
+/// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_01>
 pub struct ExternalCommand {
     /// Command name.
-    pub cmd: String,
+    pub cmd: PathBuf,
     /// Arguments (if any).
     pub args: Option<Vec<String>>,
 }
@@ -76,18 +83,145 @@ impl IntoIterator for Commands {
     }
 }
 
+/// Turn anything that can turn into a str into an ExternalCommand.
 impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
     fn from(value: &T) -> Self {
         let value = value as &str;
         let split_up = value.split(' ').collect_vec();
         let cmd = (*split_up.first().unwrap()).to_string();
         if split_up.len() == 1 {
-            Self { cmd, args: None }
+            Self {
+                cmd: cmd.into(),
+                args: None,
+            }
         } else {
             Self {
-                cmd,
+                cmd: cmd.into(),
                 args: Some(split_up.iter().skip(1).map(|s| (*s).to_string()).collect()),
             }
         }
+    }
+}
+
+#[derive(Debug)]
+/// Contains the output and return code of a command.
+pub struct CmdReturn {
+    pub ret: ReturnCode,
+    pub stdout: Vec<u8>,
+    pub stderr: Vec<u8>,
+}
+
+impl Default for CmdReturn {
+    fn default() -> Self {
+        Self {
+            ret: ReturnCode::ret(0),
+            stderr: vec![],
+            stdout: vec![],
+        }
+    }
+}
+
+/// Execute a given command.
+///
+/// # Notes
+/// Everything should be eval'ed and expanded before using this function.
+pub fn execute_external_command(
+    cmd: ExternalCommand,
+    variables: &Variables,
+    commands: &Commands,
+) -> CmdReturn {
+    let mut cmd_to_run = PathBuf::new();
+    // First of all, we have 3 choices of how a command can be run:
+    // 1. `foo` with PATH
+    // 2. `./foo` | `~tilde/foo` locally
+    // 3. `/bin/foo` with qualified path
+    // We accomplish this with
+    // <https://doc.rust-lang.org/std/path/struct.PathBuf.html#method.is_absolute>
+
+    // We can skip all the PATH checking if the user passed a qualified path.
+    //BUG: Does not handle tilde paths yet.
+    if cmd.cmd.is_absolute() || cmd.cmd.starts_with("./") {
+        if !cmd.cmd.exists() {
+            return CmdReturn {
+                ret: ReturnCode::COMMAND_NOT_FOUND.into(),
+                stdout: vec![],
+                stderr: format!(
+                    "{}",
+                    CommandError::NotFound {
+                        name: cmd.cmd.display().to_string()
+                    }
+                )
+                .into(),
+            };
+        // Is some silly goose trying to execute a directory or is not executable.
+        } else if cmd.cmd.is_dir() || cmd.cmd.metadata().unwrap().permissions().mode() & 0o111 == 0
+        {
+            return CmdReturn {
+                ret: ReturnCode::PERMISSION_DENIED.into(),
+                stdout: vec![],
+                stderr: format!(
+                    "{}",
+                    CommandError::PermissionDenied {
+                        path: cmd.cmd.display().to_string()
+                    }
+                )
+                .into(),
+            };
+        }
+
+        cmd_to_run = cmd.cmd;
+    // This means we have a normal path that we need PATH to get
+    } else {
+        cmd_to_run = if let Some(v) = commands.get_path(cmd.cmd.to_str().unwrap()) {
+            v
+        } else {
+            return CmdReturn {
+                ret: ReturnCode::COMMAND_NOT_FOUND.into(),
+                stdout: vec![],
+                stderr: format!(
+                    "{}",
+                    CommandError::NotFound {
+                        name: cmd.cmd.display().to_string()
+                    }
+                )
+                .into(),
+            };
+        };
+    }
+
+    // Now that we have our path to the binary, let's get rolling on running it.
+    // Firstly, we need to prepare our environmental variables.
+    let filtered_env = variables.get_environmentals();
+    // Huzzah! Now this is where the magic happens, and it is very confusing, but basically:
+    //
+    // 1. Create command that takes our full path because we have already calculated it by PATH.
+    // 2. Clear environment.
+    // 3. Insert our own.
+    // 4. Set current directory based on PWD.
+    let cmd = Command::new(cmd_to_run)
+        .args(if cmd.args.is_none() {
+            vec![]
+        } else {
+            cmd.args.unwrap()
+        })
+        .env_clear()
+        .current_dir(
+            variables
+                .get_variable("PWD")
+                .unwrap()
+                .get_value()
+                .to_string(),
+        )
+        .envs(filtered_env)
+        .output()
+        .expect("Oops");
+
+    CmdReturn {
+        ret: match cmd.status.code() {
+            Some(code) => code.into(),
+            None => unimplemented!("Something something signals"),
+        },
+        stdout: cmd.stdout,
+        stderr: cmd.stderr,
     }
 }

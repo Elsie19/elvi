@@ -95,6 +95,13 @@ impl From<u16> for ReturnCode {
     }
 }
 
+impl From<i32> for ReturnCode {
+    fn from(value: i32) -> Self {
+        // Reasonably sure this won't matter, I don't care about it losing bits from the top.
+        Self { val: value as u16 }
+    }
+}
+
 impl std::ops::Not for ReturnCode {
     type Output = Self;
 

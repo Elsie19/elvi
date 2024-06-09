@@ -4,6 +4,7 @@ use std::{io, process::Command};
 use crate::internal::commands::CommandError;
 use crate::internal::status::ReturnCode;
 
+use super::commands::execute_external_command;
 use super::{
     commands::{Commands, ExternalCommand},
     variables::{ElviGlobal, ElviType, Variable, Variables},
@@ -182,18 +183,15 @@ pub fn change_variable(
             //TODO: Interpolate the variables if any
             let cmd_to_run: ExternalCommand = x.into();
             // Set variable to empty if we can't get the command
-            if commands.get_path(&cmd_to_run.cmd).is_none() {
-                eprintln!(
-                    "{}",
-                    CommandError::NotFound {
-                        name: cmd_to_run.cmd,
-                    }
-                );
+            let retty = execute_external_command(cmd_to_run, variables, commands);
+            if retty.ret == ReturnCode::PERMISSION_DENIED.into()
+                || retty.ret == ReturnCode::COMMAND_NOT_FOUND.into()
+            {
                 if var.get_lvl() != ElviGlobal::Global {
                     var.change_lvl(lvl);
                 }
                 match variables.set_variable(
-                    name,
+                    name.clone(),
                     Variable::oneshot_var(
                         &ElviType::String(String::new()),
                         var.get_modification_status(),
@@ -204,56 +202,28 @@ pub fn change_variable(
                     Ok(()) => {}
                     Err(oops) => eprintln!("{oops}"),
                 }
-            } else {
-                // Let's get our environmental variables ready
-                let filtered_env = variables.get_environmentals();
-                // Full path, this is important as we don't want Command::new()
-                // to be fooling around with it's own PATH, even though we
-                // override it.
-                let patho = commands.get_path(&cmd_to_run.cmd).unwrap();
-                // This is a doozy but what we're doing is creating a command that takes the full
-                // path to our program, clears it's own environment, inserts ours, set's the
-                // current directory to ours as well.
-                let cmd = Command::new(patho.to_str().unwrap())
-                    .args(if cmd_to_run.args.is_none() {
-                        vec![]
-                    } else {
-                        cmd_to_run.args.unwrap()
-                    })
-                    .env_clear()
-                    .current_dir(
-                        variables
-                            .get_variable("PWD")
-                            .unwrap()
-                            .get_value()
-                            .to_string(),
-                    )
-                    .envs(filtered_env)
-                    .output()
-                    .expect("oops");
-
-                if !cmd.stderr.is_empty() {
-                    io::stderr().write_all(&cmd.stderr).unwrap();
-                }
-                match variables.set_variable(
-                    name,
-                    var.change_contents(ElviType::String(
-                        // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
-                        // assignment if it comes up.
-                        std::str::from_utf8(&cmd.stdout)
-                            .unwrap()
-                            // This is to conform to
-                            // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,
-                            // specifically the part about trailing newlines deleted. This is from
-                            // the bash manual but it is the same in POSIX, I've checked.
-                            .trim_end_matches('\n')
-                            .to_string(),
-                    ))
-                    .clone(),
-                ) {
-                    Ok(()) => {}
-                    Err(oops) => eprintln!("{oops}"),
-                }
+            }
+            if !retty.stderr.is_empty() {
+                io::stderr().write_all(&retty.stderr).unwrap();
+            }
+            match variables.set_variable(
+                name,
+                var.change_contents(ElviType::String(
+                    // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
+                    // assignment if it comes up.
+                    std::str::from_utf8(&retty.stdout)
+                        .unwrap()
+                        // This is to conform to
+                        // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,
+                        // specifically the part about trailing newlines deleted. This is from
+                        // the bash manual but it is the same in POSIX, I've checked.
+                        .trim_end_matches('\n')
+                        .to_string(),
+                ))
+                .clone(),
+            ) {
+                Ok(()) => {}
+                Err(oops) => eprintln!("{oops}"),
             }
         }
         _ => unimplemented!("Give me a break please"),
