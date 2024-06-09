@@ -200,7 +200,7 @@ pub fn execute_external_command(
     // 2. Clear environment.
     // 3. Insert our own.
     // 4. Set current directory based on PWD.
-    let bitch = Command::new("foo");
+    let bitch = Command::new("");
     let mut binding = Command::new(cmd_to_run);
     let bruh = binding
         .args(if cmd.args.is_none() {
