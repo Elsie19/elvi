@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
-use crate::internal::errors::CommandError;
+use crate::internal::errors::{CommandError, ElviError};
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::{ElviType, Variable, Variables};
 
@@ -33,7 +33,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                 .to_string()
         )
         .is_ok());
-        return ReturnCode::ret(ReturnCode::SUCCESS);
+        return ReturnCode::SUCCESS.into();
     }
     // Atp we know we got something, so let's check if it's `-` or a path.
     match flag.unwrap().to_string().as_str() {
@@ -59,7 +59,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                     .to_string()
             )
             .is_ok());
-            ReturnCode::ret(ReturnCode::SUCCESS)
+            ReturnCode::SUCCESS.into()
         }
         patho => {
             let to_cd = PathBuf::from(
@@ -68,24 +68,20 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                     .to_string(),
             );
             if !to_cd.exists() {
-                eprintln!(
-                    "{}",
-                    CommandError::CannotCd {
-                        name: "cd".to_string(),
-                        path: to_cd.to_str().unwrap().to_string()
-                    }
-                );
-                return ReturnCode::ret(ReturnCode::MISUSE);
+                let err = CommandError::CannotCd {
+                    name: "cd".to_string(),
+                    path: to_cd.to_str().unwrap().to_string(),
+                };
+                eprintln!("{err}");
+                return err.ret();
             }
             if fs::read_dir(to_cd.to_str().unwrap()).is_err() {
-                eprintln!(
-                    "{}",
-                    CommandError::CannotCd {
-                        name: "cd".to_string(),
-                        path: to_cd.to_str().unwrap().to_string()
-                    }
-                );
-                return ReturnCode::ret(ReturnCode::MISUSE);
+                let err = CommandError::CannotCd {
+                    name: "cd".to_string(),
+                    path: to_cd.to_str().unwrap().to_string(),
+                };
+                eprintln!("{err}");
+                return err.ret();
             }
             // Ok so the path exists, time to roll.
             match variables.set_variable(
@@ -108,7 +104,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
                 Err(oops) => eprintln!("{oops}"),
             }
             assert!(env::set_current_dir(to_cd).is_ok());
-            ReturnCode::ret(ReturnCode::SUCCESS)
+            ReturnCode::SUCCESS.into()
         }
     }
 }

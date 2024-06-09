@@ -6,7 +6,7 @@ pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> Retur
     let mut to_print = vec![];
     if text.is_none() {
         println!();
-        return ReturnCode::ret(ReturnCode::SUCCESS);
+        return ReturnCode::SUCCESS.into();
     }
     for part in text.unwrap() {
         to_print.push(
@@ -17,5 +17,5 @@ pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> Retur
         );
     }
     println!("{}", to_print.join(" "));
-    ReturnCode::ret(ReturnCode::SUCCESS)
+    ReturnCode::SUCCESS.into()
 }

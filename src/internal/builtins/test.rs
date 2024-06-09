@@ -235,8 +235,14 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             }
         }
         TestOptions::File1NewerThanFile2((f1, f2)) => {
-            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
-            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
+            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string())
+            else {
+                return false.into();
+            };
+            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string())
+            else {
+                return false.into();
+            };
             (f1_meta.modified().unwrap() > f2_meta.modified().unwrap()).into()
         }
         TestOptions::File1OlderThanFile2((f1, f2)) => !builtin_test(
@@ -245,8 +251,14 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             variables,
         ),
         TestOptions::File1SameAsFile2((f1, f2)) => {
-            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
-            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string()) else { return false.into() };
+            let Ok(f1_meta) = fs::metadata(f1.eval_escapes().eval_variables(variables).to_string())
+            else {
+                return false.into();
+            };
+            let Ok(f2_meta) = fs::metadata(f2.eval_escapes().eval_variables(variables).to_string())
+            else {
+                return false.into();
+            };
             (f1_meta.ino() == f2_meta.ino()).into()
         }
         TestOptions::StringNotNull(_foo) => todo!(),

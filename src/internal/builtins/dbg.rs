@@ -1,3 +1,4 @@
+use crate::internal::errors::ElviError;
 use crate::internal::errors::VariableError;
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::ElviMutable;
@@ -6,14 +7,12 @@ use crate::internal::variables::Variables;
 /// The internal code that runs when the `dbg` builtin is run.
 pub fn builtin_dbg(name: &str, variables: &mut Variables) -> ReturnCode {
     let Some(var) = variables.get_variable(name) else {
-        eprintln!(
-            "{}",
-            VariableError::NoSuchVariable {
-                name: name.to_string(),
-                caller: "dbg"
-            }
-        );
-        return ReturnCode::ret(ReturnCode::FAILURE);
+        let err = VariableError::NoSuchVariable {
+            name: name.to_string(),
+            caller: "dbg",
+        };
+        eprintln!("{err}");
+        return err.ret();
     };
     match var.get_modification_status() {
         ElviMutable::Normal => println!("{}={:?}", name, var.get_value()),
@@ -21,5 +20,5 @@ pub fn builtin_dbg(name: &str, variables: &mut Variables) -> ReturnCode {
             println!("readonly {}={}", name, var.get_value());
         }
     }
-    ReturnCode::ret(ReturnCode::SUCCESS)
+    ReturnCode::SUCCESS.into()
 }
