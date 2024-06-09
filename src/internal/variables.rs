@@ -1,5 +1,4 @@
 use core::fmt;
-use custom_error::custom_error;
 use glob::glob;
 use homedir::get_home;
 use pest_consume::Itertools;
@@ -11,13 +10,8 @@ use std::{
     process,
 };
 
+use super::errors::VariableError;
 use super::status::ReturnCode;
-
-custom_error! {pub VariableError
-    Readonly {name: String, line: usize, column: usize} = "elvi: {name}: readonly variable (set on line '{line}' column '{line}')",
-    IllegalNumber {name: String, caller: &'static str} = "elvi: {caller}: Illegal number: {name})",
-    NoSuchVariable {name: String, caller: &'static str} = "{caller}: no such variable: {name})",
-}
 
 #[derive(Debug, Clone, PartialEq)]
 /// Struct representing the variable types in Elvi.

@@ -1,4 +1,5 @@
-use crate::internal::commands::{CommandError, Commands};
+use crate::internal::commands::Commands;
+use crate::internal::errors::CommandError;
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::{ElviType, Variables};
 

@@ -1,6 +1,6 @@
+use crate::internal::errors::VariableError;
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::ElviMutable;
-use crate::internal::variables::VariableError;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `unset` builtin is run.

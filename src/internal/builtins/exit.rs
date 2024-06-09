@@ -1,7 +1,4 @@
-use crate::internal::{
-    status::ReturnCode,
-    variables::{ElviType, VariableError},
-};
+use crate::internal::{errors::VariableError, status::ReturnCode, variables::ElviType};
 
 /// The internal code that runs when the `exit` builtin is run.
 ///

@@ -66,6 +66,8 @@ pub mod builtins {
     /// 2. `-f` flag for functions.
     pub mod unset;
 }
+/// Contains modules relating to Elvi errors.
+pub mod errors;
 /// Contains modules relating to handling error codes.
 pub mod status;
 /// Contains modules relating to executing Elvi code.

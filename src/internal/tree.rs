@@ -1,7 +1,6 @@
 use std::io::Write;
 use std::{io, process::Command};
 
-use crate::internal::commands::CommandError;
 use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;

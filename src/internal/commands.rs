@@ -1,4 +1,3 @@
-use custom_error::custom_error;
 use pest_consume::Itertools;
 use std::{
     collections::{hash_map::IntoIter, HashMap},
@@ -6,7 +5,7 @@ use std::{
     ops::Deref,
     os::unix::fs::PermissionsExt,
     path::PathBuf,
-    process::Command,
+    process::{Command, Stdio},
 };
 
 use super::{
@@ -14,12 +13,7 @@ use super::{
     variables::{ElviType, Variables},
 };
 
-custom_error! { pub CommandError
-    NotFound {name: String} = "elvi: {name}: not found",
-    SubCommandNotFound {name: &'static str, cmd: String} = "elvi: {name}: {cmd}: not found",
-    CannotCd {name: String, path: String} = "elvi: {name}: can't cd to {path}",
-    PermissionDenied {path: String} = "elvi: {path}: Permission denied",
-}
+use super::errors::CommandError;
 
 #[derive(Debug, Clone)]
 /// Global list of commands.
@@ -38,6 +32,8 @@ pub struct ExternalCommand {
     pub cmd: PathBuf,
     /// Arguments (if any).
     pub args: Option<Vec<String>>,
+    /// Attributes of how a command should be run.
+    pub attributes: HowRun,
 }
 
 impl Commands {
@@ -93,11 +89,32 @@ impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
             Self {
                 cmd: cmd.into(),
                 args: None,
+                attributes: HowRun::RealTime,
             }
         } else {
             Self {
                 cmd: cmd.into(),
                 args: Some(split_up.iter().skip(1).map(|s| (*s).to_string()).collect()),
+                attributes: HowRun::RealTime,
+            }
+        }
+    }
+}
+
+impl From<Vec<String>> for ExternalCommand {
+    fn from(value: Vec<String>) -> Self {
+        let cmd = value.first().unwrap().to_owned();
+        if value.len() == 1 {
+            Self {
+                cmd: cmd.into(),
+                args: None,
+                attributes: HowRun::RealTime,
+            }
+        } else {
+            Self {
+                cmd: cmd.into(),
+                args: Some(value.iter().skip(1).map(|s| (*s).to_string()).collect()),
+                attributes: HowRun::RealTime,
             }
         }
     }
@@ -111,6 +128,14 @@ pub struct CmdReturn {
     pub stderr: Vec<u8>,
 }
 
+#[derive(Debug, Clone)]
+/// Instructs [`ExternalCommand`] how to handle output.
+pub enum HowRun {
+    RealTime,
+    Substitution,
+    Piped,
+}
+
 impl Default for CmdReturn {
     fn default() -> Self {
         Self {
@@ -121,15 +146,15 @@ impl Default for CmdReturn {
     }
 }
 
-/// Execute a given command.
+/// Return an almost prepared [`std::process::Command`] where the caller can provide the specifics.
 ///
 /// # Notes
 /// Everything should be eval'ed and expanded before using this function.
-pub fn execute_external_command(
+pub fn execute_external_command<'a>(
     cmd: ExternalCommand,
-    variables: &Variables,
-    commands: &Commands,
-) -> CmdReturn {
+    variables: &'a Variables,
+    commands: &'a Commands,
+) -> Result<&'a mut std::process::Command, CommandError> {
     let mut cmd_to_run = PathBuf::new();
     // First of all, we have 3 choices of how a command can be run:
     // 1. `foo` with PATH
@@ -142,31 +167,15 @@ pub fn execute_external_command(
     //BUG: Does not handle tilde paths yet.
     if cmd.cmd.is_absolute() || cmd.cmd.starts_with("./") {
         if !cmd.cmd.exists() {
-            return CmdReturn {
-                ret: ReturnCode::COMMAND_NOT_FOUND.into(),
-                stdout: vec![],
-                stderr: format!(
-                    "{}",
-                    CommandError::NotFound {
-                        name: cmd.cmd.display().to_string()
-                    }
-                )
-                .into(),
-            };
+            return Err(CommandError::NotFound {
+                name: cmd.cmd.display().to_string(),
+            });
         // Is some silly goose trying to execute a directory or is not executable.
         } else if cmd.cmd.is_dir() || cmd.cmd.metadata().unwrap().permissions().mode() & 0o111 == 0
         {
-            return CmdReturn {
-                ret: ReturnCode::PERMISSION_DENIED.into(),
-                stdout: vec![],
-                stderr: format!(
-                    "{}",
-                    CommandError::PermissionDenied {
-                        path: cmd.cmd.display().to_string()
-                    }
-                )
-                .into(),
-            };
+            return Err(CommandError::PermissionDenied {
+                path: cmd.cmd.display().to_string(),
+            });
         }
 
         cmd_to_run = cmd.cmd;
@@ -175,17 +184,9 @@ pub fn execute_external_command(
         cmd_to_run = if let Some(v) = commands.get_path(cmd.cmd.to_str().unwrap()) {
             v
         } else {
-            return CmdReturn {
-                ret: ReturnCode::COMMAND_NOT_FOUND.into(),
-                stdout: vec![],
-                stderr: format!(
-                    "{}",
-                    CommandError::NotFound {
-                        name: cmd.cmd.display().to_string()
-                    }
-                )
-                .into(),
-            };
+            return Err(CommandError::NotFound {
+                name: cmd.cmd.display().to_string(),
+            });
         };
     }
 
@@ -198,7 +199,7 @@ pub fn execute_external_command(
     // 2. Clear environment.
     // 3. Insert our own.
     // 4. Set current directory based on PWD.
-    let cmd = Command::new(cmd_to_run)
+    Ok(Command::new(cmd_to_run)
         .args(if cmd.args.is_none() {
             vec![]
         } else {
@@ -212,16 +213,5 @@ pub fn execute_external_command(
                 .get_value()
                 .to_string(),
         )
-        .envs(filtered_env)
-        .output()
-        .expect("Oops");
-
-    CmdReturn {
-        ret: match cmd.status.code() {
-            Some(code) => code.into(),
-            None => unimplemented!("Something something signals"),
-        },
-        stdout: cmd.stdout,
-        stderr: cmd.stderr,
-    }
+        .envs(filtered_env))
 }

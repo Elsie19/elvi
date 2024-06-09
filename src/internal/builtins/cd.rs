@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
-use crate::internal::commands::CommandError;
+use crate::internal::errors::CommandError;
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::{ElviType, Variable, Variables};
 

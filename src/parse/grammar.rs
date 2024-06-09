@@ -1,5 +1,6 @@
 use crate::internal::builtins;
-use crate::internal::commands::Commands;
+use crate::internal::commands::{execute_external_command, Commands, ExternalCommand};
+use crate::internal::errors::ElviError;
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, Loop, TestOptions};
 use crate::internal::variables::Arguments;
@@ -450,11 +451,18 @@ pub fn eval(
                 expanded.push(
                     part.tilde_expansion(variables)
                         .eval_escapes()
-                        .eval_variables(variables),
+                        .eval_variables(variables)
+                        .to_string(),
                 )
             }
-            println!("Running {:?}", expanded);
-            todo!("Implement universal command running. Pull from current backticks");
+            let cmd_run: ExternalCommand = expanded.into();
+            let templated = execute_external_command(cmd_run, variables, commands);
+            match templated {
+                Err(oops) => {
+                    eprintln!("{}", oops);
+                    variables.set_ret(oops.ret())
+                }
+            }
         }
         Actions::Null => {}
         Actions::IfStatement(if_stmt) => {
