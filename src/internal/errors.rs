@@ -2,6 +2,7 @@ use super::status::ReturnCode;
 
 /// Supplies information relevant to errors.
 pub trait ElviError {
+    /// Give return code for a given error type.
     fn ret(&self) -> ReturnCode;
 }
 
