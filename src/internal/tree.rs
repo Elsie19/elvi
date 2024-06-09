@@ -1,6 +1,7 @@
+use std::io;
 use std::io::Write;
-use std::{io, process::Command};
 
+use crate::internal::errors::ElviError;
 use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;
@@ -183,34 +184,38 @@ pub fn change_variable(
             let cmd_to_run: ExternalCommand = x.into();
             // Set variable to empty if we can't get the command
             let retty = execute_external_command(cmd_to_run, variables, commands);
-            if retty.ret == ReturnCode::PERMISSION_DENIED.into()
-                || retty.ret == ReturnCode::COMMAND_NOT_FOUND.into()
-            {
-                if var.get_lvl() != ElviGlobal::Global {
-                    var.change_lvl(lvl);
+            let mut child = match retty {
+                Ok(yay) => yay,
+                Err(oops) => {
+                    if var.get_lvl() != ElviGlobal::Global {
+                        var.change_lvl(lvl);
+                    }
+                    match variables.set_variable(
+                        name.clone(),
+                        Variable::oneshot_var(
+                            &ElviType::String(String::new()),
+                            var.get_modification_status(),
+                            var.get_lvl(),
+                            var.get_line(),
+                        ),
+                    ) {
+                        Ok(()) => {}
+                        Err(oops) => eprintln!("{oops}"),
+                    }
+                    eprintln!("{}", oops);
+                    return variables.set_ret(oops.ret());
                 }
-                match variables.set_variable(
-                    name.clone(),
-                    Variable::oneshot_var(
-                        &ElviType::String(String::new()),
-                        var.get_modification_status(),
-                        var.get_lvl(),
-                        var.get_line(),
-                    ),
-                ) {
-                    Ok(()) => {}
-                    Err(oops) => eprintln!("{oops}"),
-                }
-            }
-            if !retty.stderr.is_empty() {
-                io::stderr().write_all(&retty.stderr).unwrap();
+            };
+            let completed_child = child.output().expect("Could not execute process");
+            if !completed_child.stderr.is_empty() {
+                io::stderr().write_all(&completed_child.stderr).unwrap();
             }
             match variables.set_variable(
                 name,
                 var.change_contents(ElviType::String(
                     // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
                     // assignment if it comes up.
-                    std::str::from_utf8(&retty.stdout)
+                    std::str::from_utf8(&completed_child.stdout)
                         .unwrap()
                         // This is to conform to
                         // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,

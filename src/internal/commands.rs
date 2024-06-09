@@ -1,7 +1,7 @@
 use pest_consume::Itertools;
 use std::{
     collections::{hash_map::IntoIter, HashMap},
-    fs,
+    fs, mem,
     ops::Deref,
     os::unix::fs::PermissionsExt,
     path::PathBuf,
@@ -150,11 +150,12 @@ impl Default for CmdReturn {
 ///
 /// # Notes
 /// Everything should be eval'ed and expanded before using this function.
-pub fn execute_external_command<'a>(
+pub fn execute_external_command(
     cmd: ExternalCommand,
-    variables: &'a Variables,
-    commands: &'a Commands,
-) -> Result<&'a mut std::process::Command, CommandError> {
+    variables: &Variables,
+    commands: &Commands,
+) -> Result<std::process::Command, CommandError> {
+    #[allow(unused_assignments)]
     let mut cmd_to_run = PathBuf::new();
     // First of all, we have 3 choices of how a command can be run:
     // 1. `foo` with PATH
@@ -199,7 +200,9 @@ pub fn execute_external_command<'a>(
     // 2. Clear environment.
     // 3. Insert our own.
     // 4. Set current directory based on PWD.
-    Ok(Command::new(cmd_to_run)
+    let bitch = Command::new("foo");
+    let mut binding = Command::new(cmd_to_run);
+    let bruh = binding
         .args(if cmd.args.is_none() {
             vec![]
         } else {
@@ -213,5 +216,6 @@ pub fn execute_external_command<'a>(
                 .get_value()
                 .to_string(),
         )
-        .envs(filtered_env))
+        .envs(filtered_env);
+    Ok(mem::replace(bruh, bitch))
 }

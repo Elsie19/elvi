@@ -76,7 +76,7 @@ impl std::fmt::Display for VariableError {
             }
             Self::Readonly { name, line, column } => write!(
                 f,
-                "elvi: {name}: readonly variable (set on line '{line}' column '{line}')"
+                "elvi: {name}: readonly variable (set on line '{line}' column '{column}')"
             ),
             Self::IllegalNumber { name, caller } => {
                 write!(f, "elvi: {caller}: Illegal number: {name})")

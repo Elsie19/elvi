@@ -458,6 +458,10 @@ pub fn eval(
             let cmd_run: ExternalCommand = expanded.into();
             let templated = execute_external_command(cmd_run, variables, commands);
             match templated {
+                Ok(mut yay) => {
+                    let mut foop = yay.spawn().expect("woot");
+                    variables.set_ret(foop.wait().unwrap().code().unwrap().into());
+                }
                 Err(oops) => {
                     eprintln!("{}", oops);
                     variables.set_ret(oops.ret())
