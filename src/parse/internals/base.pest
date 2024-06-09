@@ -14,6 +14,8 @@ elviNumber = { ASCII_DIGIT+ }
 elviWord       = { anyString | elviSingleWord }
 elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*")+ }
 
+keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" }
+
 // `program` is comprised of statements.
 statement = {
     (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop | externalCommand)

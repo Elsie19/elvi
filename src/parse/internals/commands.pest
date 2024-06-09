@@ -1,2 +1,2 @@
 // Main rules
-externalCommand = ${ elviWord ~ (space+ ~ elviWord)* }
+externalCommand = ${ !(keywords) ~ elviWord ~ (space+ ~ elviWord)* }
