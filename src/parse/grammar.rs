@@ -298,6 +298,7 @@ impl ElviParser {
                 Actions::FunctionDeclaration(Function {
                     name,
                     // This is to match when I run `foo() {}` then `foo` in sh.
+                    // TODO: Change this to a compound command later.
                     contents: Some(vec![Actions::Command(vec![ElviType::String("{}".into())])]),
                 })
             }
@@ -380,19 +381,13 @@ impl ElviParser {
         let positional_arguments = input.user_data();
 
         // Set all the positional variables once.
-        for (idx, elem) in positional_arguments.args.iter().enumerate() {
-            variables
-                .set_variable(
-                    idx.to_string(),
-                    Variable::oneshot_var(
-                        &ElviType::String(elem.to_string()),
-                        ElviMutable::Normal,
-                        ElviGlobal::Global,
-                        (0, 0),
-                    ),
-                )
-                .unwrap();
-        }
+        let list: Vec<Variable> = positional_arguments
+            .args
+            .to_owned()
+            .iter()
+            .map(|var| var.to_owned().into())
+            .collect();
+        variables.new_parameters(&list);
 
         let mut subshells_in = 1;
 

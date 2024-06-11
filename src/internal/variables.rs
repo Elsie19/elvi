@@ -69,6 +69,8 @@ pub enum ElviGlobal {
 pub struct Variables {
     /// Hashmap of a variable name and its contents.
     vars: HashMap<String, Variable>,
+    /// A separate field used solely for positional parameters.
+    params: Vec<Variable>,
 }
 
 #[derive(Debug, Clone)]
@@ -86,8 +88,17 @@ pub struct Variable {
 
 impl Variables {
     #[must_use]
+    /// Get a variable.
+    ///
+    /// # Notes
+    /// This method has a bit of indirection to it. If it detects what appears to be a positional
+    /// parameter, it will silently pull that, even though it is not coming from the vars list.
     pub fn get_variable(&self, var: &str) -> Option<&Variable> {
-        self.vars.get(var)
+        if let Ok(pos) = var.parse::<usize>() {
+            self.params.get(pos)
+        } else {
+            self.vars.get(var)
+        }
     }
 
     /// Return a hashmap of all variables marked as [`ElviGlobal::Global`] and their corresponding
@@ -184,6 +195,21 @@ impl Variables {
             Ok(())
         }
     }
+
+    /// Create a new set of parameters.
+    pub fn new_parameters(&mut self, params: &[Variable]) {
+        self.params = params.to_vec();
+    }
+
+    /// Pull parameters out.
+    pub fn pull_parameters(&self) -> Vec<Variable> {
+        self.params.clone()
+    }
+
+    /// Get count of parameters.
+    pub fn len_parameters(&self) -> usize {
+        self.params.len()
+    }
 }
 
 impl Default for Variables {
@@ -263,6 +289,28 @@ impl Default for Variables {
                     },
                 ),
             ]),
+
+            params: vec![],
+        }
+    }
+}
+
+impl Default for Variable {
+    fn default() -> Self {
+        Self {
+            contents: ElviType::String("".into()),
+            modification_status: ElviMutable::Normal,
+            shell_lvl: ElviGlobal::Global,
+            line: (0, 0),
+        }
+    }
+}
+
+impl From<String> for Variable {
+    fn from(value: String) -> Self {
+        Self {
+            contents: ElviType::String(value),
+            ..Default::default()
         }
     }
 }
@@ -489,7 +537,7 @@ impl ElviType {
                                 .by_ref()
                                 // We don't wanna consume the character it fails on, otherwise we'd use
                                 // take_while() instead.
-                                .peeking_take_while(|&c| c != ' ' && c != '\\')
+                                .peeking_take_while(|&c| c != ' ' && c != '\\' && c != ':')
                                 .collect();
                             let expanded_out = self.eval_special_variable(&tasty_var, vars);
                             if !expanded_out.is_empty() {
@@ -517,6 +565,7 @@ impl ElviType {
             "$" => {
                 ret_vec.push(process::id().to_string());
             }
+            "#" => ret_vec.push((variables.len_parameters() - 1).to_string()),
             default => {
                 if let Some(woot) = variables.get_variable(default) {
                     ret_vec.push(woot.get_value().to_string());
@@ -573,17 +622,6 @@ impl fmt::Display for ElviType {
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
-        }
-    }
-}
-
-impl Default for Variable {
-    fn default() -> Self {
-        Self {
-            contents: ElviType::String(String::new()),
-            modification_status: ElviMutable::Normal,
-            shell_lvl: ElviGlobal::Global,
-            line: (0, 0),
         }
     }
 }

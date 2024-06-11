@@ -30,3 +30,5 @@ echo "${PATH}"
 foo() {
     echo "bar"
 }
+
+echo "Count: $#: ${1}, ${2}, ${3}"
