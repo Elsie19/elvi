@@ -456,7 +456,7 @@ pub fn eval(
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Echo(text) => {
-                let ret = builtins::echo::builtin_echo(text, variables).get();
+                let ret = builtins::echo::builtin_echo(text.as_deref(), variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
         },

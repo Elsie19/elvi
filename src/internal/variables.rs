@@ -514,7 +514,6 @@ impl ElviType {
                             // WOOOOOOOO
                             chars_of.next().unwrap();
                             //BUG:  What about ${foo\}bar}
-                            //TODO: Work on parameter expansion, ugh.
                             let tasty_var: String =
                                 chars_of.by_ref().take_while(|&c| c != '}').collect();
                             // So here we have a list of expanded special vars, but assuming that
