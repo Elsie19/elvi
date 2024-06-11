@@ -8,6 +8,7 @@ use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Va
 use pest_consume::{match_nodes, Error, Parser};
 
 #[derive(Parser)]
+#[grammar = "parse/internals/base.pest"]
 #[grammar = "parse/internals/strings.pest"]
 #[grammar = "parse/internals/variables.pest"]
 #[grammar = "parse/internals/command_substitution.pest"]
@@ -15,7 +16,7 @@ use pest_consume::{match_nodes, Error, Parser};
 #[grammar = "parse/internals/commands.pest"]
 #[grammar = "parse/internals/if.pest"]
 #[grammar = "parse/internals/for.pest"]
-#[grammar = "parse/internals/base.pest"]
+#[grammar = "parse/internals/functions.pest"]
 /// Global struct that implements the pest.rs parser ([`pest_derive`]).
 pub struct ElviParser;
 

@@ -26,3 +26,7 @@ for i in ~/Projects/*; do
 done
 
 echo "${PATH}"
+
+foo() {
+    echo "bar"
+}

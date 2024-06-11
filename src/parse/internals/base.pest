@@ -1,22 +1,32 @@
-// Base program.
+//! List of all Elvi grammar rules.
+
+/// Entry point for program. Starts at the beginning, and continues with statements.
 program = { SOI ~ ((WHITE_SPACE+)? ~ statement ~ (newline)*)+ ~ EOI }
 
 // Newlines in POSIX are defined as either a newline or a seperator `;`.
+/// Defines a newline as either `\n` or a `;`.
 newline = _{ ";"{1} | NEWLINE }
 
 COMMENT = _{ (WHITE_SPACE+)? ~ "#" ~ (!NEWLINE ~ ANY)* ~ NEWLINE }
 
+/// Spaces or tabs.
 space = _{ (" " | "\t") }
 
 // Easy function for just a number
+/// Just a number.
 elviNumber = { ASCII_DIGIT+ }
 
-elviWord       = { anyString | elviSingleWord }
+/// A core component of parsing. This covers all types of strings including bare strings.
+elviWord = { anyString | elviSingleWord }
+
+/// Any numbers or lettesr, with underscores, dashes, slashes, tildes, globs, or periods.
 elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*" | ".")+ }
 
+/// Keywords to prevent name clashing in parsing.
 keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" }
 
 // `program` is comprised of statements.
+/// A statement is simply anything that can be executed.
 statement = {
-    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop | externalCommand)
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop | functionDeclaration | externalCommand)
 }

@@ -1,14 +1,29 @@
 // Main grammars
-builtinDbg   = !{ "dbg" ~ space? ~ variableIdent }
+/// The debug builtin.
+builtinDbg = !{ "dbg" ~ space? ~ variableIdent }
+
+/// The unset builtin.
 builtinUnset = !{ "unset" ~ space? ~ variableIdent }
-builtinExit  = !{ "exit" ~ space? ~ (elviWord | elviNumber)? }
-builtinHash  = !{ "hash" ~ space? ~ elviWord? }
-builtinCd    = !{ "cd" ~ space? ~ elviWord? }
+
+/// The exit builtin.
+builtinExit = !{ "exit" ~ space? ~ (elviWord | elviNumber)? }
+
+/// The hash builtin.
+builtinHash = !{ "hash" ~ space? ~ elviWord? }
+
+/// The cd builtin.
+builtinCd = !{ "cd" ~ space? ~ elviWord? }
 // TODO: Add commands to `builtinTest` and also `-a` and `-o`
+/// The test builtin.
 builtinTest = !{ ("[" ~ space+ ~ (#invert = builtinTestInvert ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons) ~ space+ ~ "]") | ("test" ~ space+ ~ (builtinTestInvert ~ space+)? ~ (builtinTestPrimaries | builtinTestComparisons)) }
+
+/// The echo builtin.
 builtinEcho = !{ "echo" ~ space? ~ (elviWord+)? }
 
-builtinTestInvert    = { "!" }
+/// The invert symbol (`!`).
+builtinTestInvert = { "!" }
+
+/// `test` primaries just means a flag that takes an input, such as `-f foo`.
 builtinTestPrimaries = {
     #block = ("-b" ~ space+ ~ elviWord)
   | #character_special = ("-c" ~ space+ ~ elviWord)
@@ -32,6 +47,7 @@ builtinTestPrimaries = {
   | #socket_file_exists = ("-S" ~ space+ ~ elviWord)
 }
 
+/// `test` comparisons are two inputs that are operated on into a boolean.
 builtinTestComparisons = {
     #string_equals = (elviWord ~ space+ ~ "=" ~ space+ ~ elviWord)
   | #string_not_equals = (elviWord ~ space+ ~ "!=" ~ space+ ~ elviWord)
@@ -45,5 +61,5 @@ builtinTestComparisons = {
   | #integer_le = (elviWord ~ space+ ~ "-le" ~ space+ ~ elviWord)
 }
 
-// Wrapper grammar for any builtin
+/// Wrapper grammar for any builtin.
 builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest | builtinEcho }

@@ -1,6 +1,11 @@
 // Main rules
+/// Backtick substitution is what it says.
 backtickSubstitution = { "`" ~ backtickInner ~ "`" }
 
 // Helper rules
-backtickInner  = @{ (!("`" | "\\") ~ ANY)* ~ (backtickEscape ~ backtickInner)? }
+/// Anything inside of a backtick.
+// TODO: Probably should be replaced with `statement`.
+backtickInner = @{ (!("`" | "\\") ~ ANY)* ~ (backtickEscape ~ backtickInner)? }
+
+/// What can escape a backtick.
 backtickEscape = @{ "\\" ~ ("\\" | "`") }

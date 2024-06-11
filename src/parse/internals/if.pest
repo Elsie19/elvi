@@ -1,10 +1,12 @@
 // Main rules
+/// If statement.
 ifStatement = ${
     "if" ~ space+ ~ ifStatementMatch ~ newline+ ~ (space+)? ~ "then"
         ~ (space+ | newline+) ~ (#then_block = statement)+
         ~ (newline+ ~ (space+)? ~ ("else" | "elsie") ~ newline+
         ~ (#else_block = statement)+)? ~ newline+ ~ (space+)? ~ "fi" }
 
+/// What an if statement can match on.
 ifStatementMatch = ${
     backtickSubstitution
   | builtinWrapper

@@ -1,8 +1,14 @@
 // Main rules
+/// Normal variable creation, e.g.: `foo="bar"`.
 normalVariable = @{ variableIdent ~ "=" ~ variableIdentifierPossibilities }
-// HACK: I don't like this, future me, make it so that any whitespace can follow the "readonly" but not after it.
-readonlyVariable = @{ "readonly " ~ variableIdent ~ "=" ~ variableIdentifierPossibilities }
 
+/// Readonly variable creation, e.g.: `readonly foo="bar"`.
+readonlyVariable = @{ "readonly" ~ space+ ~ variableIdent ~ "=" ~ variableIdentifierPossibilities }
+
+/// This means anything that a variable can be assigned to, such as a string or command substitution.
 variableIdentifierPossibilities = ${ anyString | backtickSubstitution }
 
+/// Helper for <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_235>.
+///
+/// Should be equivalent to the regex `^[a-zA-Z_][a-zA-Z0-9_]*$`.
 variableIdent = !{ !ASCII_DIGIT ~ (ASCII_ALPHANUMERIC | "_")+ }
