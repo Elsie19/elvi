@@ -7,14 +7,14 @@ use crate::internal::variables::{ElviType, Variables};
 pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> ReturnCode {
     let mut to_print = vec![];
     if let Some(text) = text {
-        text.iter().for_each(|part| {
+        for part in text.iter() {
             to_print.push(
                 part.tilde_expansion(variables)
                     .eval_escapes()
                     .eval_variables(variables)
                     .to_string(),
             );
-        });
+        }
         println!("{}", to_print.join(" "));
         ReturnCode::SUCCESS.into()
     } else {
