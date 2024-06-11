@@ -13,7 +13,7 @@ pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
     match var.get_modification_status() {
         ElviMutable::Normal => match variables.unset(name) {
             // We don't care about what it returned
-            Some(_) | None => ReturnCode::SUCCESS.into(),
+            Some(()) | None => ReturnCode::SUCCESS.into(),
         },
         ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
             let err = VariableError::Readonly {

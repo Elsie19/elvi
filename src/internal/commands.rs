@@ -38,6 +38,7 @@ pub struct ExternalCommand {
 
 impl Commands {
     /// Generate a list of commands from a path variable.
+    #[must_use = "Why are you generating PATH if you aren't using it"]
     pub fn generate(variables: &Variables) -> Self {
         let mut cmds: HashMap<String, PathBuf> = HashMap::new();
 
@@ -64,8 +65,9 @@ impl Commands {
         Self { cmds }
     }
 
+    #[must_use = "Whatcha not doing with this path here bud"]
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
-        self.cmds.get(program).map(|cmd| cmd.clone())
+        self.cmds.get(program).map(std::clone::Clone::clone)
     }
 }
 

@@ -14,11 +14,13 @@ pub struct ParseReturnCodeError;
 /// <https://tldp.org/LDP/abs/html/exitcodes.html>
 impl ReturnCode {
     /// Returns an instance of [`ReturnCode`] with a given value.
+    #[must_use]
     pub fn ret(val: u16) -> Self {
         ReturnCode { val }
     }
 
     /// Pull [`ReturnCode::val`].
+    #[must_use]
     pub fn get(self) -> u16 {
         self.val
     }
@@ -27,6 +29,7 @@ impl ReturnCode {
     ///
     /// `true` will invert.
     /// `false` will not invert.
+    #[must_use]
     pub fn invert(self, invert: bool) -> Self {
         if invert {
             Self {
@@ -49,6 +52,7 @@ impl ReturnCode {
 
     /// <https://tldp.org/LDP/abs/html/exitcodes.html#AEN23629>
     /// Will cap a given return value to within a range of 0-255.
+    #[must_use]
     pub fn cap(self) -> u8 {
         (self.val % 256).try_into().unwrap()
     }
@@ -99,6 +103,7 @@ impl From<i32> for ReturnCode {
     fn from(value: i32) -> Self {
         // Reasonably sure this won't matter, I don't care about it losing bits from the top.
         #[allow(clippy::cast_possible_truncation)]
+        #[allow(clippy::cast_sign_loss)]
         Self { val: value as u16 }
     }
 }

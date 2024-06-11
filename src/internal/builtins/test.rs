@@ -10,6 +10,7 @@ use crate::internal::tree::TestOptions;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `test` builtin is run.
+#[must_use]
 pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> ReturnCode {
     let ret = match to_do {
         TestOptions::String1IsString2((s1, s2)) => (s1.eval_escapes().eval_variables(variables)

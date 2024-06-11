@@ -85,12 +85,14 @@ pub struct Variable {
 }
 
 impl Variables {
+    #[must_use]
     pub fn get_variable(&self, var: &str) -> Option<&Variable> {
         self.vars.get(var)
     }
 
     /// Return a hashmap of all variables marked as [`ElviGlobal::Global`] and their corresponding
     /// values (can only be a [`ElviType::String`]).
+    #[must_use]
     pub fn get_environmentals(&self) -> HashMap<String, String> {
         let mut ret: HashMap<String, String> = HashMap::new();
         for (name, var) in &self.vars {
@@ -141,6 +143,7 @@ impl Variables {
     }
 
     /// Quick function to pull `$?`.
+    #[must_use]
     pub fn get_ret(&self) -> ElviType {
         // This cannot fail on unwrap unless something awful happened.
         self.vars.get("?").unwrap().get_value().to_owned()
@@ -258,11 +261,13 @@ impl Default for Variables {
 }
 
 impl Variable {
+    #[must_use]
     pub fn get_value(&self) -> &ElviType {
         &self.contents
     }
 
     /// Return a variable template with all options available.
+    #[must_use]
     pub fn oneshot_var(
         contents: &ElviType,
         modification_status: ElviMutable,
@@ -278,6 +283,7 @@ impl Variable {
     }
 
     /// Return the [`ElviGlobal`] of a given variable.
+    #[must_use]
     pub fn get_lvl(&self) -> ElviGlobal {
         self.shell_lvl
     }
@@ -289,11 +295,13 @@ impl Variable {
     }
 
     /// Get the [`ElviMutable`] of a variable.
+    #[must_use]
     pub fn get_modification_status(&self) -> ElviMutable {
         self.modification_status
     }
 
     /// Get the assignment line of a variable.
+    #[must_use]
     pub fn get_line(&self) -> (usize, usize) {
         self.line
     }
@@ -307,6 +315,7 @@ impl Variable {
 
 impl ElviType {
     /// Return an escaped string using [`backslash::escape_ascii`].
+    #[must_use]
     pub fn eval_escapes(&self) -> Self {
         match self {
             Self::VariableSubstitution(le_string) => {
@@ -317,6 +326,7 @@ impl ElviType {
     }
 
     /// Convert a [`ElviType::ErrExitCode`] into a [`ReturnCode`].
+    #[must_use]
     pub fn convert_err_type(&self) -> ReturnCode {
         match self {
             Self::ErrExitCode(val) => (*val).into(),
@@ -338,6 +348,7 @@ impl ElviType {
     ///
     /// # Notes
     /// Requires [`ElviType::String`].
+    #[must_use]
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
             Self::String(le_string) => {
@@ -419,6 +430,7 @@ impl ElviType {
 
     /// This assumes [`ElviType::VariableSubstitution`]. If not, it will return the text given as
     /// is.
+    #[must_use]
     pub fn eval_variables(&self, vars: &Variables) -> Self {
         match self {
             // So basically because of my shitty thinking, we set all double quotes to
@@ -490,6 +502,7 @@ impl ElviType {
     /// This is for
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#2.5.2>
     /// We also do variable expansion regardless in here.
+    #[must_use]
     pub fn eval_special_variable(&self, var: &str, variables: &Variables) -> Vec<String> {
         let mut ret_vec = vec![];
         match var {
@@ -511,6 +524,7 @@ impl ElviType {
     /// # Notes
     /// This function will return a list of paths it matches against, but if it does not match
     /// anything, it will return the literal string that it received.
+    #[must_use = "Why no using the globs ya goof"]
     pub fn expand_globs(&self) -> Vec<Self> {
         let mut ret_vec = vec![];
         match glob(&self.to_string()) {
