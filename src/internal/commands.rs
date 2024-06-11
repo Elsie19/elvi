@@ -10,16 +10,19 @@ use std::{
 
 use super::{
     status::ReturnCode,
+    tree::Actions,
     variables::{ElviType, Variables},
 };
 
 use super::errors::CommandError;
 
 #[derive(Debug, Clone)]
-/// Global list of commands.
+/// Global list of commands, functions, and aliases.
 pub struct Commands {
     /// Hashmap of the name of a command, and the path to its executable.
     pub cmds: HashMap<String, PathBuf>,
+    /// List of functions and their [`Actions`].
+    pub functions: HashMap<String, Actions>,
 }
 
 #[derive(Debug, Clone)]
@@ -57,16 +60,15 @@ impl Commands {
                 continue;
             };
 
-            for part in files {
-                if part.as_ref().unwrap().path().is_file() {
-                    cmds.insert(
-                        part.as_ref().unwrap().file_name().into_string().unwrap(),
-                        part.unwrap().path(),
-                    );
-                }
+            // Skip all `None`'s.
+            for part in files.flatten() {
+                cmds.insert(part.file_name().into_string().unwrap(), part.path());
             }
         }
-        Self { cmds }
+        Self {
+            cmds,
+            functions: HashMap::new(),
+        }
     }
 
     #[must_use = "Whatcha not doing with this path here bud"]

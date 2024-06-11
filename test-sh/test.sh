@@ -24,3 +24,5 @@ echo "My PID is $$ and current process is $0"
 for i in ~/Projects/*; do
     echo "${i}"
 done
+
+echo "${PATH}"
