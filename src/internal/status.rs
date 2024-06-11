@@ -79,12 +79,12 @@ impl ReturnCode {
     /// Permission denied
     ///
     /// # Code
-    /// A script cannot be executed due to permission errors shall return 126.
+    /// A script cannot be executed due to permission errors shall return `126`.
     pub const PERMISSION_DENIED: u16 = 126;
     /// Command not found
     ///
     /// # Code
-    /// A command not found in PATH that is called shall return 127.
+    /// A command not found in `PATH` that is called shall return `127`.
     pub const COMMAND_NOT_FOUND: u16 = 127;
     /// Signal killing
     ///
@@ -97,11 +97,11 @@ impl FromStr for ReturnCode {
     type Err = ParseReturnCodeError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let Ok(x) = s.parse::<u16>() else {
-            return Err(ParseReturnCodeError);
-        };
-
-        Ok(ReturnCode { val: x })
+        if let Ok(x) = s.parse::<u16>() {
+            Ok(ReturnCode { val: x })
+        } else {
+            Err(ParseReturnCodeError)
+        }
     }
 }
 
