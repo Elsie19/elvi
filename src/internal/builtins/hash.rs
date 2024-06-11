@@ -10,13 +10,13 @@ pub fn builtin_hash(
     commands: &mut Commands,
     variables: &Variables,
 ) -> ReturnCode {
-    if flag.is_some() {
-        if *flag.as_ref().unwrap() == ElviType::String("-r".into()) {
+    if let Some(inner) = flag {
+        if inner == ElviType::String("-r".into()) {
             *commands = Commands::generate(variables);
         } else {
             let err = CommandError::SubCommandNotFound {
                 name: "hash",
-                cmd: flag.unwrap().to_string(),
+                cmd: inner.to_string(),
             };
             eprintln!("{err}");
             return err.ret();
