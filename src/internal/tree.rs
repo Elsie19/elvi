@@ -23,8 +23,17 @@ pub enum Actions {
     IfStatement(Box<Conditional>),
     /// For loop
     ForLoop(Loop),
+    /// Function declaration.
+    FunctionDeclaration(Function),
     /// Do nothing.
     Null,
+}
+
+#[derive(Debug, Clone)]
+/// How functions are handled.
+pub struct Function {
+    pub name: String,
+    pub contents: Option<Vec<Actions>>,
 }
 
 #[derive(Debug, Clone)]

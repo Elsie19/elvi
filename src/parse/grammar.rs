@@ -2,6 +2,7 @@ use crate::internal::builtins;
 use crate::internal::commands::{execute_external_command, Commands, ExternalCommand};
 use crate::internal::errors::ElviError;
 use crate::internal::status::ReturnCode;
+use crate::internal::tree::Function;
 use crate::internal::tree::{change_variable, Actions, Builtins, Conditional, Loop, TestOptions};
 use crate::internal::variables::Arguments;
 use crate::internal::variables::{ElviGlobal, ElviMutable, ElviType, Variable, Variables};
@@ -284,6 +285,24 @@ impl ElviParser {
         ))
     }
 
+    /// Handles function statements.
+    pub fn functionDeclaration(input: Node) -> Result<Actions> {
+        Ok(match_nodes!(input.into_children();
+            [name # variableIdent(name), inner_function # statement(stmt)..] => {
+                Actions::FunctionDeclaration(Function {
+                    name,
+                    contents: Some(stmt.collect()),
+                })
+            },
+            [name # variableIdent(name)] => {
+                Actions::FunctionDeclaration(Function {
+                    name,
+                    contents: None,
+                })
+            }
+        ))
+    }
+
     /// Handles if statement conditions
     pub fn ifStatementMatch(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
@@ -348,6 +367,7 @@ impl ElviParser {
             [externalCommand(var)] => Ok(var),
             [ifStatement(stmt)] => Ok(stmt),
             [forLoop(stmt)] => Ok(stmt),
+            [functionDeclaration(func)] => Ok(func),
         )
     }
 
@@ -536,6 +556,9 @@ pub fn eval(
                     variables.set_ret(ret);
                 }
             }
+        }
+        Actions::FunctionDeclaration(func) => {
+            commands.register_function(func);
         }
     }
     ReturnCode::ret(variables.get_ret().convert_err_type().get())

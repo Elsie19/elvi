@@ -10,7 +10,7 @@ use std::{
 
 use super::{
     status::ReturnCode,
-    tree::Actions,
+    tree::Function,
     variables::{ElviType, Variables},
 };
 
@@ -22,7 +22,7 @@ pub struct Commands {
     /// Hashmap of the name of a command, and the path to its executable.
     pub cmds: HashMap<String, PathBuf>,
     /// List of functions and their [`Actions`].
-    pub functions: HashMap<String, Actions>,
+    pub functions: HashMap<String, Function>,
 }
 
 #[derive(Debug, Clone)]
@@ -69,6 +69,11 @@ impl Commands {
             cmds,
             functions: HashMap::new(),
         }
+    }
+
+    /// Registers a function and it's contents.
+    pub fn register_function(&mut self, func: Function) {
+        self.functions.insert(func.name.clone(), func);
     }
 
     #[must_use = "Whatcha not doing with this path here bud"]
