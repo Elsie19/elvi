@@ -168,7 +168,7 @@ pub fn change_variable(
     match var.get_value() {
         goopy @ ElviType::VariableSubstitution(_) => {
             // Goopy will save us!!!
-            var.change_contents(goopy.eval_variables(variables));
+            var.change_contents(goopy.eval_escapes().eval_variables(variables));
             change_variable(variables, commands, lvl, name, var);
         }
         ElviType::String(_we_dont_care) => {
@@ -186,7 +186,7 @@ pub fn change_variable(
                 // non-interactive shell, that's what we'll do.
                 Err(oops) => {
                     eprintln!("{oops}");
-                    std::process::exit(ReturnCode::MISUSE.into());
+                    std::process::exit(oops.ret().get().into());
                 }
             }
         }
