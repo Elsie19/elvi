@@ -317,6 +317,7 @@ impl From<String> for Variable {
 
 impl Variable {
     #[must_use]
+    /// Get [`ElviType`] of variable.
     pub fn get_value(&self) -> &ElviType {
         &self.contents
     }
@@ -537,7 +538,12 @@ impl ElviType {
                                 .by_ref()
                                 // We don't wanna consume the character it fails on, otherwise we'd use
                                 // take_while() instead.
-                                .peeking_take_while(|&c| c != ' ' && c != '\\' && c != ':')
+                                .peeking_take_while(|&c| {
+                                    // TODO: Figure out how to work around `-` for it's special
+                                    // parameter.
+                                    // TODO: Also I need to figure out a better system than this.
+                                    c != ' ' && c != '\\' && c != ':' && c != '-'
+                                })
                                 .collect();
                             let expanded_out = self.eval_special_variable(&tasty_var, vars);
                             if !expanded_out.is_empty() {
@@ -561,7 +567,18 @@ impl ElviType {
     pub fn eval_special_variable(&self, var: &str, variables: &Variables) -> Vec<String> {
         let mut ret_vec = vec![];
         match var {
-            //TODO: Do `${@}`
+            // TODO: Fully flesh out the differences between these two.
+            "@" | "*" => {
+                let mut pushback = vec![];
+                let loopo = variables.pull_parameters();
+                for (idx, part) in loopo.iter().enumerate().skip(1) {
+                    pushback.push(part.get_value().to_string());
+                    if idx != loopo.len() {
+                        pushback.push(" ".to_string());
+                    }
+                }
+                return pushback;
+            }
             "$" => {
                 ret_vec.push(process::id().to_string());
             }

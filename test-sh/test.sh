@@ -31,4 +31,4 @@ foo() {
     echo "bar"
 }
 
-echo "Count: $#: ${1}, ${2}, ${3}"
+echo "Count: $#: ${*}"
