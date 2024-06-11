@@ -129,7 +129,7 @@ impl ElviParser {
     pub fn builtinTest(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinTestComparisons(results)] | [builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(false, results)),
-            [builtinTestInvert(_char), builtinTestComparisons(results)] | [builtinTestInvert(_char), builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(true, results)),
+            [invert # builtinTestInvert(_char), builtinTestComparisons(results)] | [invert # builtinTestInvert(_char), builtinTestPrimaries(results)] => Actions::Builtin(Builtins::Test(true, results)),
         ))
     }
 
