@@ -139,15 +139,32 @@ pub struct CmdReturn {
 #[derive(Debug, Clone)]
 /// Instructs [`ExternalCommand`] how to handle output.
 pub enum HowRun {
+    /// Run in real time. Use this when you want immediate output, such as when you are not piping
+    /// into anything.
+    ///
+    /// ```bash
+    /// ls -la
+    /// ```
     RealTime,
+    /// Use this when you are doing command substitution. It functions like [`HowRun::Piped`] but
+    /// should print stderr out after running.
+    ///
+    /// ```bash
+    /// foo=`ls -la`
+    /// ```
     Substitution,
+    /// When you are piping into multiple commands.
+    ///
+    /// ```bash
+    /// ls | less
+    /// ```
     Piped,
 }
 
 impl Default for CmdReturn {
     fn default() -> Self {
         Self {
-            ret: ReturnCode::ret(0),
+            ret: ReturnCode::SUCCESS.into(),
             stderr: vec![],
             stdout: vec![],
         }
