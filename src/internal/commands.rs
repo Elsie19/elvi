@@ -71,7 +71,7 @@ impl Commands {
 
     #[must_use = "Whatcha not doing with this path here bud"]
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
-        self.cmds.get(program).map(std::clone::Clone::clone)
+        self.cmds.get(program).cloned()
     }
 }
 
@@ -188,7 +188,7 @@ pub fn execute_external_command(
         cmd_to_run = cmd.cmd;
     // This means we have a normal path that we need PATH to get
     } else {
-        cmd_to_run = if let Some(v) = commands.get_path(cmd.cmd.to_str().unwrap()) {
+        cmd_to_run = if let Some(v) = commands.get_path(&cmd.cmd.display().to_string()) {
             v
         } else {
             return Err(CommandError::NotFound {

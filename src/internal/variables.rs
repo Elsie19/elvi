@@ -143,10 +143,17 @@ impl Variables {
     }
 
     /// Quick function to pull `$?`.
+    ///
+    /// # Panics
+    /// Will only fail in a catastrophic situation where `$?` doesn't exist.
     #[must_use]
     pub fn get_ret(&self) -> ElviType {
         // This cannot fail on unwrap unless something awful happened.
-        self.vars.get("?").unwrap().get_value().to_owned()
+        self.vars
+            .get("?")
+            .expect("Something very bad happened where `$?` does not exist")
+            .get_value()
+            .to_owned()
     }
 
     /// Set a given variable.

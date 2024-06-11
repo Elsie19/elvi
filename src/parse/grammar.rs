@@ -430,9 +430,7 @@ pub fn eval(
             }
             Builtins::Cd(mut flag) => {
                 // Let's just eval possible vars
-                if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_escapes().eval_variables(variables));
-                }
+                flag = flag.map(|f| f.eval_escapes().eval_variables(variables));
                 let ret = builtins::cd::builtin_cd(flag, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }

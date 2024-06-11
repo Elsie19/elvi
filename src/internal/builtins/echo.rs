@@ -6,18 +6,19 @@ use crate::internal::variables::{ElviType, Variables};
 #[allow(clippy::module_name_repetitions)]
 pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> ReturnCode {
     let mut to_print = vec![];
-    if text.is_none() {
+    if let Some(text) = text {
+        text.iter().for_each(|part| {
+            to_print.push(
+                part.tilde_expansion(variables)
+                    .eval_escapes()
+                    .eval_variables(variables)
+                    .to_string(),
+            );
+        });
+        println!("{}", to_print.join(" "));
+        ReturnCode::SUCCESS.into()
+    } else {
         println!();
-        return ReturnCode::SUCCESS.into();
+        ReturnCode::SUCCESS.into()
     }
-    for part in text.unwrap() {
-        to_print.push(
-            part.tilde_expansion(variables)
-                .eval_escapes()
-                .eval_variables(variables)
-                .to_string(),
-        );
-    }
-    println!("{}", to_print.join(" "));
-    ReturnCode::SUCCESS.into()
 }
