@@ -62,9 +62,8 @@ impl std::error::Error for VariableError {}
 impl ElviError for VariableError {
     fn ret(&self) -> ReturnCode {
         match self {
-            Self::Readonly { .. } => ReturnCode::FAILURE.into(),
+            Self::Readonly { .. } | Self::NoSuchVariable { .. } => ReturnCode::FAILURE.into(),
             Self::IllegalNumber { .. } => ReturnCode::MISUSE.into(),
-            Self::NoSuchVariable { .. } => ReturnCode::FAILURE.into(),
         }
     }
 }

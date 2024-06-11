@@ -5,7 +5,7 @@ use std::{
     ops::Deref,
     os::unix::fs::PermissionsExt,
     path::PathBuf,
-    process::{Command, Stdio},
+    process::Command,
 };
 
 use super::{
@@ -65,7 +65,7 @@ impl Commands {
     }
 
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
-        self.cmds.get(program).map(|cmd| cmd.to_path_buf())
+        self.cmds.get(program).map(|cmd| cmd.clone())
     }
 }
 
@@ -79,7 +79,7 @@ impl IntoIterator for Commands {
     }
 }
 
-/// Turn anything that can turn into a str into an ExternalCommand.
+/// Turn anything that can turn into a str into an [`ExternalCommand`].
 impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
     fn from(value: &T) -> Self {
         let value = value as &str;

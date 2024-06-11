@@ -202,7 +202,7 @@ pub fn change_variable(
                         Ok(()) => {}
                         Err(oops) => eprintln!("{oops}"),
                     }
-                    eprintln!("{}", oops);
+                    eprintln!("{oops}");
                     return variables.set_ret(oops.ret());
                 }
             };

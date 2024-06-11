@@ -98,6 +98,7 @@ impl From<u16> for ReturnCode {
 impl From<i32> for ReturnCode {
     fn from(value: i32) -> Self {
         // Reasonably sure this won't matter, I don't care about it losing bits from the top.
+        #[allow(clippy::cast_possible_truncation)]
         Self { val: value as u16 }
     }
 }

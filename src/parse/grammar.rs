@@ -453,7 +453,7 @@ pub fn eval(
                         .eval_escapes()
                         .eval_variables(variables)
                         .to_string(),
-                )
+                );
             }
             let cmd_run: ExternalCommand = expanded.into();
             let templated = execute_external_command(cmd_run, variables, commands);
@@ -463,8 +463,8 @@ pub fn eval(
                     variables.set_ret(foop.wait().unwrap().code().unwrap().into());
                 }
                 Err(oops) => {
-                    eprintln!("{}", oops);
-                    variables.set_ret(oops.ret())
+                    eprintln!("{oops}");
+                    variables.set_ret(oops.ret());
                 }
             }
         }

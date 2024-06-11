@@ -21,7 +21,7 @@ pub fn builtin_hash(
             return err.ret();
         }
     } else {
-        for (cmd, patho) in commands.cmds.iter() {
+        for (cmd, patho) in &commands.cmds {
             println!("{}={}", cmd, patho.display());
         }
     }

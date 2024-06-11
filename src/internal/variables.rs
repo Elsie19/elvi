@@ -93,7 +93,7 @@ impl Variables {
     /// values (can only be a [`ElviType::String`]).
     pub fn get_environmentals(&self) -> HashMap<String, String> {
         let mut ret: HashMap<String, String> = HashMap::new();
-        for (name, var) in self.vars.iter() {
+        for (name, var) in &self.vars {
             if var.get_lvl() == ElviGlobal::Global {
                 ret.insert(name.to_string(), var.get_value().to_string());
             }
@@ -548,7 +548,7 @@ impl fmt::Display for ElviType {
             ElviType::String(x)
             | ElviType::VariableSubstitution(x)
             | ElviType::CommandSubstitution(x)
-            | ElviType::BareString(x) => write!(f, "{}", x),
+            | ElviType::BareString(x) => write!(f, "{x}"),
             ElviType::Number(x) => write!(f, "{x}"),
             ElviType::ErrExitCode(x) => write!(f, "{x}"),
             ElviType::Boolean(x) => write!(f, "{x}"),
