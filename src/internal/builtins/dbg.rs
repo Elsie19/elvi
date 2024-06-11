@@ -5,6 +5,7 @@ use crate::internal::variables::ElviMutable;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `dbg` builtin is run.
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_dbg(name: &str, variables: &mut Variables) -> ReturnCode {
     let Some(var) = variables.get_variable(name) else {
         let err = VariableError::NoSuchVariable {

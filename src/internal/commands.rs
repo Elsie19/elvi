@@ -38,6 +38,10 @@ pub struct ExternalCommand {
 
 impl Commands {
     /// Generate a list of commands from a path variable.
+    ///
+    /// # Panics
+    /// 1. This will panic if it cannot find the `PATH` variable, which in practice won't happen.
+    /// 2. Will panic if `PATH` is not defined as an [`ElviType::String`].
     #[must_use = "Why are you generating PATH if you aren't using it"]
     pub fn generate(variables: &Variables) -> Self {
         let mut cmds: HashMap<String, PathBuf> = HashMap::new();

@@ -53,8 +53,10 @@ impl ReturnCode {
     /// <https://tldp.org/LDP/abs/html/exitcodes.html#AEN23629>
     /// Will cap a given return value to within a range of 0-255.
     #[must_use]
+    // We are ok with this, because by doing the `% 256`, we ensure it's in range.
+    #[allow(clippy::cast_possible_truncation)]
     pub fn cap(self) -> u8 {
-        (self.val % 256).try_into().unwrap()
+        (self.val % 256) as u8
     }
 
     /// Success in POSIX is defined as 0.

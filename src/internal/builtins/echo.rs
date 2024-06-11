@@ -3,6 +3,7 @@ use crate::internal::variables::{ElviType, Variables};
 
 /// The internal code that runs when the `echo` builtin is run.
 #[must_use]
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_echo(text: Option<Vec<ElviType>>, variables: &Variables) -> ReturnCode {
     let mut to_print = vec![];
     if text.is_none() {

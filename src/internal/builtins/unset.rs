@@ -5,6 +5,7 @@ use crate::internal::variables::ElviMutable;
 use crate::internal::variables::Variables;
 
 /// The internal code that runs when the `unset` builtin is run.
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
     let Some(var) = variables.get_variable(name) else {
         // <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#unset> in description in 5th paragraph

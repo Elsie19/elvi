@@ -10,6 +10,7 @@ use crate::internal::{
 /// <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#exit>
 /// except for trapping.
 #[must_use]
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_exit(num: Option<ElviType>) -> ReturnCode {
     match num {
         Some(yo) => {

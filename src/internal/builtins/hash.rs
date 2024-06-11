@@ -4,6 +4,7 @@ use crate::internal::status::ReturnCode;
 use crate::internal::variables::{ElviType, Variables};
 
 /// The internal code that runs when the `hash` builtin is run.
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_hash(
     flag: Option<ElviType>,
     commands: &mut Commands,

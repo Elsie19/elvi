@@ -9,6 +9,7 @@ use crate::internal::variables::{ElviType, Variable, Variables};
 ///
 /// # Todo
 /// Fix this spaghetti code.
+#[allow(clippy::module_name_repetitions)]
 pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCode {
     if flag.is_none() {
         match variables.set_variable(

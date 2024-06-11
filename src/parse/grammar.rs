@@ -393,6 +393,8 @@ impl ElviParser {
 }
 
 /// Evaluates any given [`Actions`].
+// We know clippy. Lol.
+#[allow(clippy::too_many_lines)]
 pub fn eval(
     action: Actions,
     variables: &mut Variables,
@@ -422,9 +424,7 @@ pub fn eval(
             }
             Builtins::Hash(mut flag) => {
                 // Let's just eval possible vars
-                if flag.is_some() {
-                    flag = Some(flag.unwrap().eval_escapes().eval_variables(variables));
-                }
+                flag = flag.map(|f| f.eval_escapes().eval_variables(variables));
                 let ret = builtins::hash::builtin_hash(flag, commands, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
