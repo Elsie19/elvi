@@ -2,6 +2,9 @@ use std::str::FromStr;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 /// Wrapper for a [`u16`] to represent an error code.
+///
+/// All documentation for exit codes are available at
+/// <https://tldp.org/LDP/abs/html/exitcodes.html>.
 pub struct ReturnCode {
     /// Actual error code.
     val: u16,
@@ -11,7 +14,6 @@ pub struct ReturnCode {
 /// Struct for bad parses into a [`ReturnCode`].
 pub struct ParseReturnCodeError;
 
-/// <https://tldp.org/LDP/abs/html/exitcodes.html>
 impl ReturnCode {
     /// Returns an instance of [`ReturnCode`] with a given value.
     #[must_use]
@@ -59,17 +61,35 @@ impl ReturnCode {
         (self.val % 256) as u8
     }
 
-    /// Success in POSIX is defined as 0.
+    /// Success
+    ///
+    /// # Code
+    /// A successful command shall return `0`.
     pub const SUCCESS: u16 = 0;
-    /// Failure in POSIX is defined as 1.
+    /// Failure
+    ///
+    /// # Code
+    /// A general failure code shall return `1`.
     pub const FAILURE: u16 = 1;
-    /// Misuse of a builtin shall return 2.
+    /// Misuse
+    ///
+    /// # Code
+    /// Misuse of a builtin shall return `2`.
     pub const MISUSE: u16 = 2;
-    /// A script cannot be executed due to permission errors.
+    /// Permission denied
+    ///
+    /// # Code
+    /// A script cannot be executed due to permission errors shall return 126.
     pub const PERMISSION_DENIED: u16 = 126;
+    /// Command not found
+    ///
+    /// # Code
     /// A command not found in PATH that is called shall return 127.
     pub const COMMAND_NOT_FOUND: u16 = 127;
-    /// When ctrl-C is called on a script.
+    /// Signal killing
+    ///
+    /// # Code
+    /// When ctrl-C is called on a script, it shall return `130`.
     pub const CTRL_C: u16 = 130;
 }
 
