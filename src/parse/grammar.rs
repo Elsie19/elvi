@@ -297,7 +297,8 @@ impl ElviParser {
             [name # variableIdent(name)] => {
                 Actions::FunctionDeclaration(Function {
                     name,
-                    contents: None,
+                    // This is to match when I run `foo() {}` then `foo` in sh.
+                    contents: Some(vec![Actions::Command(vec![ElviType::String("{}".into())])]),
                 })
             }
         ))

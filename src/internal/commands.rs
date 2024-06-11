@@ -21,7 +21,7 @@ use super::errors::CommandError;
 pub struct Commands {
     /// Hashmap of the name of a command, and the path to its executable.
     pub cmds: HashMap<String, PathBuf>,
-    /// List of functions and their [`Actions`].
+    /// List of functions.
     pub functions: HashMap<String, Function>,
 }
 

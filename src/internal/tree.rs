@@ -32,7 +32,9 @@ pub enum Actions {
 #[derive(Debug, Clone)]
 /// How functions are handled.
 pub struct Function {
+    /// Name of function.
     pub name: String,
+    /// Internals of the function.
     pub contents: Option<Vec<Actions>>,
 }
 
