@@ -432,10 +432,9 @@ pub fn eval(
                 let ret = builtins::unset::builtin_unset(var.as_deref(), variables, commands).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
-            Builtins::Hash(mut flag) => {
+            Builtins::Hash(flag) => {
                 // Let's just eval possible vars
-                flag = flag.map(|f| f.eval_escapes().eval_variables(variables));
-                let ret = builtins::hash::builtin_hash(flag, commands, variables).get();
+                let ret = builtins::hash::builtin_hash(flag.as_deref(), commands, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Cd(mut flag) => {
