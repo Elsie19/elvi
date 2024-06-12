@@ -429,7 +429,7 @@ pub fn eval(
                 }
             }
             Builtins::Unset(var) => {
-                let ret = builtins::unset::builtin_unset(&var, variables).get();
+                let ret = builtins::unset::builtin_unset(var.as_deref(), variables, commands).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Hash(mut flag) => {

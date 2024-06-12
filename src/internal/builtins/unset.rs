@@ -1,29 +1,95 @@
-use crate::internal::errors::ElviError;
+use getopts::Options;
+
+use crate::internal::commands::Commands;
 use crate::internal::errors::VariableError;
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::ElviMutable;
+use crate::internal::variables::ElviType;
 use crate::internal::variables::Variables;
+
+#[derive(PartialEq)]
+enum TypeUnset {
+    Function,
+    Variable,
+}
 
 /// The internal code that runs when the `unset` builtin is run.
 #[allow(clippy::module_name_repetitions)]
-pub fn builtin_unset(name: &str, variables: &mut Variables) -> ReturnCode {
-    let Some(var) = variables.get_variable(name) else {
+pub fn builtin_unset(
+    args: Option<&[ElviType]>,
+    variables: &mut Variables,
+    commands: &mut Commands,
+) -> ReturnCode {
+    let mut opts = Options::new();
+    let mut to_unset = TypeUnset::Variable;
+    let mut evaled_variables = vec![];
+    opts.optflag("h", "help", "print help menu");
+    opts.optflag("v", "", "treat each NAME as a shell variable");
+    opts.optflag("f", "", "treat each NAME as a shell function");
+
+    if let Some(unny) = args {
+        for part in unny {
+            evaled_variables.push(
+                part.tilde_expansion(variables)
+                    .eval_escapes()
+                    .eval_variables(variables)
+                    .to_string(),
+            );
+        }
+    }
+
+    let matches = match opts.parse(evaled_variables) {
+        Ok(m) => m,
+        Err(f) => {
+            eprintln!("{f}");
+            return ReturnCode::MISUSE.into();
+        }
+    };
+    if matches.opt_present("h") {
+        print_usage("unset", opts);
+        return ReturnCode::SUCCESS.into();
+    }
+    if matches.opt_present("f") {
+        to_unset = TypeUnset::Function;
+    } else if matches.opt_present("v") {
+        to_unset = TypeUnset::Variable;
+    }
+    if matches.free.is_empty() {
+        print_usage("unset", opts);
+        return ReturnCode::MISUSE.into();
+    }
+
+    let mut return_code: ReturnCode = ReturnCode::SUCCESS.into();
+
+    for name in matches.free {
+        if to_unset == TypeUnset::Function {
+            commands.deregister_function(&name);
+        } else {
+            let Some(var) = variables.get_variable(&name) else {
         // <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#unset> in description in 5th paragraph
         return ReturnCode::SUCCESS.into();
     };
-    match var.get_modification_status() {
-        ElviMutable::Normal => match variables.unset(name) {
-            // We don't care about what it returned
-            Some(()) | None => ReturnCode::SUCCESS.into(),
-        },
-        ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-            let err = VariableError::Readonly {
-                name: "unset".to_string(),
-                line: var.get_line().0,
-                column: var.get_line().1,
-            };
-            eprintln!("{err}");
-            err.ret()
+            match var.get_modification_status() {
+                ElviMutable::Normal => match variables.unset(&name) {
+                    // We don't care about what it returned
+                    Some(()) | None => {}
+                },
+                ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
+                    let err = VariableError::Readonly {
+                        name: "unset".to_string(),
+                        line: var.get_line().0,
+                        column: var.get_line().1,
+                    };
+                    eprintln!("{err}");
+                    return_code = ReturnCode::FAILURE.into();
+                }
+            }
         }
     }
+    return return_code;
+}
+
+fn print_usage(program: &str, opts: Options) {
+    let brief = format!("Usage: {} [-fv] [name ...]", program);
+    print!("{}", opts.usage(&brief));
 }

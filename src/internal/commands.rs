@@ -76,6 +76,11 @@ impl Commands {
         self.functions.insert(func.name.clone(), func);
     }
 
+    /// Unregister a function.
+    pub fn deregister_function(&mut self, name: &str) {
+        self.functions.remove(name);
+    }
+
     #[must_use = "Whatcha not doing with this path here bud"]
     pub fn get_path(&self, program: &str) -> Option<PathBuf> {
         self.cmds.get(program).cloned()
