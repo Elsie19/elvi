@@ -201,28 +201,22 @@ impl ElviParser {
 
     /// Handles the readonly builtin.
     pub fn builtinDbg(input: Node) -> Result<Actions> {
-        let name = input
-            .into_children()
-            .into_pairs()
-            .next()
-            .unwrap()
-            .as_str()
-            .to_string();
+        let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)..] => Some(stringo.collect()),
+            [] => None,
+        );
 
-        Ok(Actions::Builtin(Builtins::Dbg(name)))
+        Ok(Actions::Builtin(Builtins::Dbg(possibles)))
     }
 
     /// Handles the unset builtin.
     pub fn builtinUnset(input: Node) -> Result<Actions> {
-        let name = input
-            .into_children()
-            .into_pairs()
-            .next()
-            .unwrap()
-            .as_str()
-            .to_string();
+        let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)..] => Some(stringo.collect()),
+            [] => None,
+        );
 
-        Ok(Actions::Builtin(Builtins::Unset(name)))
+        Ok(Actions::Builtin(Builtins::Unset(possibles)))
     }
 
     /// Handles the echo builtin.
@@ -238,8 +232,7 @@ impl ElviParser {
     /// Handles the exit builtin.
     pub fn builtinExit(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [elviWord(stringo)] => Some(stringo),
-            [elviNumber(num)] => Some(ElviType::String(num.to_string())),
+            [elviWord(stringo)..] => Some(stringo.collect()),
             [] => None,
         );
 
@@ -249,7 +242,7 @@ impl ElviParser {
     /// Handles the hash builtin.
     pub fn builtinHash(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [elviWord(stringo)] => Some(stringo),
+            [elviWord(stringo)..] => Some(stringo.collect()),
             [] => None,
         );
 
@@ -259,7 +252,7 @@ impl ElviParser {
     /// Handles the cd builtin.
     pub fn builtinCd(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
-            [elviWord(stringo)] => Some(stringo),
+            [elviWord(stringo)..] => Some(stringo.collect()),
             [] => None,
         );
 

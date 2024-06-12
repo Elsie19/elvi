@@ -41,15 +41,15 @@ pub struct Function {
 /// A list of builtins and their parameters.
 pub enum Builtins {
     /// Just needs a variable name.
-    Dbg(String),
+    Dbg(Option<Vec<ElviType>>),
     /// Just needs a variable name.
-    Unset(String),
+    Unset(Option<Vec<ElviType>>),
     /// Will exit with `0` if not given data, and if so, attempt to parse into a number.
-    Exit(Option<ElviType>),
+    Exit(Option<Vec<ElviType>>),
     /// Will display commands if no argument given, will regenerate if `-r` is passed.
-    Hash(Option<ElviType>),
+    Hash(Option<Vec<ElviType>>),
     /// Needs a path, empty, or dash.
-    Cd(Option<ElviType>),
+    Cd(Option<Vec<ElviType>>),
     /// Needs something to test and a bool (! for example).
     Test(bool, TestOptions),
     /// Can take nothing or a list of stuff
