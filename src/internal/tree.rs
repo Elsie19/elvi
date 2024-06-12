@@ -171,7 +171,7 @@ pub fn change_variable(
             var.change_contents(goopy.eval_escapes().eval_variables(variables));
             change_variable(variables, commands, lvl, name, var);
         }
-        ElviType::String(_we_dont_care) => {
+        ElviType::String(_) => {
             // First let's get the level because while parsing we assume a certain variable level that is
             // not true to the actual evaluating.
             if var.get_lvl() != ElviGlobal::Global {
