@@ -317,25 +317,25 @@ impl ElviParser {
         Ok(match_nodes!(input.into_children();
             // Condition + then_block
             [ifStatementMatch(condition), then_block # statement(stmt)..] => Actions::IfStatement(Box::new(
-            Conditional {
-                condition,
-                then_block: stmt.collect(),
-                elif_block: None,
-                else_block: None
-            }
-        ),
+                Conditional {
+                    condition,
+                    then_block: stmt.collect(),
+                    elif_block: None,
+                    else_block: None
+                }
+            ),
         ),
             // Condition + then_block + else_block
             [ifStatementMatch(condition), then_block # statement(stmt).., else_block # statement(else_part)..] => Actions::IfStatement(Box::new(
-                        Conditional {
-                            condition,
-                            then_block: stmt.collect(),
-                            elif_block: None,
-                            else_block: Some(else_part.collect())
-                        }
-                    ),
-                    )
-                ))
+                    Conditional {
+                        condition,
+                        then_block: stmt.collect(),
+                        elif_block: None,
+                        else_block: Some(else_part.collect())
+                    }
+                ),
+            )
+        ))
     }
 
     /// Handles the inner matching of for loops
