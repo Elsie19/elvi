@@ -421,7 +421,7 @@ pub fn eval(
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Exit(var) => {
-                let ret = builtins::exit::builtin_exit(var);
+                let ret = builtins::exit::builtin_exit(var.as_deref(), variables);
                 if *subshells_in > 1 {
                     *subshells_in -= 1;
                 } else {
