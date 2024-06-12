@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
+use getopts::Options;
+
 use crate::internal::errors::{CommandError, ElviError};
 use crate::internal::status::ReturnCode;
 use crate::internal::variables::{ElviType, Variable, Variables};
@@ -10,8 +12,35 @@ use crate::internal::variables::{ElviType, Variable, Variables};
 /// # Todo
 /// Fix this spaghetti code.
 #[allow(clippy::module_name_repetitions)]
-pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCode {
-    if flag.is_none() {
+pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> ReturnCode {
+    let mut opts = Options::new();
+    let mut evaled_variables = vec![];
+    opts.optflag("h", "help", "print help menu");
+
+    if let Some(unny) = args {
+        for part in unny {
+            evaled_variables.push(
+                part.tilde_expansion(variables)
+                    .eval_escapes()
+                    .eval_variables(variables)
+                    .to_string(),
+            );
+        }
+    }
+
+    let matches = match opts.parse(evaled_variables) {
+        Ok(m) => m,
+        Err(f) => {
+            eprintln!("{f}");
+            return ReturnCode::MISUSE.into();
+        }
+    };
+    if matches.opt_present("h") {
+        print_usage("cd", opts);
+        return ReturnCode::SUCCESS.into();
+    }
+
+    if matches.free.is_empty() {
         match variables.set_variable(
             "OLDPWD".to_string(),
             variables.get_variable("PWD").unwrap().to_owned(),
@@ -37,7 +66,7 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
         return ReturnCode::SUCCESS.into();
     }
     // Atp we know we got something, so let's check if it's `-` or a path.
-    match flag.unwrap().to_string().as_str() {
+    match matches.free[0].as_str() {
         "-" => {
             let swap = variables.get_variable("PWD").unwrap().clone();
             match variables.set_variable(
@@ -108,4 +137,9 @@ pub fn builtin_cd(flag: Option<ElviType>, variables: &mut Variables) -> ReturnCo
             ReturnCode::SUCCESS.into()
         }
     }
+}
+
+fn print_usage(program: &str, opts: Options) {
+    let brief = format!("Usage: {} PATH", program);
+    print!("{}", opts.usage(&brief));
 }

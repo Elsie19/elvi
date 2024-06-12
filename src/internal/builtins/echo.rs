@@ -31,8 +31,8 @@ pub fn builtin_echo(text: Option<&[ElviType]>, variables: &Variables) -> ReturnC
 
     let mut to_print = vec![];
     if !matches.free.is_empty() {
-        for part in matches.free {
-            to_print.push(part);
+        for part in &matches.free {
+            to_print.push(part.to_owned());
         }
         if matches.opt_present("n") {
             print!("{}", to_print.join(" "));

@@ -437,10 +437,9 @@ pub fn eval(
                 let ret = builtins::hash::builtin_hash(flag.as_deref(), commands, variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
-            Builtins::Cd(mut flag) => {
+            Builtins::Cd(flag) => {
                 // Let's just eval possible vars
-                flag = flag.map(|f| f.eval_escapes().eval_variables(variables));
-                let ret = builtins::cd::builtin_cd(flag, variables).get();
+                let ret = builtins::cd::builtin_cd(flag.as_deref(), variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Test(invert, yo) => {
