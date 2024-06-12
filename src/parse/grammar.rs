@@ -417,7 +417,7 @@ pub fn eval(
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
-                let ret = builtins::dbg::builtin_dbg(&var, variables).get();
+                let ret = builtins::dbg::builtin_dbg(var.as_deref(), variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
             Builtins::Exit(var) => {
