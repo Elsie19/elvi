@@ -2,7 +2,6 @@ use std::io;
 use std::io::Write;
 
 use crate::internal::errors::ElviError;
-use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;
 use super::{
