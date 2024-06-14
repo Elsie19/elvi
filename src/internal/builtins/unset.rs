@@ -46,7 +46,7 @@ pub fn builtin_unset(
         }
     };
     if matches.opt_present("h") {
-        print_usage("unset", opts);
+        print_usage("unset", &opts);
         return ReturnCode::SUCCESS.into();
     }
     if matches.opt_present("f") {
@@ -55,7 +55,7 @@ pub fn builtin_unset(
         to_unset = TypeUnset::Variable;
     }
     if matches.free.is_empty() {
-        print_usage("unset", opts);
+        print_usage("unset", &opts);
         return ReturnCode::MISUSE.into();
     }
 
@@ -86,10 +86,10 @@ pub fn builtin_unset(
             }
         }
     }
-    return return_code;
+    return_code
 }
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} [-fv] [name ...]", program);
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {program} [-fv] [name ...]");
     print!("{}", opts.usage(&brief));
 }

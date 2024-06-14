@@ -30,7 +30,14 @@ pub fn builtin_echo(text: Option<&[ElviType]>, variables: &Variables) -> ReturnC
     };
 
     let mut to_print = vec![];
-    if !matches.free.is_empty() {
+    if matches.free.is_empty() {
+        if matches.opt_present("n") {
+            print!("");
+        } else {
+            println!();
+        }
+        ReturnCode::SUCCESS.into()
+    } else {
         for part in &matches.free {
             to_print.push(part.to_owned());
         }
@@ -38,13 +45,6 @@ pub fn builtin_echo(text: Option<&[ElviType]>, variables: &Variables) -> ReturnC
             print!("{}", to_print.join(" "));
         } else {
             println!("{}", to_print.join(" "));
-        }
-        ReturnCode::SUCCESS.into()
-    } else {
-        if matches.opt_present("n") {
-            print!("");
-        } else {
-            println!();
         }
         ReturnCode::SUCCESS.into()
     }

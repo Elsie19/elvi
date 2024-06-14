@@ -17,9 +17,9 @@ pub struct Args {
 #[derive(Debug, clap::Args)]
 #[group(required = true, multiple = false)]
 pub struct Group {
-    /// Read commands from the command_string operand instead of from the standard input.
+    /// Read commands from the `command_string` operand instead of from the standard input.
     ///
-    /// Special parameter 0 will be set from the command_name operand
+    /// Special parameter 0 will be set from the `command_name` operand
     /// and the positional parameters ($1, $2, etc.)  set
     /// from the remaining argument operands.
     #[clap(short = 'c', long = None, conflicts_with = "file")]

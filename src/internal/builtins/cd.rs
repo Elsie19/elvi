@@ -36,7 +36,7 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
         }
     };
     if matches.opt_present("h") {
-        print_usage("cd", opts);
+        print_usage("cd", &opts);
         return ReturnCode::SUCCESS.into();
     }
 
@@ -139,7 +139,7 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
     }
 }
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} PATH", program);
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {program} PATH");
     print!("{}", opts.usage(&brief));
 }

@@ -352,12 +352,8 @@ impl ElviParser {
     /// Handles global statements.
     pub fn statement(input: Node) -> Result<Actions> {
         match_nodes!(input.into_children();
-            [normalVariable(var)] => {
-                Ok(Actions::ChangeVariable(var))
-            },
-            [readonlyVariable(var)] => {
-                Ok(Actions::ChangeVariable(var))
-            },
+            [normalVariable(var)] => Ok(Actions::ChangeVariable(var)),
+            [readonlyVariable(var)] => Ok(Actions::ChangeVariable(var)),
             [builtinWrapper(var)] => Ok(var),
             [externalCommand(var)] => Ok(var),
             [ifStatement(stmt)] => Ok(stmt),
@@ -376,7 +372,7 @@ impl ElviParser {
         // Set all the positional variables once.
         let list: Vec<Variable> = positional_arguments
             .args
-            .to_owned()
+            .clone()
             .iter()
             .map(|var| var.to_owned().into())
             .collect();

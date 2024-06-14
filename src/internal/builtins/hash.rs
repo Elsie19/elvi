@@ -41,14 +41,14 @@ pub fn builtin_hash(
             println!("{}={}", cmd, patho.display());
         }
     } else {
-        print_usage("hash", opts);
+        print_usage("hash", &opts);
         return ReturnCode::MISUSE.into();
     }
 
     ReturnCode::SUCCESS.into()
 }
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} [-r] [name ...]", program);
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {program} [-r] [name ...]");
     print!("{}", opts.usage(&brief));
 }

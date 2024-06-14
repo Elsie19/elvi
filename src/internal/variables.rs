@@ -202,11 +202,13 @@ impl Variables {
     }
 
     /// Pull parameters out.
+    #[must_use]
     pub fn pull_parameters(&self) -> Vec<Variable> {
         self.params.clone()
     }
 
     /// Get count of parameters.
+    #[must_use]
     pub fn len_parameters(&self) -> usize {
         self.params.len()
     }
@@ -298,7 +300,7 @@ impl Default for Variables {
 impl Default for Variable {
     fn default() -> Self {
         Self {
-            contents: ElviType::String("".into()),
+            contents: ElviType::String(String::new()),
             modification_status: ElviMutable::Normal,
             shell_lvl: ElviGlobal::Global,
             line: (0, 0),
@@ -431,7 +433,7 @@ impl ElviType {
                 // Perchance could it be a user form?
                 } else if re.is_match(match path.parent() {
                     Some(p) => p.to_str().unwrap(),
-                    None => "/".into(),
+                    None => "/",
                 }) {
                     let user = match path.parent() {
                         Some(woot) => {
@@ -502,7 +504,7 @@ impl ElviType {
                 while let Some(charp) = chars_of.next() {
                     // Do we have a variable that is escaped?
                     if charp == '\\' && chars_of.peek() == Some(&'$') {
-                        chars_of.next().unwrap();
+                        chars_of.next();
                         back_to_string.push('$');
                     // Do we have a normal string please.
                     } else if charp != '$' {
@@ -513,7 +515,7 @@ impl ElviType {
                         // Oh and we're at '$' in the thing.
                         if chars_of.peek() == Some(&'{') {
                             // WOOOOOOOO
-                            chars_of.next().unwrap();
+                            chars_of.next();
                             //BUG: What about ${foo\}bar}
                             let tasty_var: String =
                                 chars_of.by_ref().take_while(|&c| c != '}').collect();
@@ -597,6 +599,10 @@ impl ElviType {
     /// # Notes
     /// This function will return a list of paths it matches against, but if it does not match
     /// anything, it will return the literal string that it received.
+    ///
+    /// # Panics
+    /// 1. This can panic if a string returned by [`glob()`] is not valid unicode, which in
+    ///    practice will never happen.
     #[must_use = "Why no using the globs ya goof"]
     pub fn expand_globs(&self) -> Vec<Self> {
         let mut ret_vec = vec![];

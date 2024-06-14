@@ -33,12 +33,12 @@ pub fn builtin_dbg(args: Option<&[ElviType]>, variables: &mut Variables) -> Retu
         }
     };
     if matches.opt_present("h") {
-        print_usage("dbg", opts);
+        print_usage("dbg", &opts);
         return ReturnCode::SUCCESS.into();
     }
 
     if matches.free.is_empty() {
-        print_usage("dbg", opts);
+        print_usage("dbg", &opts);
         return ReturnCode::FAILURE.into();
     }
 
@@ -60,7 +60,7 @@ pub fn builtin_dbg(args: Option<&[ElviType]>, variables: &mut Variables) -> Retu
     ReturnCode::SUCCESS.into()
 }
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} VARNAME", program);
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {program} VARNAME");
     print!("{}", opts.usage(&brief));
 }

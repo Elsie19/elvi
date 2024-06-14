@@ -37,11 +37,11 @@ pub fn builtin_exit(args: Option<&[ElviType]>, variables: &Variables) -> ReturnC
         }
     };
     if matches.opt_present("h") {
-        print_usage("exit", opts);
+        print_usage("exit", &opts);
         return ReturnCode::SUCCESS.into();
     }
 
-    match matches.free.get(0) {
+    match matches.free.first() {
         Some(yo) => {
             let try_code = yo.to_string().parse::<ReturnCode>();
             if let Ok(yay) = try_code {
@@ -60,7 +60,7 @@ pub fn builtin_exit(args: Option<&[ElviType]>, variables: &Variables) -> ReturnC
     }
 }
 
-fn print_usage(program: &str, opts: Options) {
-    let brief = format!("Usage: {} [n]", program);
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {program} [n]");
     print!("{}", opts.usage(&brief));
 }
