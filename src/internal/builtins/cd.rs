@@ -56,14 +56,10 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
             Ok(()) => {}
             Err(oops) => eprintln!("{oops}"),
         }
-        assert!(env::set_current_dir(
-            variables
-                .get_variable("HOME")
-                .unwrap()
-                .get_value()
-                .to_string()
-        )
-        .is_ok());
+        assert!(
+            env::set_current_dir(variables.get_variable("HOME").unwrap().contents.to_string())
+                .is_ok()
+        );
         return ReturnCode::SUCCESS.into();
     }
     // Atp we know we got something, so let's check if it's `-` or a path.
@@ -77,17 +73,13 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
-            println!("{}", variables.get_variable("PWD").unwrap().get_value());
+            println!("{}", variables.get_variable("PWD").unwrap().contents);
             match variables.set_variable("OLDPWD".to_string(), swap) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
             assert!(env::set_current_dir(
-                variables
-                    .get_variable("PWD")
-                    .unwrap()
-                    .get_value()
-                    .to_string()
+                variables.get_variable("PWD").unwrap().contents.to_string()
             )
             .is_ok());
             ReturnCode::SUCCESS.into()
@@ -117,19 +109,25 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
             // Ok so the path exists, time to roll.
             match variables.set_variable(
                 "OLDPWD".to_string(),
-                variables.get_variable("PWD").unwrap().clone(),
+                match variables.get_variable("PWD") {
+                    Some(yay) => yay.to_owned(),
+                    None => Variable {
+                        contents: ElviType::String(
+                            env::current_dir().unwrap().to_str().unwrap().into(),
+                        ),
+                        ..Default::default()
+                    },
+                },
             ) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
             match variables.set_variable(
                 "PWD".to_string(),
-                Variable::oneshot_var(
-                    &ElviType::String(to_cd.to_str().unwrap().to_string()),
-                    crate::internal::variables::ElviMutable::Normal,
-                    crate::internal::variables::ElviGlobal::Global,
-                    (0, 0),
-                ),
+                Variable {
+                    contents: ElviType::String(to_cd.to_str().unwrap().to_string()),
+                    ..Default::default()
+                },
             ) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),

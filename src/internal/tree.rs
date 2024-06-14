@@ -2,6 +2,7 @@ use std::io;
 use std::io::Write;
 
 use crate::internal::errors::ElviError;
+use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;
 use super::{
@@ -164,17 +165,17 @@ pub fn change_variable(
     var: &mut Variable,
 ) {
     // Makes shit easier to deal with.
-    match var.get_value() {
+    match &var.contents {
         goopy @ ElviType::VariableSubstitution(_) => {
             // Goopy will save us!!!
-            var.change_contents(goopy.eval_escapes().eval_variables(variables));
+            var.contents = goopy.eval_escapes().eval_variables(variables);
             change_variable(variables, commands, lvl, name, var);
         }
         ElviType::String(_) => {
             // First let's get the level because while parsing we assume a certain variable level that is
             // not true to the actual evaluating.
-            if var.get_lvl() != ElviGlobal::Global {
-                var.change_lvl(lvl);
+            if var.shell_lvl != ElviGlobal::Global {
+                var.shell_lvl = ElviGlobal::Normal(lvl);
             }
             match variables.set_variable(name, var.to_owned()) {
                 Ok(()) => {}
@@ -197,17 +198,17 @@ pub fn change_variable(
             let mut child = match retty {
                 Ok(yay) => yay,
                 Err(oops) => {
-                    if var.get_lvl() != ElviGlobal::Global {
-                        var.change_lvl(lvl);
+                    if var.shell_lvl != ElviGlobal::Global {
+                        var.shell_lvl = ElviGlobal::Normal(lvl);
                     }
                     match variables.set_variable(
                         name.clone(),
-                        Variable::oneshot_var(
-                            &ElviType::String(String::new()),
-                            var.get_modification_status(),
-                            var.get_lvl(),
-                            var.get_line(),
-                        ),
+                        Variable {
+                            modification_status: var.modification_status,
+                            shell_lvl: var.shell_lvl,
+                            line: var.line,
+                            ..Default::default()
+                        },
                     ) {
                         Ok(()) => {}
                         Err(oops) => eprintln!("{oops}"),
@@ -216,26 +217,29 @@ pub fn change_variable(
                     return variables.set_ret(oops.ret());
                 }
             };
-            let completed_child = child.output().expect("Could not execute process");
+            let completed_child = match child.output() {
+                Ok(yay) => yay,
+                Err(f) => {
+                    eprintln!("{f}");
+                    return variables.set_ret(ReturnCode::FAILURE.into());
+                }
+            };
             if !completed_child.stderr.is_empty() {
                 io::stderr().write_all(&completed_child.stderr).unwrap();
             }
-            match variables.set_variable(
-                name,
-                var.change_contents(ElviType::String(
-                    // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
-                    // assignment if it comes up.
-                    std::str::from_utf8(&completed_child.stdout)
-                        .unwrap()
-                        // This is to conform to
-                        // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,
-                        // specifically the part about trailing newlines deleted. This is from
-                        // the bash manual but it is the same in POSIX, I've checked.
-                        .trim_end_matches('\n')
-                        .to_string(),
-                ))
-                .clone(),
-            ) {
+            var.contents = ElviType::String(
+                // POSIX says (somewhere trust me) that stderr shouldn't be in the variable
+                // assignment if it comes up.
+                std::str::from_utf8(&completed_child.stdout)
+                    .unwrap()
+                    // This is to conform to
+                    // <https://www.gnu.org/software/bash/manual/html_node/Command-Substitution.html>,
+                    // specifically the part about trailing newlines deleted. This is from
+                    // the bash manual but it is the same in POSIX, I've checked.
+                    .trim_end_matches('\n')
+                    .to_string(),
+            );
+            match variables.set_variable(name, var.clone()) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }

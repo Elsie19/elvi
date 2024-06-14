@@ -49,7 +49,7 @@ impl Commands {
     pub fn generate(variables: &Variables) -> Self {
         let mut cmds: HashMap<String, PathBuf> = HashMap::new();
 
-        let path_var = variables.get_variable("PATH").unwrap().get_value();
+        let path_var = &variables.get_variable("PATH").unwrap().contents;
 
         let ElviType::String(path_var) = path_var else {
             unreachable!("How is `PATH` defined as anything but a string? For your debugging information, it is {:?}", path_var)
@@ -255,13 +255,7 @@ pub fn execute_external_command(
             cmd.args.unwrap()
         })
         .env_clear()
-        .current_dir(
-            variables
-                .get_variable("PWD")
-                .unwrap()
-                .get_value()
-                .to_string(),
-        )
+        .current_dir(variables.get_variable("PWD").unwrap().contents.to_string())
         .envs(filtered_env);
     Ok(mem::replace(bruh, bitch))
 }

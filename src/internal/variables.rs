@@ -77,13 +77,13 @@ pub struct Variables {
 /// Single variable content.
 pub struct Variable {
     /// Contents of the variable.
-    contents: ElviType,
+    pub contents: ElviType,
     /// Mutability status.
-    modification_status: ElviMutable,
+    pub modification_status: ElviMutable,
     /// Relation to `$SHLVL`.
-    shell_lvl: ElviGlobal,
+    pub shell_lvl: ElviGlobal,
     /// Line and column variable was declared on.
-    line: (usize, usize),
+    pub line: (usize, usize),
 }
 
 impl Variables {
@@ -107,8 +107,8 @@ impl Variables {
     pub fn get_environmentals(&self) -> HashMap<String, String> {
         let mut ret: HashMap<String, String> = HashMap::new();
         for (name, var) in &self.vars {
-            if var.get_lvl() == ElviGlobal::Global {
-                ret.insert(name.to_string(), var.get_value().to_string());
+            if var.shell_lvl == ElviGlobal::Global {
+                ret.insert(name.to_string(), var.contents.to_string());
             }
         }
         ret
@@ -144,12 +144,11 @@ impl Variables {
     pub fn set_ret(&mut self, code: ReturnCode) {
         self.vars.insert(
             "?".into(),
-            Variable::oneshot_var(
-                &ElviType::ErrExitCode(code.get()),
-                ElviMutable::ReadonlyUnsettable,
-                ElviGlobal::Global,
-                (0, 0),
-            ),
+            Variable {
+                contents: ElviType::ErrExitCode(code.get()),
+                modification_status: ElviMutable::ReadonlyUnsettable,
+                ..Default::default()
+            },
         );
     }
 
@@ -163,7 +162,7 @@ impl Variables {
         self.vars
             .get("?")
             .expect("Something very bad happened where `$?` does not exist")
-            .get_value()
+            .contents
             .to_owned()
     }
 
@@ -317,60 +316,6 @@ impl From<String> for Variable {
     }
 }
 
-impl Variable {
-    #[must_use]
-    /// Get [`ElviType`] of variable.
-    pub fn get_value(&self) -> &ElviType {
-        &self.contents
-    }
-
-    /// Return a variable template with all options available.
-    #[must_use]
-    pub fn oneshot_var(
-        contents: &ElviType,
-        modification_status: ElviMutable,
-        shell_lvl: ElviGlobal,
-        line: (usize, usize),
-    ) -> Self {
-        Self {
-            contents: contents.clone(),
-            modification_status,
-            shell_lvl,
-            line,
-        }
-    }
-
-    /// Return the [`ElviGlobal`] of a given variable.
-    #[must_use]
-    pub fn get_lvl(&self) -> ElviGlobal {
-        self.shell_lvl
-    }
-
-    /// Change any variable's level to a [`ElviGlobal::Normal`] and return it.
-    pub fn change_lvl(&mut self, lvl: u32) -> ElviGlobal {
-        self.shell_lvl = ElviGlobal::Normal(lvl);
-        self.shell_lvl
-    }
-
-    /// Get the [`ElviMutable`] of a variable.
-    #[must_use]
-    pub fn get_modification_status(&self) -> ElviMutable {
-        self.modification_status
-    }
-
-    /// Get the assignment line of a variable.
-    #[must_use]
-    pub fn get_line(&self) -> (usize, usize) {
-        self.line
-    }
-
-    /// Change and return the contents of a variable.
-    pub fn change_contents(&mut self, var: ElviType) -> &Self {
-        self.contents = var;
-        self
-    }
-}
-
 impl ElviType {
     /// Return an escaped string using [`backslash::escape_ascii`].
     ///
@@ -424,7 +369,7 @@ impl ElviType {
                 // ```
                 // Do we have a tilde at the start?
                 if path.starts_with("~/") {
-                    let home_dir = vars.get_variable("HOME").unwrap().get_value();
+                    let home_dir = &vars.get_variable("HOME").unwrap().contents;
                     let final_cd = home_dir.to_string()
                         + std::path::MAIN_SEPARATOR_STR
                         + path.strip_prefix("~/").unwrap().to_str().unwrap();
@@ -577,7 +522,7 @@ impl ElviType {
                 let mut pushback = vec![];
                 let loopo = variables.pull_parameters();
                 for (idx, part) in loopo.iter().enumerate().skip(1) {
-                    pushback.push(part.get_value().to_string());
+                    pushback.push(part.contents.to_string());
                     if idx != loopo.len() {
                         pushback.push(" ".to_string());
                     }
@@ -590,7 +535,7 @@ impl ElviType {
             "#" => ret_vec.push((variables.len_parameters() - 1).to_string()),
             default => {
                 if let Some(woot) = variables.get_variable(default) {
-                    ret_vec.push(woot.get_value().to_string());
+                    ret_vec.push(woot.contents.to_string());
                 }
             }
         }

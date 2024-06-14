@@ -168,12 +168,12 @@ impl ElviParser {
 
         Ok((
             name_pair.to_string(),
-            Variable::oneshot_var(
-                &variable_contents.unwrap(),
-                ElviMutable::Normal,
-                ElviGlobal::Normal(1),
-                lines,
-            ),
+            Variable {
+                contents: variable_contents.unwrap(),
+                shell_lvl: ElviGlobal::Normal(1),
+                line: lines,
+                ..Default::default()
+            },
         ))
     }
 
@@ -190,12 +190,12 @@ impl ElviParser {
 
         Ok((
             name_pair.to_string(),
-            Variable::oneshot_var(
-                &variable_contents.unwrap(),
-                ElviMutable::Readonly,
-                ElviGlobal::Normal(1),
-                lines,
-            ),
+            Variable {
+                contents: variable_contents.unwrap(),
+                shell_lvl: ElviGlobal::Normal(1),
+                modification_status: ElviMutable::Readonly,
+                line: lines,
+            },
         ))
     }
 
@@ -517,12 +517,12 @@ pub fn eval(
                         .unwrap();
                     match variables.set_variable(
                         loop_things.variable.to_string(),
-                        Variable::oneshot_var(
-                            var,
-                            template.get_modification_status(),
-                            template.get_lvl(),
-                            template.get_line(),
-                        ),
+                        Variable {
+                            contents: var.clone(),
+                            modification_status: template.modification_status,
+                            shell_lvl: template.shell_lvl,
+                            line: template.line,
+                        },
                     ) {
                         Ok(()) => {}
                         Err(e) => {
@@ -533,12 +533,7 @@ pub fn eval(
                 } else {
                     variables.set_variable(
                         loop_things.variable.to_string(),
-                        Variable::oneshot_var(
-                            var,
-                            ElviMutable::Normal,
-                            ElviGlobal::Global,
-                            (0, 0),
-                        ),
+                        Variable { contents: var.clone(), ..Default::default() }
                     ).unwrap() /* I'm reasonably confident that this won't fail */;
                 }
                 for act in &loop_things.do_block {

@@ -69,7 +69,7 @@ pub fn builtin_unset(
         // <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#unset> in description in 5th paragraph
         return ReturnCode::SUCCESS.into();
     };
-            match var.get_modification_status() {
+            match var.modification_status {
                 ElviMutable::Normal => match variables.unset(&name) {
                     // We don't care about what it returned
                     Some(()) | None => {}
@@ -77,8 +77,8 @@ pub fn builtin_unset(
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
                     let err = VariableError::Readonly {
                         name: "unset".to_string(),
-                        line: var.get_line().0,
-                        column: var.get_line().1,
+                        line: var.line.0,
+                        column: var.line.1,
                     };
                     eprintln!("{err}");
                     return_code = ReturnCode::FAILURE.into();

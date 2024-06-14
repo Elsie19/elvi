@@ -51,10 +51,10 @@ pub fn builtin_dbg(args: Option<&[ElviType]>, variables: &mut Variables) -> Retu
         return err.ret();
     };
 
-    match var.get_modification_status() {
-        ElviMutable::Normal => println!("{}={:?}", matches.free[0], var.get_value()),
+    match var.modification_status {
+        ElviMutable::Normal => println!("{}={:?}", matches.free[0], var.contents),
         ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
-            println!("readonly {}={}", matches.free[0], var.get_value());
+            println!("readonly {}={}", matches.free[0], var.contents);
         }
     }
     ReturnCode::SUCCESS.into()
