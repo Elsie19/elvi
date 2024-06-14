@@ -204,7 +204,7 @@ pub fn change_variable(
                         var.shell_lvl = ElviGlobal::Normal(lvl);
                     }
                     match variables.set_variable(
-                        name.clone(),
+                        name,
                         Variable {
                             modification_status: var.modification_status,
                             shell_lvl: var.shell_lvl,

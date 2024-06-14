@@ -93,11 +93,12 @@ impl Variables {
     /// # Notes
     /// This method has a bit of indirection to it. If it detects what appears to be a positional
     /// parameter, it will silently pull that, even though it is not coming from the vars list.
-    pub fn get_variable(&self, var: &str) -> Option<&Variable> {
-        if let Ok(pos) = var.parse::<usize>() {
+    pub fn get_variable(&self, var: impl Into<String>) -> Option<&Variable> {
+        let var_two = var.into();
+        if let Ok(pos) = var_two.parse::<usize>() {
             self.params.get(pos)
         } else {
-            self.vars.get(var)
+            self.vars.get(&var_two)
         }
     }
 
