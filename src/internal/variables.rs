@@ -222,27 +222,21 @@ impl Default for Variables {
                     "PS1".into(),
                     Variable {
                         contents: ElviType::String("$ ".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
                     "IFS".into(),
                     Variable {
                         contents: ElviType::String(r" \t\n".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
                     "PATH".into(),
                     Variable {
                         contents: ElviType::String("/usr/sbin:/usr/bin:/sbin:/bin".into()),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
@@ -260,9 +254,7 @@ impl Default for Variables {
                         contents: ElviType::String(
                             env::current_dir().unwrap().to_str().unwrap().to_string(),
                         ),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
@@ -271,9 +263,7 @@ impl Default for Variables {
                         contents: ElviType::String(
                             env::current_dir().unwrap().to_str().unwrap().to_string(),
                         ),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
@@ -284,9 +274,7 @@ impl Default for Variables {
                             #[allow(deprecated)]
                             env::home_dir().unwrap().to_str().unwrap().to_string(),
                         ),
-                        modification_status: ElviMutable::Normal,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
             ]),
