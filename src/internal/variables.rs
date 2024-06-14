@@ -429,8 +429,10 @@ impl ElviType {
                         _ => unreachable!("Not possible."),
                     }
                 // Perchance could it be a user form?
-                } else if re.is_match(path.parent().unwrap().to_str().unwrap())
-                    || re.is_match(path.to_str().unwrap())
+                } else if re.is_match(match path.parent() {
+                    Some(p) => p.to_str().unwrap(),
+                    None => "/".into(),
+                }) || re.is_match(path.to_str().unwrap())
                 {
                     let user = match path.parent() {
                         Some(woot) => {
