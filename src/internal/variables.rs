@@ -115,7 +115,7 @@ impl Variables {
     /// Unsets a variable.
     ///
     /// # Notes
-    /// Check before running this function if a varible is not [`ElviMutable::Normal`], because
+    /// Check before running this function if a variable is not [`ElviMutable::Normal`], because
     /// this function will happily unset anything.
     ///
     /// # Returns

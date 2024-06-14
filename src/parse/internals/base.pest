@@ -3,7 +3,7 @@
 /// Entry point for program. Starts at the beginning, and continues with statements.
 program = { SOI ~ ((WHITE_SPACE+)? ~ statement ~ (newline)*)+ ~ EOI }
 
-// Newlines in POSIX are defined as either a newline or a seperator `;`.
+// Newlines in POSIX are defined as either a newline or a separator `;`.
 /// Defines a newline as either `\n` or a `;`.
 newline = _{ ";"{1} | NEWLINE }
 
