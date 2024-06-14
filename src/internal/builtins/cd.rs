@@ -12,6 +12,7 @@ use crate::internal::variables::{ElviType, Variable, Variables};
 /// # Todo
 /// Fix this spaghetti code.
 #[allow(clippy::module_name_repetitions)]
+#[allow(clippy::too_many_lines)]
 pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> ReturnCode {
     let mut opts = Options::new();
     let mut evaled_variables = vec![];

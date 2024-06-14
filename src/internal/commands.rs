@@ -185,6 +185,17 @@ impl Default for CmdReturn {
 ///
 /// # Notes
 /// Everything should be eval'ed and expanded before using this function.
+///
+/// # Errors
+/// * Will return [`CommandError::NotFound`] if the program does not exist.
+/// * Will return [`CommandError::PermissionDenied`] if the path is not executable.
+///
+/// # Panics
+/// Will panic if this scenario happens:
+/// 1. Path is absolute or starts with `./`.
+/// 2. Path exists.
+/// 3. Is not a directory.
+/// 4. Cannot access metadata on file.
 pub fn execute_external_command(
     cmd: ExternalCommand,
     variables: &Variables,

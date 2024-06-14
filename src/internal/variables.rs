@@ -373,6 +373,9 @@ impl Variable {
 
 impl ElviType {
     /// Return an escaped string using [`backslash::escape_ascii`].
+    ///
+    /// # Panics
+    /// Can panic if the string cannot be converted a [`String`] to a UTF-8 byte vector.
     #[must_use]
     pub fn eval_escapes(&self) -> Self {
         match self {

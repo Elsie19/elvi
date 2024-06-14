@@ -123,7 +123,7 @@ impl ElviParser {
         ))
     }
 
-    pub fn builtinTestInvert(_input: Node) -> Result<bool> {
+    pub fn builtinTestInvert(input: Node) -> Result<bool> {
         Ok(true)
     }
 
