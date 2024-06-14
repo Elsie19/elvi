@@ -461,7 +461,14 @@ pub fn eval(
             let templated = execute_external_command(cmd_run, variables, commands);
             match templated {
                 Ok(mut yay) => {
-                    let mut foop = yay.spawn().expect("woot");
+                    let mut foop = match yay.spawn() {
+                        Ok(yes) => yes,
+                        Err(f) => {
+                            eprintln!("{f}");
+                            variables.set_ret(ReturnCode::FAILURE.into());
+                            return variables.get_ret().convert_err_type();
+                        }
+                    };
                     variables.set_ret(foop.wait().unwrap().code().unwrap().into());
                 }
                 Err(oops) => {
