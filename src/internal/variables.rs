@@ -193,6 +193,14 @@ impl Variables {
     }
 
     /// Create a new set of parameters.
+    ///
+    /// # Examples
+    /// ```rust
+    /// # use std::env;
+    /// let args: Vec<String> = env::args().map(|var| var.to_owned().into()).collect();
+    /// let mut variables = Variables::default();
+    /// variables.new_parameters(params.as_slice());
+    /// ```
     pub fn new_parameters(&mut self, params: &[Variable]) {
         self.params = params.to_vec();
     }
@@ -211,7 +219,15 @@ impl Variables {
 }
 
 impl Default for Variables {
-    /// Create new default variable list with required variables.
+    /// Create new default variable list with required variables:
+    ///
+    /// * `PS1`
+    /// * `IFS`
+    /// * `PATH`
+    /// * `?`
+    /// * `PWD`
+    /// * `OLDPWD`
+    /// * `HOME`
     fn default() -> Self {
         Self {
             vars: HashMap::from([
