@@ -77,8 +77,7 @@ pub fn builtin_unset(
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
                     let err = VariableError::Readonly {
                         name: "unset".to_string(),
-                        line: var.line.0,
-                        column: var.line.1,
+                        lines: var.line,
                     };
                     eprintln!("{err}");
                     return_code = ReturnCode::FAILURE.into();

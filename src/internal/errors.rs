@@ -42,19 +42,9 @@ impl std::fmt::Display for CommandError {
 #[derive(Debug)]
 /// Errors relating to variables.
 pub enum VariableError {
-    Readonly {
-        name: String,
-        line: usize,
-        column: usize,
-    },
-    IllegalNumber {
-        name: String,
-        caller: &'static str,
-    },
-    NoSuchVariable {
-        name: String,
-        caller: &'static str,
-    },
+    Readonly { name: String, lines: (usize, usize) },
+    IllegalNumber { name: String, caller: &'static str },
+    NoSuchVariable { name: String, caller: &'static str },
 }
 
 impl std::error::Error for VariableError {}
@@ -74,9 +64,10 @@ impl std::fmt::Display for VariableError {
             Self::NoSuchVariable { name, caller } => {
                 write!(f, "{caller}: no such variable: {name}")
             }
-            Self::Readonly { name, line, column } => write!(
+            Self::Readonly { name, lines } => write!(
                 f,
-                "elvi: {name}: readonly variable (set on line '{line}' column '{column}')"
+                "elvi: {name}: readonly variable (set on line '{}' column '{}')",
+                lines.0, lines.1
             ),
             Self::IllegalNumber { name, caller } => {
                 write!(f, "elvi: {caller}: Illegal number: {name})")

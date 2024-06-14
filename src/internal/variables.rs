@@ -161,7 +161,7 @@ impl Variables {
             .get("?")
             .expect("Something very bad happened where `$?` does not exist")
             .contents
-            .to_owned()
+            .clone()
     }
 
     /// Set a given variable.
@@ -175,8 +175,7 @@ impl Variables {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
                     Err(VariableError::Readonly {
                         name,
-                        line: value.line.0,
-                        column: value.line.1,
+                        lines: value.line,
                     })
                 }
                 ElviMutable::Normal => {
