@@ -514,7 +514,7 @@ impl ElviType {
                         if chars_of.peek() == Some(&'{') {
                             // WOOOOOOOO
                             chars_of.next().unwrap();
-                            //BUG:  What about ${foo\}bar}
+                            //BUG: What about ${foo\}bar}
                             let tasty_var: String =
                                 chars_of.by_ref().take_while(|&c| c != '}').collect();
                             // So here we have a list of expanded special vars, but assuming that
