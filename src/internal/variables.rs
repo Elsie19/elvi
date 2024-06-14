@@ -13,6 +13,12 @@ use std::{
 use super::errors::VariableError;
 use super::status::ReturnCode;
 
+/// Functions to describe the quoted nature of a type.
+pub trait QuotedNature {
+    /// Is a type quoted or not.
+    fn is_quoted(&self) -> bool;
+}
+
 #[derive(Debug, Clone, PartialEq)]
 /// Struct representing the variable types in Elvi.
 pub enum ElviType {
@@ -39,6 +45,15 @@ pub enum ElviType {
     /// $borp
     /// ```
     BareString(String),
+}
+
+impl QuotedNature for ElviType {
+    fn is_quoted(&self) -> bool {
+        match self {
+            Self::VariableSubstitution(_) | Self::CommandSubstitution(_) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
