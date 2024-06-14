@@ -432,8 +432,7 @@ impl ElviType {
                 } else if re.is_match(match path.parent() {
                     Some(p) => p.to_str().unwrap(),
                     None => "/".into(),
-                }) || re.is_match(path.to_str().unwrap())
-                {
+                }) {
                     let user = match path.parent() {
                         Some(woot) => {
                             if woot == Path::new("") {
