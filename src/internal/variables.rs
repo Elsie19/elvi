@@ -105,13 +105,11 @@ impl Variables {
     /// values (can only be a [`ElviType::String`]).
     #[must_use]
     pub fn get_environmentals(&self) -> HashMap<String, String> {
-        let mut ret: HashMap<String, String> = HashMap::new();
-        for (name, var) in &self.vars {
-            if var.shell_lvl == ElviGlobal::Global {
-                ret.insert(name.to_string(), var.contents.to_string());
-            }
-        }
-        ret
+        self.vars
+            .iter()
+            .filter(|(_, var)| var.shell_lvl == ElviGlobal::Global)
+            .map(|(name, var)| (name.to_string(), var.contents.to_string()))
+            .collect()
     }
 
     /// Unsets a variable.
