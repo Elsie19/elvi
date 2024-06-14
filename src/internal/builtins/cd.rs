@@ -42,17 +42,11 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
     }
 
     if matches.free.is_empty() {
-        match variables.set_variable(
-            "OLDPWD".to_string(),
-            variables.get_variable("PWD").unwrap().to_owned(),
-        ) {
+        match variables.set_variable("OLDPWD", variables.get_variable("PWD").unwrap().clone()) {
             Ok(()) => {}
             Err(oops) => eprintln!("{oops}"),
         }
-        match variables.set_variable(
-            "PWD".to_string(),
-            variables.get_variable("HOME").unwrap().clone(),
-        ) {
+        match variables.set_variable("PWD", variables.get_variable("HOME").unwrap().clone()) {
             Ok(()) => {}
             Err(oops) => eprintln!("{oops}"),
         }
@@ -66,15 +60,12 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
     match matches.free[0].as_str() {
         "-" => {
             let swap = variables.get_variable("PWD").unwrap().clone();
-            match variables.set_variable(
-                "PWD".to_string(),
-                variables.get_variable("OLDPWD").unwrap().clone(),
-            ) {
+            match variables.set_variable("PWD", variables.get_variable("OLDPWD").unwrap().clone()) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
             println!("{}", variables.get_variable("PWD").unwrap().contents);
-            match variables.set_variable("OLDPWD".to_string(), swap) {
+            match variables.set_variable("OLDPWD", swap) {
                 Ok(()) => {}
                 Err(oops) => eprintln!("{oops}"),
             }
@@ -108,7 +99,7 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
             }
             // Ok so the path exists, time to roll.
             match variables.set_variable(
-                "OLDPWD".to_string(),
+                "OLDPWD",
                 match variables.get_variable("PWD") {
                     Some(yay) => yay.to_owned(),
                     None => Variable {
@@ -123,7 +114,7 @@ pub fn builtin_cd(args: Option<&[ElviType]>, variables: &mut Variables) -> Retur
                 Err(oops) => eprintln!("{oops}"),
             }
             match variables.set_variable(
-                "PWD".to_string(),
+                "PWD",
                 Variable {
                     contents: ElviType::String(to_cd.to_str().unwrap().to_string()),
                     ..Default::default()

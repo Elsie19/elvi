@@ -163,7 +163,7 @@ pub fn change_variable(
     variables: &mut Variables,
     commands: &Commands,
     lvl: u32,
-    name: String,
+    name: &str,
     var: &mut Variable,
 ) {
     // Makes shit easier to deal with.

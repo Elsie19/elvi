@@ -169,25 +169,30 @@ impl Variables {
     /// # Errors
     /// Will return [`VariableError`] if a variable is [`ElviMutable::Readonly`] or
     /// [`ElviMutable::ReadonlyUnsettable`].
-    pub fn set_variable(&mut self, name: String, var: Variable) -> Result<(), VariableError> {
-        if let Some(value) = self.vars.get(&name) {
+    pub fn set_variable(
+        &mut self,
+        name: impl Into<String>,
+        var: Variable,
+    ) -> Result<(), VariableError> {
+        let name_two = name.into();
+        if let Some(value) = self.vars.get(&name_two) {
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
                     Err(VariableError::Readonly {
-                        name,
+                        name: name_two,
                         lines: value.line,
                     })
                 }
                 ElviMutable::Normal => {
                     self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
-                    self.vars.insert(name, var);
+                    self.vars.insert(name_two, var);
                     Ok(())
                 }
             }
         // Is this a fresh variable?
         } else {
             self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
-            self.vars.insert(name, var);
+            self.vars.insert(name_two, var);
             Ok(())
         }
     }

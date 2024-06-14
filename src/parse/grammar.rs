@@ -420,7 +420,7 @@ pub fn eval(
 ) -> ReturnCode {
     match action {
         Actions::ChangeVariable((name, mut var)) => {
-            change_variable(variables, commands, *subshells_in, name, &mut var);
+            change_variable(variables, commands, *subshells_in, &name, &mut var);
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
