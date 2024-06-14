@@ -50,6 +50,11 @@ pub mod builtins {
     /// Conforming to
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#hash>
     pub mod hash;
+    /// The `shift` builtin.
+    ///
+    /// Conforming to
+    /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#shift>
+    pub mod shift;
     /// The `test` builtin.
     ///
     /// Conforming to

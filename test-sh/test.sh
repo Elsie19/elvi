@@ -32,3 +32,5 @@ foo() {
 }
 
 echo "Count: $#: ${*}"
+shift 50
+echo "Count: $#: ${*}"

@@ -55,6 +55,8 @@ pub enum Builtins {
     Test(bool, TestOptions),
     /// Can take nothing or a list of stuff
     Echo(Option<Vec<ElviType>>),
+    /// Can take nothing or a number.
+    Shift(Option<Vec<ElviType>>),
 }
 
 #[derive(Debug, Clone)]

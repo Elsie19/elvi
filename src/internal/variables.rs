@@ -70,7 +70,7 @@ pub struct Variables {
     /// Hashmap of a variable name and its contents.
     vars: HashMap<String, Variable>,
     /// A separate field used solely for positional parameters.
-    params: Vec<Variable>,
+    pub params: Vec<Variable>,
 }
 
 #[derive(Debug, Clone)]

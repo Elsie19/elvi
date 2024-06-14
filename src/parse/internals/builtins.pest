@@ -11,6 +11,9 @@ builtinExit = !{ "exit" ~ (space+ ~ elviWord)* }
 /// The hash builtin.
 builtinHash = !{ "hash" ~ (space+ ~ elviWord)* }
 
+/// The shift builtin.
+builtinShift = !{ "shift" ~ (space+ ~ elviWord)* }
+
 /// The cd builtin.
 builtinCd = !{ "cd" ~ (space+ ~ elviWord)* }
 // TODO: Add commands to `builtinTest` and also `-a` and `-o`
@@ -62,4 +65,4 @@ builtinTestComparisons = {
 }
 
 /// Wrapper grammar for any builtin.
-builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest | builtinEcho }
+builtinWrapper = { builtinDbg | builtinUnset | builtinExit | builtinHash | builtinCd | builtinTest | builtinEcho | builtinShift }

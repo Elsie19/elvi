@@ -259,6 +259,16 @@ impl ElviParser {
         Ok(Actions::Builtin(Builtins::Cd(possibles)))
     }
 
+    /// Handles the cd builtin.
+    pub fn builtinShift(input: Node) -> Result<Actions> {
+        let possibles = match_nodes!(input.into_children();
+            [elviWord(stringo)..] => Some(stringo.collect()),
+            [] => None,
+        );
+
+        Ok(Actions::Builtin(Builtins::Shift(possibles)))
+    }
+
     pub fn builtinWrapper(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinDbg(stringo)] => stringo,
@@ -268,6 +278,7 @@ impl ElviParser {
             [builtinCd(stringo)] => stringo,
             [builtinTest(stringo)] => stringo,
             [builtinEcho(stringo)] => stringo,
+            [builtinShift(stringo)] => stringo,
         ))
     }
 
@@ -444,6 +455,10 @@ pub fn eval(
             }
             Builtins::Echo(text) => {
                 let ret = builtins::echo::builtin_echo(text.as_deref(), variables).get();
+                variables.set_ret(ReturnCode::ret(ret));
+            }
+            Builtins::Shift(text) => {
+                let ret = builtins::shift::builtin_shift(text.as_deref(), variables).get();
                 variables.set_ret(ReturnCode::ret(ret));
             }
         },
