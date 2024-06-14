@@ -12,6 +12,7 @@ use crate::internal::variables::Variables;
 /// The internal code that runs when the `test` builtin is run.
 #[must_use]
 #[allow(clippy::module_name_repetitions)]
+#[allow(clippy::too_many_lines)]
 pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> ReturnCode {
     let ret = match to_do {
         TestOptions::String1IsString2((s1, s2)) => (s1.eval_escapes().eval_variables(variables)
@@ -131,7 +132,7 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             .to_string()
             .is_empty()
             .into(),
-        TestOptions::StringNonZero(stringo) => {
+        TestOptions::StringNonZero(stringo) | TestOptions::StringNotNull(stringo) => {
             !builtin_test(invert, TestOptions::StringZero(stringo), variables)
         }
         TestOptions::ReadableFileExists(file) => {
@@ -263,7 +264,6 @@ pub fn builtin_test(invert: bool, to_do: TestOptions, variables: &Variables) -> 
             };
             (f1_meta.ino() == f2_meta.ino()).into()
         }
-        TestOptions::StringNotNull(_foo) => todo!(),
         TestOptions::FileExistsOwnerEffectiveUserID(file) => {
             let uid = match fs::metadata(file.eval_escapes().eval_variables(variables).to_string())
             {
