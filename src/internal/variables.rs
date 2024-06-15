@@ -311,6 +311,13 @@ impl Default for Variables {
                         ..Default::default()
                     },
                 ),
+                (
+                    "ELVI_VERSION".into(),
+                    Variable {
+                        contents: ElviType::String(env!("CARGO_PKG_VERSION").to_string()),
+                        ..Default::default()
+                    },
+                ),
             ]),
 
             params: vec![],
