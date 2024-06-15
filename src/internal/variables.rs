@@ -135,9 +135,8 @@ impl Variables {
     /// this function will happily unset anything.
     ///
     /// # Returns
-    /// `Some(())` for a variable that was found and removed.
-    ///
-    /// `None` for a variable that was not found.
+    /// 1. `Some(())` for a variable that was found and removed.
+    /// 2. `None` for a variable that was not found.
     pub fn unset(&mut self, var: &str) -> Option<()> {
         match self.vars.remove(var) {
             Some(_) => Some(()),
@@ -540,16 +539,14 @@ impl ElviType {
         let mut ret_vec = vec![];
         match var {
             // TODO: Fully flesh out the differences between these two.
-            "@" | "*" => {
-                let mut pushback = vec![];
-                let loopo = variables.pull_parameters();
-                for (idx, part) in loopo.iter().enumerate().skip(1) {
-                    pushback.push(part.contents.to_string());
-                    if idx != loopo.len() {
-                        pushback.push(" ".to_string());
+            "*" => {
+                if self.is_quoted() {
+                    let mut le_shit = vec![];
+                    for i in variables.params.iter().skip(1) {
+                        le_shit.push(i.contents.to_owned());
                     }
+                    return vec![split_ifs(&le_shit, variables)];
                 }
-                return pushback;
             }
             "$" => {
                 ret_vec.push(process::id().to_string());
@@ -629,4 +626,22 @@ impl From<Vec<String>> for Arguments {
     fn from(value: Vec<String>) -> Self {
         Self { args: value }
     }
+}
+
+/// Split string according to IFS.
+pub fn split_ifs(to_split: &[ElviType], vars: &Variables) -> String {
+    let mut reto = vec![];
+    let ifs = match vars.get_variable("IFS") {
+        Some(yay) => match yay.contents.to_string().chars().nth(0) {
+            Some(yap) => yap.to_string(),
+            None => "".to_string(),
+        },
+        None => " ".to_string(),
+    };
+    for part in to_split {
+        if !part.is_quoted() {
+            reto.push(part);
+        }
+    }
+    reto.iter().join(&ifs)
 }
