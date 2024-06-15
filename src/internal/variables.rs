@@ -634,9 +634,9 @@ impl From<Vec<String>> for Arguments {
 pub fn split_ifs(to_split: &[ElviType], vars: &Variables) -> String {
     let mut reto = vec![];
     let ifs = match vars.get_variable("IFS") {
-        Some(yay) => match yay.contents.to_string().chars().nth(0) {
-            Some(yap) => yap.to_string(),
-            None => "".to_string(),
+        Some(yay) => match yay.contents.to_string().chars().next() {
+            Some(y) => y.to_string(),
+            None => String::new(),
         },
         None => " ".to_string(),
     };
