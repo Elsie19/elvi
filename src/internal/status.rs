@@ -140,3 +140,21 @@ impl std::ops::Not for ReturnCode {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn wrap_out_of_bounds() {
+        let out_bounds = 300;
+        let errcode: ReturnCode = out_bounds.into();
+        assert_eq!(errcode.cap(), 44);
+    }
+
+    #[test]
+    fn not() {
+        let errcode: ReturnCode = ReturnCode::FAILURE.into();
+        assert_ne!(errcode, !errcode)
+    }
+}
