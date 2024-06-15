@@ -50,8 +50,8 @@ pub enum ElviType {
 impl QuotedNature for ElviType {
     fn is_quoted(&self) -> bool {
         match self {
-            Self::VariableSubstitution(_) | Self::CommandSubstitution(_) => true,
-            _ => false,
+            Self::String(_) | Self::BareString(_) => false,
+            _ => true,
         }
     }
 }
