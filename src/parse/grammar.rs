@@ -424,8 +424,8 @@ pub fn eval(
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
-                let ret = builtins::dbg::builtin_dbg(var.as_deref(), variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::dbg::builtin_dbg(var.as_deref(), variables);
+                variables.set_ret(ret);
             }
             Builtins::Exit(var) => {
                 let ret = builtins::exit::builtin_exit(var.as_deref(), variables);
@@ -436,30 +436,28 @@ pub fn eval(
                 }
             }
             Builtins::Unset(var) => {
-                let ret = builtins::unset::builtin_unset(var.as_deref(), variables, commands).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::unset::builtin_unset(var.as_deref(), variables, commands);
+                variables.set_ret(ret);
             }
             Builtins::Hash(flag) => {
-                // Let's just eval possible vars
-                let ret = builtins::hash::builtin_hash(flag.as_deref(), commands, variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::hash::builtin_hash(flag.as_deref(), commands, variables);
+                variables.set_ret(ret);
             }
             Builtins::Cd(flag) => {
-                // Let's just eval possible vars
-                let ret = builtins::cd::builtin_cd(flag.as_deref(), variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::cd::builtin_cd(flag.as_deref(), variables);
+                variables.set_ret(ret);
             }
             Builtins::Test(invert, yo) => {
-                let ret = builtins::test::builtin_test(invert, yo, variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::test::builtin_test(invert, yo, variables);
+                variables.set_ret(ret);
             }
             Builtins::Echo(text) => {
-                let ret = builtins::echo::builtin_echo(text.as_deref(), variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::echo::builtin_echo(text.as_deref(), variables);
+                variables.set_ret(ret);
             }
             Builtins::Shift(text) => {
-                let ret = builtins::shift::builtin_shift(text.as_deref(), variables).get();
-                variables.set_ret(ReturnCode::ret(ret));
+                let ret = builtins::shift::builtin_shift(text.as_deref(), variables);
+                variables.set_ret(ret);
             }
         },
         Actions::Command(cmd) => {
@@ -473,11 +471,12 @@ pub fn eval(
                 );
             }
             if commands.functions.contains_key(&expanded[0]) {
-                let current_params = variables.params.clone();
+                let current_params = variables.pull_parameters();
                 let function_run: ExternalCommand = expanded.clone().into();
+                // Temporarily replace positionals.
                 variables.params = vec![function_run.cmd.display().to_string().into()];
-                if function_run.args.is_some() {
-                    for part in function_run.args.unwrap() {
+                if let Some(comps) = function_run.args {
+                    for part in comps {
                         variables.params.push(part.into());
                     }
                 }
@@ -493,9 +492,11 @@ pub fn eval(
                     let ret = eval(inc.to_owned(), variables, commands, subshells_in);
                     variables.set_ret(ret);
                 }
-                variables.params = current_params;
+                // Bring them back.
+                variables.new_parameters(&current_params);
                 return variables.get_ret().convert_err_type();
             }
+            // If it isn't a function, it's a command.
             let cmd_run: ExternalCommand = expanded.into();
             let templated = execute_external_command(cmd_run, variables, commands);
             match templated {
@@ -526,8 +527,8 @@ pub fn eval(
                     let ret = eval(act, variables, commands, subshells_in);
                     variables.set_ret(ret);
                 }
-            } else if if_stmt.else_block.is_some() {
-                for act in if_stmt.else_block.unwrap() {
+            } else if let Some(components) = if_stmt.else_block {
+                for act in components {
                     let ret = eval(act, variables, commands, subshells_in);
                     variables.set_ret(ret);
                 }
