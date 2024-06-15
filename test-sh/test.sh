@@ -28,10 +28,10 @@ done
 echo "${PATH}"
 
 foo() {
-    echo "bar"
+    echo "${0} is running with: ${*}"
 }
 
 echo "Count: $#: ${*}"
 shift 1
 echo "Count: $#: ${*}"
-foo
+foo bing bong

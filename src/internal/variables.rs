@@ -77,6 +77,8 @@ pub enum ElviGlobal {
     /// Every variable in [`Variables`] that is above the current level will be sweeped after the
     /// subshell ends.
     Normal(u32),
+    /// Local variable (**Not POSIX**).
+    Local,
 }
 
 #[derive(Debug, Clone)]
