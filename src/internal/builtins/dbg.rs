@@ -1,11 +1,8 @@
 use getopts::Options;
 
-use crate::internal::errors::ElviError;
-use crate::internal::errors::VariableError;
+use crate::internal::errors::{ElviError, VariableError};
 use crate::internal::status::ReturnCode;
-use crate::internal::variables::ElviMutable;
-use crate::internal::variables::ElviType;
-use crate::internal::variables::Variables;
+use crate::internal::variables::{ElviMutable, ElviType, Variables};
 
 /// The internal code that runs when the `dbg` builtin is run.
 #[allow(clippy::module_name_repetitions)]

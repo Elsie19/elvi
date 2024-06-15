@@ -34,4 +34,7 @@ foo() {
 echo "Count: $#: ${*}"
 shift 1
 echo "Count: $#: ${*}"
+for loopo; do
+    echo "${loopo}"
+done
 foo bing bong

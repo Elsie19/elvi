@@ -35,10 +35,6 @@ pub mod builtins {
     ///
     /// Conforming to
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#echo>
-    ///
-    /// # Notes
-    /// Currently does not implement the following flags/behaviors:
-    /// 1. `-n` flag no newline.
     pub mod echo;
     /// The `exit` builtin.
     ///
@@ -64,11 +60,6 @@ pub mod builtins {
     ///
     /// Conforming to
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#unset>
-    ///
-    /// # Notes
-    /// Currently does not implement the following flags/behaviors:
-    /// 1. `-v` flag for variables.
-    /// 2. `-f` flag for functions.
     pub mod unset;
 }
 /// Contains modules relating to Elvi errors.

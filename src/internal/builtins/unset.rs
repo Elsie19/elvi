@@ -8,6 +8,7 @@ use crate::internal::variables::ElviType;
 use crate::internal::variables::Variables;
 
 #[derive(PartialEq)]
+/// Determine whether a function or variable is to be unset.
 enum TypeUnset {
     Function,
     Variable,
