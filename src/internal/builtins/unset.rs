@@ -92,3 +92,53 @@ fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {program} [-fv] [name ...]");
     print!("{}", opts.usage(&brief));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::internal::variables::Variable;
+
+    #[test]
+    #[should_panic]
+    fn did_unset() {
+        let mut variables = Variables::default();
+        let mut commands = Commands::generate(&variables);
+        variables
+            .set_variable(
+                "foo",
+                Variable {
+                    contents: ElviType::String("bar".to_string()),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        builtin_unset(
+            Some(&[ElviType::String("foo".to_string())]),
+            &mut variables,
+            &mut commands,
+        );
+        variables.get_variable("foo").unwrap();
+    }
+
+    #[test]
+    fn cannot_unset_readonly() {
+        let mut variables = Variables::default();
+        let mut commands = Commands::generate(&variables);
+        variables
+            .set_variable(
+                "foo",
+                Variable {
+                    contents: ElviType::String("bar".to_string()),
+                    modification_status: ElviMutable::Readonly,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let out = builtin_unset(
+            Some(&[ElviType::String("foo".to_string())]),
+            &mut variables,
+            &mut commands,
+        );
+        assert_eq!(out, ReturnCode::FAILURE.into());
+    }
+}
