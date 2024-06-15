@@ -472,6 +472,30 @@ pub fn eval(
                         .to_string(),
                 );
             }
+            if commands.functions.contains_key(&expanded[0]) {
+                let current_params = variables.params.clone();
+                let function_run: ExternalCommand = expanded.clone().into();
+                variables.params = vec![function_run.cmd.display().to_string().into()];
+                if function_run.args.is_some() {
+                    for part in function_run.args.unwrap() {
+                        variables.params.push(part.into());
+                    }
+                }
+                for inc in commands
+                    .functions
+                    .clone()
+                    .get(&expanded[0])
+                    .unwrap()
+                    .contents
+                    .as_ref()
+                    .unwrap()
+                {
+                    let ret = eval(inc.to_owned(), variables, commands, subshells_in);
+                    variables.set_ret(ret);
+                }
+                variables.params = current_params;
+                return variables.get_ret().convert_err_type();
+            }
             let cmd_run: ExternalCommand = expanded.into();
             let templated = execute_external_command(cmd_run, variables, commands);
             match templated {
