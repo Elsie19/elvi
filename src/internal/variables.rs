@@ -279,8 +279,7 @@ impl Default for Variables {
                     Variable {
                         contents: ElviType::ErrExitCode(0),
                         modification_status: ElviMutable::ReadonlyUnsettable,
-                        shell_lvl: ElviGlobal::Global,
-                        line: (0, 0),
+                        ..Default::default()
                     },
                 ),
                 (
