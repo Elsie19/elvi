@@ -85,7 +85,7 @@ pub enum ElviGlobal {
 /// Global variable list.
 pub struct Variables {
     /// Hashmap of a variable name and its contents.
-    vars: HashMap<String, Variable>,
+    pub vars: HashMap<String, Variable>,
     /// A separate field used solely for positional parameters.
     pub params: Vec<Variable>,
 }

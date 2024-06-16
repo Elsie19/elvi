@@ -28,6 +28,7 @@ done
 echo "${PATH}"
 
 foo() {
+    local foo="bar"
     echo "${0} is running with: ${*}"
 }
 
@@ -37,5 +38,5 @@ echo "Count: $#: ${*}"
 for loopo; do
     echo "${loopo}"
 done
-local foo="bar"
 foo bing bong
+echo "foo is '${foo}'"

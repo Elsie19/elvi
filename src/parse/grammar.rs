@@ -517,6 +517,10 @@ pub fn eval(
                     variables.set_ret(ret);
                 }
                 // Bring them back.
+                // Remove all local variables.
+                variables
+                    .vars
+                    .retain(|_, v| v.shell_lvl != ElviGlobal::Local);
                 global_env.set_function(false);
                 variables.new_parameters(&current_params);
                 return variables.get_ret().convert_err_type();
