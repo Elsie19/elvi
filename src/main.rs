@@ -31,17 +31,17 @@ use user_flags::Args;
 #[doc(hidden)]
 fn main() {
     let args = Args::parse();
-    let unparsed_file = if let Some(input) = args.group.read_from_input.clone() {
+    let unparsed_file = if let Some(ref input) = args.group.read_from_input {
         input
     } else {
-        match fs::read_to_string(args.group.file.as_ref().unwrap()) {
+        &match fs::read_to_string(args.group.file.as_ref().unwrap()) {
             Ok(yay) => yay,
             Err(_) => Args::command()
                 .error(
                     ErrorKind::ValueValidation,
                     format!(
                         "File `{}` does not exist.",
-                        args.group.file.unwrap().to_str().unwrap()
+                        args.group.file.unwrap().display()
                     ),
                 )
                 .exit(),
@@ -68,8 +68,8 @@ fn main() {
 
     let mut positionals: Arguments = vec![var_zero].into();
 
-    if args.positionals.is_some() {
-        positionals.args.append(&mut args.positionals.unwrap());
+    if let Some(mut positional_args) = args.positionals {
+        positionals.args.append(&mut positional_args);
     }
 
     // Check if we can successfully parse the script on first go.
