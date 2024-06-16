@@ -189,9 +189,10 @@ impl Variables {
     pub fn set_variable(
         &mut self,
         name: impl Into<String>,
-        var: Variable,
+        var: impl Into<Variable>,
     ) -> Result<(), VariableError> {
         let name_two = name.into();
+        let var_two = var.into();
         if let Some(value) = self.vars.get(&name_two) {
             match value.modification_status {
                 ElviMutable::Readonly | ElviMutable::ReadonlyUnsettable => {
@@ -202,14 +203,14 @@ impl Variables {
                 }
                 ElviMutable::Normal => {
                     self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
-                    self.vars.insert(name_two, var);
+                    self.vars.insert(name_two, var_two);
                     Ok(())
                 }
             }
         // Is this a fresh variable?
         } else {
             self.set_ret(ReturnCode::ret(ReturnCode::SUCCESS));
-            self.vars.insert(name_two, var);
+            self.vars.insert(name_two, var_two);
             Ok(())
         }
     }
@@ -340,6 +341,15 @@ impl From<String> for Variable {
     fn from(value: String) -> Self {
         Self {
             contents: ElviType::String(value),
+            ..Default::default()
+        }
+    }
+}
+
+impl From<ElviType> for Variable {
+    fn from(value: ElviType) -> Self {
+        Self {
+            contents: value,
             ..Default::default()
         }
     }

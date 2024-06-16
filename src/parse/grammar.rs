@@ -596,7 +596,7 @@ pub fn eval(
                 } else {
                     variables.set_variable(
                         loop_things.variable.to_string(),
-                        Variable { contents: var.clone(), ..Default::default() }
+                        var.clone()
                     ).unwrap() /* I'm reasonably confident that this won't fail */;
                 }
                 for act in &loop_things.do_block {

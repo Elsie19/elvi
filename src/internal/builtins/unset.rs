@@ -105,13 +105,7 @@ mod tests {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
         variables
-            .set_variable(
-                "foo",
-                Variable {
-                    contents: ElviType::String("bar".to_string()),
-                    ..Default::default()
-                },
-            )
+            .set_variable("foo", ElviType::String("bar".to_string()))
             .unwrap();
         builtin_unset(
             Some(&[ElviType::String("foo".to_string())]),
