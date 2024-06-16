@@ -5,6 +5,7 @@ use crate::internal::errors::ElviError;
 use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;
+use super::env::Env;
 use super::{
     commands::{Commands, ExternalCommand},
     variables::{ElviGlobal, ElviType, Variable, Variables},
@@ -162,7 +163,7 @@ pub enum TestOptions {
 pub fn change_variable(
     variables: &mut Variables,
     commands: &Commands,
-    lvl: u32,
+    env: &mut Env,
     name: &str,
     var: &mut Variable,
 ) {
@@ -171,13 +172,13 @@ pub fn change_variable(
         goopy @ ElviType::VariableSubstitution(_) => {
             // Goopy will save us!!!
             var.contents = goopy.eval_escapes().eval_variables(variables);
-            change_variable(variables, commands, lvl, name, var);
+            change_variable(variables, commands, env, name, var);
         }
         ElviType::String(_) => {
             // First let's get the level because while parsing we assume a certain variable level that is
             // not true to the actual evaluating.
             if var.shell_lvl != ElviGlobal::Global {
-                var.shell_lvl = ElviGlobal::Normal(lvl);
+                var.shell_lvl = ElviGlobal::Normal(env.subshells_in);
             }
             match variables.set_variable(name, var.to_owned()) {
                 Ok(()) => {}
@@ -201,7 +202,7 @@ pub fn change_variable(
                 Ok(yay) => yay,
                 Err(oops) => {
                     if var.shell_lvl != ElviGlobal::Global {
-                        var.shell_lvl = ElviGlobal::Normal(lvl);
+                        var.shell_lvl = ElviGlobal::Normal(env.subshells_in);
                     }
                     match variables.set_variable(
                         name,

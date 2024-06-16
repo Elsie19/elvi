@@ -499,10 +499,8 @@ impl ElviType {
                             // So here we have a list of expanded special vars, but assuming that
                             // there are no special vars, we got len() == 0.
                             let expanded_out = self.eval_special_variable(&tasty_var, vars);
-                            if !expanded_out.is_empty() {
-                                for part in expanded_out {
-                                    back_to_string.push_str(part.as_str());
-                                }
+                            for part in expanded_out {
+                                back_to_string.push_str(part.as_str());
                             }
                         } else {
                             // Fuck.
@@ -525,10 +523,8 @@ impl ElviType {
                                 })
                                 .collect();
                             let expanded_out = self.eval_special_variable(&tasty_var, vars);
-                            if !expanded_out.is_empty() {
-                                for part in expanded_out {
-                                    back_to_string.push_str(part.as_str());
-                                }
+                            for part in expanded_out {
+                                back_to_string.push_str(part.as_str());
                             }
                         }
                     }

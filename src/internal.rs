@@ -62,6 +62,8 @@ pub mod builtins {
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#unset>
     pub mod unset;
 }
+/// Contains modules relating to the global state.
+pub mod env;
 /// Contains modules relating to Elvi errors.
 pub mod errors;
 /// Contains modules relating to handling error codes.

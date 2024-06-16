@@ -1,5 +1,6 @@
 use crate::internal::builtins;
 use crate::internal::commands::{execute_external_command, Commands, ExternalCommand};
+use crate::internal::env::Env;
 use crate::internal::errors::ElviError;
 use crate::internal::status::ReturnCode;
 use crate::internal::tree::Function;
@@ -377,6 +378,7 @@ impl ElviParser {
     pub fn program(input: Node) -> ReturnCode {
         let mut variables = Variables::default();
         let mut commands = Commands::generate(&variables);
+        let mut global_env = Env::default();
 
         let positional_arguments = input.user_data();
 
@@ -389,13 +391,11 @@ impl ElviParser {
             .collect();
         variables.new_parameters(&list);
 
-        let mut subshells_in = 1;
-
         for child in input.into_children() {
             if child.as_rule() != Rule::EOI {
                 match Self::statement(child) {
                     Ok(yes) => {
-                        eval(yes, &mut variables, &mut commands, &mut subshells_in);
+                        eval(yes, &mut variables, &mut commands, &mut global_env);
                     }
                     Err(oops) => {
                         eprintln!("{oops}");
@@ -416,11 +416,11 @@ pub fn eval(
     action: Actions,
     variables: &mut Variables,
     commands: &mut Commands,
-    subshells_in: &mut u32,
+    global_env: &mut Env,
 ) -> ReturnCode {
     match action {
         Actions::ChangeVariable((name, mut var)) => {
-            change_variable(variables, commands, *subshells_in, &name, &mut var);
+            change_variable(variables, commands, global_env, &name, &mut var);
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
@@ -429,8 +429,8 @@ pub fn eval(
             }
             Builtins::Exit(var) => {
                 let ret = builtins::exit::builtin_exit(var.as_deref(), variables);
-                if *subshells_in > 1 {
-                    *subshells_in -= 1;
+                if global_env.subshells_in > 1 {
+                    global_env.subshells_in -= 1;
                 } else {
                     std::process::exit(ret.get().into());
                 }
@@ -480,6 +480,7 @@ pub fn eval(
                         variables.params.push(part.into());
                     }
                 }
+                global_env.set_function(true);
                 for inc in commands
                     .functions
                     .clone()
@@ -489,10 +490,11 @@ pub fn eval(
                     .as_ref()
                     .unwrap()
                 {
-                    let ret = eval(inc.to_owned(), variables, commands, subshells_in);
+                    let ret = eval(inc.to_owned(), variables, commands, global_env);
                     variables.set_ret(ret);
                 }
                 // Bring them back.
+                global_env.set_function(false);
                 variables.new_parameters(&current_params);
                 return variables.get_ret().convert_err_type();
             }
@@ -520,16 +522,16 @@ pub fn eval(
         Actions::Null => {}
         Actions::IfStatement(if_stmt) => {
             // Run the condition
-            eval(if_stmt.condition, variables, commands, subshells_in);
+            eval(if_stmt.condition, variables, commands, global_env);
             // Did we succeed?
             if variables.get_ret().convert_err_type().get() == ReturnCode::SUCCESS {
                 for act in if_stmt.then_block {
-                    let ret = eval(act, variables, commands, subshells_in);
+                    let ret = eval(act, variables, commands, global_env);
                     variables.set_ret(ret);
                 }
             } else if let Some(components) = if_stmt.else_block {
                 for act in components {
-                    let ret = eval(act, variables, commands, subshells_in);
+                    let ret = eval(act, variables, commands, global_env);
                     variables.set_ret(ret);
                 }
             }
@@ -571,7 +573,7 @@ pub fn eval(
                     ).unwrap() /* I'm reasonably confident that this won't fail */;
                 }
                 for act in &loop_things.do_block {
-                    let ret = eval(act.to_owned(), variables, commands, subshells_in);
+                    let ret = eval(act.to_owned(), variables, commands, global_env);
                     variables.set_ret(ret);
                 }
             }
