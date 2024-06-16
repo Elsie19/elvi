@@ -138,7 +138,6 @@ impl From<Vec<String>> for ExternalCommand {
     }
 }
 
-#[derive(Debug)]
 /// Contains the output and return code of a command.
 pub struct CmdReturn {
     pub ret: ReturnCode,
@@ -253,5 +252,7 @@ pub fn execute_external_command(
         .env_clear()
         .current_dir(variables.get_variable("PWD").unwrap().contents.to_string())
         .envs(filtered_env);
+    // So this was the only way I could figure out how to swap mutability and satisfy the borrow
+    // checker.
     Ok(mem::replace(bruh, bitch))
 }

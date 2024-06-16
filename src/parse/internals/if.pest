@@ -9,5 +9,6 @@ ifStatement = ${
 /// What an if statement can match on.
 ifStatementMatch = ${
     backtickSubstitution
+  | externalCommand
   | builtinWrapper
 }

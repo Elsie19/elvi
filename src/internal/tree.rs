@@ -207,7 +207,7 @@ pub fn change_variable(
             let mut child = match retty {
                 Ok(yay) => yay,
                 Err(oops) => {
-                    if var.shell_lvl != ElviGlobal::Global {
+                    if let ElviGlobal::Normal { .. } = var.shell_lvl {
                         var.shell_lvl = ElviGlobal::Normal(env.subshells_in);
                     }
                     match variables.set_variable(

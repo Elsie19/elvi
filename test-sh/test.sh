@@ -40,3 +40,6 @@ for loopo; do
 done
 foo bing bong
 echo "foo is '${foo}'"
+if grep -q 'h' /proc/cpuinfo; then
+    echo "IT WORKS"
+fi

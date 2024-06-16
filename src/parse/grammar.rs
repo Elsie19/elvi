@@ -294,14 +294,14 @@ impl ElviParser {
 
     pub fn builtinWrapper(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
-            [builtinDbg(stringo)] => stringo,
-            [builtinExit(stringo)] => stringo,
-            [builtinUnset(stringo)] => stringo,
-            [builtinHash(stringo)] => stringo,
-            [builtinCd(stringo)] => stringo,
-            [builtinTest(stringo)] => stringo,
-            [builtinEcho(stringo)] => stringo,
-            [builtinShift(stringo)] => stringo,
+            [builtinDbg(s)] =>   s,
+            [builtinExit(s)] =>  s,
+            [builtinUnset(s)] => s,
+            [builtinHash(s)] =>  s,
+            [builtinCd(s)] =>    s,
+            [builtinTest(s)] =>  s,
+            [builtinEcho(s)] =>  s,
+            [builtinShift(s)] => s,
         ))
     }
 
@@ -336,6 +336,7 @@ impl ElviParser {
     pub fn ifStatementMatch(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
             [builtinWrapper(built)] => built,
+            [externalCommand(cmd)] => cmd,
         ))
     }
 
