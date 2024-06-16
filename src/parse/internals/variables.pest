@@ -5,6 +5,9 @@ normalVariable = @{ variableIdent ~ "=" ~ variableIdentifierPossibilities }
 /// Readonly variable creation, e.g.: `readonly foo="bar"`.
 readonlyVariable = @{ "readonly" ~ space+ ~ variableIdent ~ "=" ~ variableIdentifierPossibilities }
 
+/// Readonly variable creation, e.g.: `readonly foo="bar"`.
+localVariable = @{ "local" ~ space+ ~ variableIdent ~ "=" ~ variableIdentifierPossibilities }
+
 /// This means anything that a variable can be assigned to, such as a string or command substitution.
 variableIdentifierPossibilities = ${ anyString | backtickSubstitution }
 

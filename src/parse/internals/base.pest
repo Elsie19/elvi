@@ -28,5 +28,5 @@ keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" }
 // `program` is comprised of statements.
 /// A statement is simply anything that can be executed.
 statement = {
-    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | builtinWrapper | ifStatement | forLoop | functionDeclaration | externalCommand)
+    (WHITE_SPACE+)? ~ (normalVariable | readonlyVariable | localVariable | builtinWrapper | ifStatement | forLoop | functionDeclaration | externalCommand)
 }

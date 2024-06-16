@@ -6,6 +6,7 @@ use crate::internal::status::ReturnCode;
 
 use super::commands::execute_external_command;
 use super::env::Env;
+use super::errors::VariableError;
 use super::{
     commands::{Commands, ExternalCommand},
     variables::{ElviGlobal, ElviType, Variable, Variables},
@@ -177,8 +178,13 @@ pub fn change_variable(
         ElviType::String(_) => {
             // First let's get the level because while parsing we assume a certain variable level that is
             // not true to the actual evaluating.
-            if var.shell_lvl != ElviGlobal::Global {
+            if let ElviGlobal::Normal { .. } = var.shell_lvl {
                 var.shell_lvl = ElviGlobal::Normal(env.subshells_in);
+            }
+            if var.shell_lvl == ElviGlobal::Local && !env.in_function() {
+                let err = VariableError::NotInFunction { name: "local" };
+                eprintln!("{err}");
+                std::process::exit(err.ret().get().into());
             }
             match variables.set_variable(name, var.to_owned()) {
                 Ok(()) => {}

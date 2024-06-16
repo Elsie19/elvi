@@ -37,4 +37,5 @@ echo "Count: $#: ${*}"
 for loopo; do
     echo "${loopo}"
 done
+local foo="bar"
 foo bing bong

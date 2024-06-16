@@ -200,6 +200,28 @@ impl ElviParser {
         ))
     }
 
+    /// Handles local variable assignments.
+    pub fn localVariable(input: Node) -> Result<(String, Variable)> {
+        let mut stuff = input.clone().into_children().into_pairs();
+
+        let lines = stuff.clone().next().unwrap().line_col();
+
+        let name_pair = stuff.next().unwrap().as_str();
+
+        let variable_contents =
+            Self::variableIdentifierPossibilities(input.clone().into_children().nth(1).unwrap());
+
+        Ok((
+            name_pair.to_string(),
+            Variable {
+                contents: variable_contents.unwrap(),
+                shell_lvl: ElviGlobal::Local,
+                modification_status: ElviMutable::Normal,
+                line: lines,
+            },
+        ))
+    }
+
     /// Handles the readonly builtin.
     pub fn builtinDbg(input: Node) -> Result<Actions> {
         let possibles = match_nodes!(input.into_children();
@@ -366,6 +388,7 @@ impl ElviParser {
         match_nodes!(input.into_children();
             [normalVariable(var)] => Ok(Actions::ChangeVariable(var)),
             [readonlyVariable(var)] => Ok(Actions::ChangeVariable(var)),
+            [localVariable(var)] => Ok(Actions::ChangeVariable(var)),
             [builtinWrapper(var)] => Ok(var),
             [externalCommand(var)] => Ok(var),
             [ifStatement(stmt)] => Ok(stmt),

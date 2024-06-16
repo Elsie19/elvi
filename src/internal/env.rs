@@ -6,9 +6,8 @@ pub struct Env {
 
 impl Env {
     /// Set whether inside function or not.
-    pub fn set_function(&mut self, in_function: bool) -> bool {
+    pub fn set_function(&mut self, in_function: bool) {
         self.in_function = in_function;
-        self.in_function
     }
 
     /// Query whether inside a function or not.

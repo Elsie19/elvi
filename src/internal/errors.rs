@@ -45,6 +45,7 @@ pub enum VariableError {
     Readonly { name: String, lines: (usize, usize) },
     IllegalNumber { name: String, caller: &'static str },
     NoSuchVariable { name: String, caller: &'static str },
+    NotInFunction { name: &'static str },
 }
 
 impl std::error::Error for VariableError {}
@@ -53,7 +54,9 @@ impl ElviError for VariableError {
     fn ret(&self) -> ReturnCode {
         match self {
             Self::NoSuchVariable { .. } => ReturnCode::FAILURE.into(),
-            Self::Readonly { .. } | Self::IllegalNumber { .. } => ReturnCode::MISUSE.into(),
+            Self::Readonly { .. } | Self::IllegalNumber { .. } | Self::NotInFunction { .. } => {
+                ReturnCode::MISUSE.into()
+            }
         }
     }
 }
@@ -71,6 +74,9 @@ impl std::fmt::Display for VariableError {
             ),
             Self::IllegalNumber { name, caller } => {
                 write!(f, "elvi: {caller}: Illegal number: {name})")
+            }
+            Self::NotInFunction { name } => {
+                write!(f, "elvi: {name}: not in a function")
             }
         }
     }
