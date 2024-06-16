@@ -548,13 +548,7 @@ pub fn eval(
             for var in &new_loop_elements {
                 // Ok so now I want to update the variable if it exists before, and if not, create a
                 // new variable.
-                if variables
-                    .get_variable(&loop_things.variable.to_string())
-                    .is_some()
-                {
-                    let template = variables
-                        .get_variable(&loop_things.variable.to_string())
-                        .unwrap();
+                if let Some(template) = variables.get_variable(&loop_things.variable.to_string()) {
                     match variables.set_variable(
                         loop_things.variable.to_string(),
                         Variable {
