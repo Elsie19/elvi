@@ -249,11 +249,7 @@ pub fn execute_external_command(
     let bitch = Command::new("");
     let mut binding = Command::new(cmd_to_run);
     let bruh = binding
-        .args(if cmd.args.is_none() {
-            vec![]
-        } else {
-            cmd.args.unwrap()
-        })
+        .args(cmd.args.unwrap_or_else(|| vec![]))
         .env_clear()
         .current_dir(variables.get_variable("PWD").unwrap().contents.to_string())
         .envs(filtered_env);
