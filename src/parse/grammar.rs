@@ -448,11 +448,11 @@ pub fn eval(
         }
         Actions::Builtin(built) => match built {
             Builtins::Dbg(var) => {
-                let ret = builtins::dbg::builtin_dbg(var.as_deref(), variables);
+                let ret = builtins::dbg::dbg::main(var.as_deref(), variables);
                 variables.set_ret(ret);
             }
             Builtins::Exit(var) => {
-                let ret = builtins::exit::builtin_exit(var.as_deref(), variables);
+                let ret = builtins::exit::exit::main(var.as_deref(), variables);
                 if global_env.subshells_in > 1 {
                     global_env.subshells_in -= 1;
                 } else {
@@ -460,27 +460,27 @@ pub fn eval(
                 }
             }
             Builtins::Unset(var) => {
-                let ret = builtins::unset::builtin_unset(var.as_deref(), variables, commands);
+                let ret = builtins::unset::unset::main(var.as_deref(), variables, commands);
                 variables.set_ret(ret);
             }
             Builtins::Hash(flag) => {
-                let ret = builtins::hash::builtin_hash(flag.as_deref(), commands, variables);
+                let ret = builtins::hash::hash::main(flag.as_deref(), commands, variables);
                 variables.set_ret(ret);
             }
             Builtins::Cd(flag) => {
-                let ret = builtins::cd::builtin_cd(flag.as_deref(), variables);
+                let ret = builtins::cd::cd::main(flag.as_deref(), variables);
                 variables.set_ret(ret);
             }
             Builtins::Test(invert, yo) => {
-                let ret = builtins::test::builtin_test(invert, yo, variables);
+                let ret = builtins::test::test::main(invert, yo, variables);
                 variables.set_ret(ret);
             }
             Builtins::Echo(text) => {
-                let ret = builtins::echo::builtin_echo(text.as_deref(), variables);
+                let ret = builtins::echo::echo::main(text.as_deref(), variables);
                 variables.set_ret(ret);
             }
             Builtins::Shift(text) => {
-                let ret = builtins::shift::builtin_shift(text.as_deref(), variables);
+                let ret = builtins::shift::shift::main(text.as_deref(), variables);
                 variables.set_ret(ret);
             }
         },

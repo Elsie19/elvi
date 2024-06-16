@@ -74,7 +74,7 @@ fn main() {
 
     // Check if we can successfully parse the script on first go.
     let raw_parse =
-        match ElviParser::parse_with_userdata(Rule::program, &unparsed_file, &positionals) {
+        match ElviParser::parse_with_userdata(Rule::program, unparsed_file, &positionals) {
             Ok(yay) => yay,
             Err(oof) => {
                 eprintln!("{}", oof.with_path(file));
