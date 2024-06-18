@@ -102,19 +102,15 @@ impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
     fn from(value: &T) -> Self {
         let value = value as &str;
         let split_up = value.split(' ').collect_vec();
-        let cmd = (*split_up.first().unwrap()).to_string();
-        if split_up.len() == 1 {
-            Self {
-                cmd: cmd.into(),
-                args: None,
-                attributes: HowRun::RealTime,
-            }
-        } else {
-            Self {
-                cmd: cmd.into(),
-                args: Some(split_up.iter().skip(1).map(|s| (*s).to_string()).collect()),
-                attributes: HowRun::RealTime,
-            }
+        let cmd = *split_up.first().unwrap();
+        Self {
+            cmd: cmd.into(),
+            args: if value.len() == 1 {
+                None
+            } else {
+                Some(split_up.iter().skip(1).map(|s| (*s).to_string()).collect())
+            },
+            attributes: HowRun::RealTime,
         }
     }
 }
@@ -122,18 +118,14 @@ impl<T: Deref<Target = str>> From<&T> for ExternalCommand {
 impl From<Vec<String>> for ExternalCommand {
     fn from(value: Vec<String>) -> Self {
         let cmd = value.first().unwrap().to_owned();
-        if value.len() == 1 {
-            Self {
-                cmd: cmd.into(),
-                args: None,
-                attributes: HowRun::RealTime,
-            }
-        } else {
-            Self {
-                cmd: cmd.into(),
-                args: Some(value.iter().skip(1).map(|s| (*s).to_string()).collect()),
-                attributes: HowRun::RealTime,
-            }
+        Self {
+            cmd: cmd.into(),
+            args: if value.len() == 1 {
+                None
+            } else {
+                Some(value.iter().skip(1).map(|s| (*s).to_string()).collect())
+            },
+            attributes: HowRun::RealTime,
         }
     }
 }
