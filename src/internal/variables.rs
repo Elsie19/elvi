@@ -2,10 +2,10 @@ use core::fmt;
 use glob::glob;
 use homedir::get_home;
 use pest_consume::Itertools;
-use regex::Regex;
 use std::{
     collections::HashMap,
     env,
+    ffi::OsStr,
     path::{Path, PathBuf},
     process,
 };
@@ -396,9 +396,8 @@ impl ElviType {
     #[must_use]
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
-            Self::String(le_string) => {
-                let re = Regex::new(r"^~([a-z_][a-z0-9_]{0,30})").unwrap();
-                let path = PathBuf::from(le_string);
+            reto @ (Self::String(le_string) | Self::VariableSubstitution(le_string)) => {
+                let path = Path::new(le_string);
                 // So in POSIX, you can have two (*three) forms:
                 //
                 // ```bash
@@ -406,69 +405,68 @@ impl ElviType {
                 // ~henry/oof
                 // ~
                 // ```
-                // Do we have a tilde at the start?
-                if path.starts_with("~/") {
-                    let home_dir = &vars.get_variable("HOME").unwrap().contents;
-                    let final_cd = home_dir.to_string()
-                        + std::path::MAIN_SEPARATOR_STR
-                        + path.strip_prefix("~/").unwrap().to_str().unwrap();
-                    match self {
-                        Self::String(_) => Self::String(final_cd),
-                        Self::VariableSubstitution(_) => Self::VariableSubstitution(final_cd),
-                        _ => unreachable!("Not possible."),
-                    }
-                // Perchance could it be a user form?
-                } else if re.is_match(match path.parent() {
-                    Some(p) => p.to_str().unwrap(),
-                    None => "/",
-                }) {
-                    let user = match path.parent() {
-                        Some(woot) => {
-                            if woot == Path::new("") {
-                                path.to_str().unwrap()[1..].to_string()
-                            } else {
-                                // ~foo/bar -> foo
-                                path.parent().unwrap().to_str().unwrap()[1..].to_string()
-                            }
-                        }
-                        None => path.to_str().unwrap().to_string(),
-                    };
-                    let user_path = match get_home(&user) {
-                        Ok(woot) => match woot {
-                            Some(yas) => yas,
-                            None => match self {
-                                // We should return the literal path they provided
-                                Self::String(_) => {
-                                    return Self::String(path.to_str().unwrap().to_string());
-                                }
-                                Self::VariableSubstitution(_) => {
-                                    return Self::VariableSubstitution(
-                                        path.to_str().unwrap().to_string(),
-                                    );
-                                }
-                                _ => unreachable!("Not possible."),
-                            },
-                        },
-                        Err(oof) => panic!("Could not obtain this home directory LMAO {oof}"),
-                    };
-                    let final_cd = user_path.join(path.strip_prefix(format!("~{user}")).unwrap());
-                    match self {
-                        Self::String(_) => Self::String(final_cd.to_str().unwrap().to_string()),
-                        Self::VariableSubstitution(_) => {
-                            Self::VariableSubstitution(final_cd.to_str().unwrap().to_string())
-                        }
-                        _ => unreachable!("Not possible."),
-                    }
-                } else {
-                    // We don't and the caller is an idiot. Congrats: here's your string back to
-                    // you. Fuck you.
-                    match self {
-                        goopy @ (Self::String(_) | Self::VariableSubstitution(_)) => goopy.clone(),
-                        _ => unreachable!(
-                            "We already matched above. How did self change? It's immutable????"
-                        ),
-                    }
+
+                // So first let's check if there's even a tilde at the start to speed things up.
+                if !le_string.starts_with("~") {
+                    return reto.clone();
                 }
+
+                if le_string == "~" {
+                    return match self {
+                        Self::String { .. } => {
+                            Self::String(vars.get_variable("HOME").unwrap().contents.to_string())
+                        }
+                        Self::VariableSubstitution { .. } => Self::VariableSubstitution(
+                            vars.get_variable("HOME").unwrap().contents.to_string(),
+                        ),
+                        _ => unreachable!(),
+                    };
+                // Do we have a tilde starting path?
+                } else if path.starts_with("~/") {
+                    let mut transform = path.display().to_string();
+                    transform.replace_range(
+                        0..1,
+                        &vars.get_variable("HOME").unwrap().contents.to_string(),
+                    );
+                    return match self {
+                        Self::String { .. } => Self::String(transform),
+                        Self::VariableSubstitution { .. } => Self::VariableSubstitution(transform),
+                        _ => unreachable!(),
+                    };
+                // At this point, after the previous checks, we can reasonably assume that we are
+                // left with a tilde user expansion.
+                } else if path.to_str().unwrap().starts_with("~") {
+                    let expanded_path: String = match path.parent() {
+                        // We have something like `~foo`.
+                        Some(p) if p == Path::new("") => {
+                            let without_tilde = &path.to_str().unwrap()[1..];
+                            let home = get_home(without_tilde).ok().flatten();
+                            handle_home(home, &[], &path.display().to_string())
+                        }
+                        // This means we have the tilde user + paths after
+                        Some(x) => {
+                            let without_tilde = &x.to_str().unwrap()[1..];
+                            let rest: Vec<&OsStr> = path.iter().skip(1).collect();
+                            let home = get_home(without_tilde).ok().flatten();
+                            handle_home(home, &rest, &path.display().to_string())
+                        }
+                        None => le_string.to_string(),
+                    };
+                    return match self {
+                        Self::String { .. } => Self::String(expanded_path),
+                        Self::VariableSubstitution { .. } => {
+                            Self::VariableSubstitution(expanded_path)
+                        }
+                        _ => unreachable!(),
+                    };
+                }
+                return match self {
+                    Self::String { .. } => Self::String(le_string.to_string()),
+                    Self::VariableSubstitution { .. } => {
+                        Self::VariableSubstitution(le_string.to_string())
+                    }
+                    _ => unreachable!(),
+                };
             }
             default => default.clone(),
         }
@@ -613,6 +611,18 @@ impl ElviType {
             Err(oof) => eprintln!("{oof}"),
         }
         ret_vec
+    }
+}
+
+fn handle_home(home: Option<PathBuf>, rest: &[&OsStr], default: &str) -> String {
+    match home {
+        Some(mut dir) => {
+            for part in rest {
+                dir.push(part);
+            }
+            dir.display().to_string()
+        }
+        None => default.to_string(),
     }
 }
 

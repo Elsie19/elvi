@@ -1,6 +1,5 @@
 #!/bin/sh
 
-if [ -f "foo" ]; then
-  echo "foo"
-fi
-ls
+for i in ~elsie/*; do
+    echo "$i"
+done
