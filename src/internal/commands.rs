@@ -202,7 +202,6 @@ pub fn execute_external_command(
     // <https://doc.rust-lang.org/std/path/struct.PathBuf.html#method.is_absolute>
 
     // We can skip all the PATH checking if the user passed a qualified path.
-    //BUG: Does not handle tilde paths yet.
     if cmd.cmd.is_absolute() || cmd.cmd.starts_with("./") {
         if !cmd.cmd.exists() {
             return Err(CommandError::NotFound {

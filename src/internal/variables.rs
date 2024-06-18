@@ -393,7 +393,7 @@ impl ElviType {
     #[must_use]
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
-            reto @ (Self::String(le_string) | Self::VariableSubstitution(le_string)) => {
+            Self::String(le_string) => {
                 let path = Path::new(le_string);
                 // So in POSIX, you can have two (*three) forms:
                 //
@@ -405,19 +405,11 @@ impl ElviType {
 
                 // So first let's check if there's even a tilde at the start to speed things up.
                 if !le_string.starts_with('~') {
-                    return reto.clone();
+                    return Self::String(le_string.to_string());
                 }
 
                 if le_string == "~" {
-                    return match self {
-                        Self::String { .. } => {
-                            Self::String(vars.get_variable("HOME").unwrap().contents.to_string())
-                        }
-                        Self::VariableSubstitution { .. } => Self::VariableSubstitution(
-                            vars.get_variable("HOME").unwrap().contents.to_string(),
-                        ),
-                        _ => unreachable!(),
-                    };
+                    return Self::String(vars.get_variable("HOME").unwrap().contents.to_string());
                 // Do we have a tilde starting path?
                 } else if path.starts_with("~/") {
                     let mut transform = path.display().to_string();
@@ -425,11 +417,7 @@ impl ElviType {
                         0..1,
                         &vars.get_variable("HOME").unwrap().contents.to_string(),
                     );
-                    return match self {
-                        Self::String { .. } => Self::String(transform),
-                        Self::VariableSubstitution { .. } => Self::VariableSubstitution(transform),
-                        _ => unreachable!(),
-                    };
+                    return Self::String(transform);
                 // At this point, after the previous checks, we can reasonably assume that we are
                 // left with a tilde user expansion.
                 } else if path.to_str().unwrap().starts_with('~') {
@@ -449,21 +437,9 @@ impl ElviType {
                         }
                         None => le_string.to_string(),
                     };
-                    return match self {
-                        Self::String { .. } => Self::String(expanded_path),
-                        Self::VariableSubstitution { .. } => {
-                            Self::VariableSubstitution(expanded_path)
-                        }
-                        _ => unreachable!(),
-                    };
+                    return Self::String(expanded_path);
                 }
-                match self {
-                    Self::String { .. } => Self::String(le_string.to_string()),
-                    Self::VariableSubstitution { .. } => {
-                        Self::VariableSubstitution(le_string.to_string())
-                    }
-                    _ => unreachable!(),
-                }
+                Self::String(le_string.to_string())
             }
             default => default.clone(),
         }
