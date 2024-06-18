@@ -11,6 +11,7 @@ impl Env {
     }
 
     /// Query whether inside a function or not.
+    #[must_use]
     pub fn in_function(&self) -> bool {
         self.in_function
     }

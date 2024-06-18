@@ -49,10 +49,7 @@ pub enum ElviType {
 
 impl QuotedNature for ElviType {
     fn is_quoted(&self) -> bool {
-        match self {
-            Self::String(_) | Self::BareString(_) => false,
-            _ => true,
-        }
+        !matches!(self, Self::String(_) | Self::BareString(_))
     }
 }
 
@@ -407,7 +404,7 @@ impl ElviType {
                 // ```
 
                 // So first let's check if there's even a tilde at the start to speed things up.
-                if !le_string.starts_with("~") {
+                if !le_string.starts_with('~') {
                     return reto.clone();
                 }
 
@@ -435,7 +432,7 @@ impl ElviType {
                     };
                 // At this point, after the previous checks, we can reasonably assume that we are
                 // left with a tilde user expansion.
-                } else if path.to_str().unwrap().starts_with("~") {
+                } else if path.to_str().unwrap().starts_with('~') {
                     let expanded_path: String = match path.parent() {
                         // We have something like `~foo`.
                         Some(p) if p == Path::new("") => {
@@ -460,13 +457,13 @@ impl ElviType {
                         _ => unreachable!(),
                     };
                 }
-                return match self {
+                match self {
                     Self::String { .. } => Self::String(le_string.to_string()),
                     Self::VariableSubstitution { .. } => {
                         Self::VariableSubstitution(le_string.to_string())
                     }
                     _ => unreachable!(),
-                };
+                }
             }
             default => default.clone(),
         }
