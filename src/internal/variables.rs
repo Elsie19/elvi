@@ -453,7 +453,7 @@ impl ElviType {
         match self {
             // So basically because of my shitty thinking, we set all double quotes to
             // [`ElviType::VariableSubstitution`] and convert that into a string. Haha.
-            ElviType::VariableSubstitution(le_string) => {
+            ElviType::VariableSubstitution(le_string) | ElviType::BareString(le_string) => {
                 // Let's skip the variables loops if we can't even find anything.
                 if !le_string.contains('$') && !le_string.contains(r"\$") {
                     return Self::String(le_string.to_string());
