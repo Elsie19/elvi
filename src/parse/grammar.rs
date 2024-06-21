@@ -138,7 +138,7 @@ impl ElviParser {
     }
 
     pub fn elviSingleWord(input: Node) -> Result<ElviType> {
-        Ok(ElviType::String(input.as_str().to_string()))
+        Ok(ElviType::BareString(input.as_str().to_string()))
     }
 
     /// Handles any single word

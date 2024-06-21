@@ -389,11 +389,11 @@ impl ElviType {
     /// *never* encounter this, and if you do, you have bigger issues than a panic.
     ///
     /// # Notes
-    /// Requires [`ElviType::String`].
+    /// Requires [`ElviType::BareString`].
     #[must_use]
     pub fn tilde_expansion(&self, vars: &Variables) -> Self {
         match self {
-            Self::String(le_string) => {
+            Self::BareString(le_string) => {
                 let path = Path::new(le_string);
                 // So in POSIX, you can have two (*three) forms:
                 //
@@ -405,11 +405,13 @@ impl ElviType {
 
                 // So first let's check if there's even a tilde at the start to speed things up.
                 if !le_string.starts_with('~') {
-                    return Self::String(le_string.to_string());
+                    return Self::BareString(le_string.to_string());
                 }
 
                 if le_string == "~" {
-                    return Self::String(vars.get_variable("HOME").unwrap().contents.to_string());
+                    return Self::BareString(
+                        vars.get_variable("HOME").unwrap().contents.to_string(),
+                    );
                 // Do we have a tilde starting path?
                 } else if path.starts_with("~/") {
                     let mut transform = path.display().to_string();
@@ -417,7 +419,7 @@ impl ElviType {
                         0..1,
                         &vars.get_variable("HOME").unwrap().contents.to_string(),
                     );
-                    return Self::String(transform);
+                    return Self::BareString(transform);
                 // At this point, after the previous checks, we can reasonably assume that we are
                 // left with a tilde user expansion.
                 } else if path.to_str().unwrap().starts_with('~') {
@@ -437,9 +439,9 @@ impl ElviType {
                         }
                         None => le_string.to_string(),
                     };
-                    return Self::String(expanded_path);
+                    return Self::BareString(expanded_path);
                 }
-                Self::String(le_string.to_string())
+                Self::BareString(le_string.to_string())
             }
             default => default.clone(),
         }
