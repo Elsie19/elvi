@@ -1,5 +1,7 @@
 #!/bin/sh
 
-for i in ~elsie/*; do
+foo="foo bar baz"
+
+for i in ${foo}; do
     echo "$i"
 done

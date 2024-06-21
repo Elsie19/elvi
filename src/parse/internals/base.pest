@@ -20,7 +20,7 @@ elviNumber = { ASCII_DIGIT+ }
 elviWord = { anyString | elviSingleWord }
 
 /// Any numbers or lettesr, with underscores, dashes, slashes, tildes, globs, or periods.
-elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*" | "." | "$")+ }
+elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*" | "." | "$" | "{" | "}")+ }
 
 /// Keywords to prevent name clashing in parsing.
 keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" }
