@@ -161,7 +161,7 @@ impl ElviParser {
     pub fn normalVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
-        let lines = stuff.clone().next().unwrap().line_col();
+        let lines = input.children().into_pairs().next().unwrap().line_col();
 
         let name_pair = stuff.next().unwrap().as_str();
 
@@ -183,7 +183,7 @@ impl ElviParser {
     pub fn readonlyVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
-        let lines = stuff.clone().next().unwrap().line_col();
+        let lines = input.children().into_pairs().next().unwrap().line_col();
 
         let name_pair = stuff.next().unwrap().as_str();
 
@@ -205,7 +205,7 @@ impl ElviParser {
     pub fn localVariable(input: Node) -> Result<(String, Variable)> {
         let mut stuff = input.clone().into_children().into_pairs();
 
-        let lines = stuff.clone().next().unwrap().line_col();
+        let lines = input.children().into_pairs().next().unwrap().line_col();
 
         let name_pair = stuff.next().unwrap().as_str();
 
@@ -410,7 +410,6 @@ impl ElviParser {
         // Set all the positional variables once.
         let list: Vec<Variable> = positional_arguments
             .args
-            .clone()
             .iter()
             .map(|var| var.to_owned().into())
             .collect();

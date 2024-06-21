@@ -22,9 +22,8 @@ pub trait QuotedNature {
 #[derive(Debug, Clone, PartialEq)]
 /// Struct representing the variable types in Elvi.
 pub enum ElviType {
-    /// A string (a single quoted string or post variable/command substituted string).
-    ///
-    /// If this string is seen, take it as it is ;)
+    /// A thin interface for [`String`]. This type should be taken exactly as a String
+    /// would be taken.
     String(String),
     /// A number.
     Number(usize),
