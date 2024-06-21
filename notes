@@ -1,0 +1,7 @@
+If I have this:
+
+```bash
+foo="bar baz"
+bang="lol"
+echo "${bang}" $foo -> "lol" bar baz
+```

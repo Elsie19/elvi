@@ -82,6 +82,7 @@ impl ElviParser {
         Ok(match_nodes!(input.into_children();
             [singleQuoteString(stringo)] => stringo,
             [doubleQuoteString(stringo)] => stringo,
+            [elviSingleWord(stringo)] => stringo,
         ))
     }
 

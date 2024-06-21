@@ -5,9 +5,8 @@ singleQuoteString = { "'" ~ singleInner ~ "'" }
 /// A double quoted string.
 doubleQuoteString = { "\"" ~ doubleInner ~ "\"" }
 
-// A wrapper so people don't have to { singleQuoteString | doubleQuoteString }
 /// Wrapper for any type of string.
-anyString = ${ singleQuoteString | doubleQuoteString }
+anyString = ${ singleQuoteString | doubleQuoteString | elviSingleWord }
 
 // Helper rules
 /// What can be inside a double quoted string.
