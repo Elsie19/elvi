@@ -480,7 +480,7 @@ impl ElviType {
                                 chars_of.by_ref().take_while(|&c| c != '}').collect();
                             // So here we have a list of expanded special vars, but assuming that
                             // there are no special vars, we got len() == 0.
-                            let expanded_out = self.eval_special_variable(&tasty_var, vars);
+                            let expanded_out = self.expand_param(&tasty_var, vars);
                             for part in expanded_out {
                                 back_to_string.push_str(part.as_str());
                             }
@@ -504,7 +504,7 @@ impl ElviType {
                                     c != ' ' && c != '\\' && c != ':' && c != '-'
                                 })
                                 .collect();
-                            let expanded_out = self.eval_special_variable(&tasty_var, vars);
+                            let expanded_out = self.expand_param(&tasty_var, vars);
                             for part in expanded_out {
                                 back_to_string.push_str(part.as_str());
                             }
@@ -521,7 +521,7 @@ impl ElviType {
     /// <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#2.5.2>
     /// We also do variable expansion regardless in here.
     #[must_use]
-    pub fn eval_special_variable(&self, var: &str, variables: &Variables) -> Vec<String> {
+    pub fn expand_param(&self, var: &str, variables: &Variables) -> Vec<String> {
         let mut ret_vec = vec![];
         match var {
             // TODO: Fully flesh out the differences between these two.
