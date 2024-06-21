@@ -14,8 +14,8 @@ pub fn main(args: Option<&[ElviType]>, variables: &mut Variables) -> ReturnCode 
         for part in unny {
             evaled_variables.push(
                 part.tilde_expansion(variables)
-                    .eval_escapes()
                     .eval_variables(variables)
+                    .eval_escapes()
                     .to_string(),
             );
         }

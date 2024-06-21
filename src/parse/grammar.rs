@@ -489,8 +489,8 @@ pub fn eval(
             for part in cmd {
                 expanded.push(
                     part.tilde_expansion(variables)
-                        .eval_escapes()
                         .eval_variables(variables)
+                        .eval_escapes()
                         .to_string(),
                 );
             }
