@@ -106,7 +106,7 @@ mod tests {
         variables
             .set_variable("foo", ElviType::String("bar".to_string()))
             .unwrap();
-        builtin_unset(
+        main(
             Some(&[ElviType::String("foo".to_string())]),
             &mut variables,
             &mut commands,
@@ -128,7 +128,7 @@ mod tests {
                 },
             )
             .unwrap();
-        let out = builtin_unset(
+        let out = main(
             Some(&[ElviType::String("foo".to_string())]),
             &mut variables,
             &mut commands,

@@ -20,7 +20,7 @@ mod tests {
     fn test_file() {
         let variables = Variables::default();
         assert_eq!(
-            builtin_test(
+            main(
                 false,
                 TestOptions::RegularFileExists(ElviType::String("/etc/passwd".into())),
                 &variables
@@ -33,7 +33,7 @@ mod tests {
     fn writable_test() {
         let variables = Variables::default();
         assert_eq!(
-            builtin_test(
+            main(
                 false,
                 TestOptions::FileExistsWritable(ElviType::String("/etc/passwd".into())),
                 &variables
@@ -46,7 +46,7 @@ mod tests {
     fn test_strings_equals() {
         let variables = Variables::default();
         assert_eq!(
-            builtin_test(
+            main(
                 false,
                 TestOptions::String1IsString2((
                     ElviType::String("foo".into()),
@@ -62,7 +62,7 @@ mod tests {
     fn directory_exists() {
         let variables = Variables::default();
         assert_eq!(
-            builtin_test(
+            main(
                 false,
                 TestOptions::DirectoryExists(ElviType::String("/etc/".into())),
                 &variables
@@ -75,7 +75,7 @@ mod tests {
     fn directory_not_exists() {
         let variables = Variables::default();
         assert_eq!(
-            builtin_test(
+            main(
                 true,
                 TestOptions::DirectoryExists(ElviType::String("/not_exists/".into())),
                 &variables
