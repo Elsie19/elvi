@@ -50,7 +50,9 @@ pub fn main(args: Option<&[ElviType]>, variables: &mut Variables) -> ReturnCode 
         eprintln!("can't shift that many");
         std::process::exit(ReturnCode::MISUSE.into());
     }
-    variables.params.drain(..number);
+    variables
+        .params
+        .truncate(variables.len_parameters() - number);
     ReturnCode::SUCCESS.into()
 }
 

@@ -517,7 +517,7 @@ pub fn eval(
                 let current_params = variables.pull_parameters();
                 let function_run: ExternalCommand = expanded.clone().into();
                 // Temporarily replace positionals.
-                variables.params = vec![function_run.cmd.display().to_string().into()];
+                variables.params.drain(1..);
                 if let Some(comps) = function_run.args {
                     for part in comps {
                         variables.params.push(part.into());
