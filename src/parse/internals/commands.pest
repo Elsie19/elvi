@@ -4,7 +4,7 @@ externalCommand = ${ !(keywords) ~ elviWord ~ (space+ ~ elviWord)* }
 
 /// A compound command
 // TODO: Make these do stuff instead of being stubs
-compoundSubshell = { "(" ~ (space+)? ~ (statement+)? ~ (space+)? ~ ")" }
+compoundSubshell = { "(" ~ (space+ | "\n"+)? ~ (statement+)? ~ (space+ | "\n"+)? ~ ")" }
 compoundShell    = { "{" ~ (space+)? ~ (statement+)? ~ (newline) ~ "}" }
 
 compoundCommands = {

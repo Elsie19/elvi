@@ -43,3 +43,9 @@ echo "foo is '${foo}'"
 if grep -q 'h' /proc/cpuinfo; then
     echo "IT WORKS"
 fi
+
+echo "SHLVL is starting at ${SHLVL}"
+(
+    echo "SHLVL is ${SHLVL} in a subshell"
+)
+echo "SHLVL is back to ${SHLVL}"

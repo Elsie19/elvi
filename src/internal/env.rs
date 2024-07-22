@@ -28,7 +28,7 @@ impl Env {
         if by_count > 0 {
             self.subshells_in = self.subshells_in.saturating_add(by_count as u32);
         } else {
-            self.subshells_in = self.subshells_in.saturating_sub(by_count as u32);
+            self.subshells_in = self.subshells_in.saturating_sub(by_count.abs() as u32);
         }
         let _ = vars.set_variable(
             "SHLVL",

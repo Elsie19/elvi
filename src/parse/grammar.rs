@@ -415,8 +415,7 @@ impl ElviParser {
             [localVariable(var)] => Ok(Actions::ChangeVariable(var)),
             [builtinWrapper(var)] => Ok(var),
             [externalCommand(var)] => Ok(var),
-            [ifStatement(stmt)] => Ok(stmt),
-            [forLoop(stmt)] => Ok(stmt),
+            [compoundCommands(stmt)] => Ok(stmt),
             [functionDeclaration(func)] => Ok(func),
         )
     }
