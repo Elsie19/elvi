@@ -8,6 +8,7 @@ pub struct Env {
     pub stderr: String,
 }
 
+#[derive(Copy, Clone)]
 pub enum Std {
     Out,
     Err,
@@ -26,7 +27,7 @@ impl Env {
     }
 
     /// Append or print text to screen
-    pub fn print(&mut self, whereto: Std, how: HowRun, text: &str) {
+    pub fn print(&mut self, whereto: &Std, how: &HowRun, text: &str) {
         match how {
             HowRun::RealTime => match whereto {
                 Std::Out => print!("{text}"),

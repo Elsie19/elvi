@@ -23,7 +23,7 @@ elviWord = { anyString | elviSingleWord }
 elviSingleWord = { (ASCII_ALPHANUMERIC | "_" | "-" | "/" | "~" | "*" | "." | "$" | "{" | "}")+ }
 
 /// Keywords to prevent name clashing in parsing.
-keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" }
+keywords = { "for" | "then" | "done" | "if" | "fi" | "else" | "elsie" | "in" | "{" | "}" | "(" | ")" }
 
 // `program` is comprised of statements.
 /// A statement is simply anything that can be executed.

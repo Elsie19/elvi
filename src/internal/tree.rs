@@ -27,6 +27,10 @@ pub enum Actions {
     ForLoop(Loop),
     /// Function declaration.
     FunctionDeclaration(Function),
+    /// Subshell
+    Subshell(Vec<Actions>),
+    /// Grouped commmands
+    CompoundBrackets(Vec<Actions>),
     /// Do nothing.
     Null,
 }

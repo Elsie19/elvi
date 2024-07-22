@@ -66,9 +66,9 @@ pub fn main(
             commands.deregister_function(&name);
         } else {
             let Some(var) = variables.get_variable(&name) else {
-        // <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#unset> in description in 5th paragraph
-        return ReturnCode::SUCCESS.into();
-    };
+                // <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/utilities/V3_chap02.html#unset> in description in 5th paragraph
+                return ReturnCode::SUCCESS.into();
+            };
             match var.modification_status {
                 ElviMutable::Normal => match variables.unset(&name) {
                     // We don't care about what it returned

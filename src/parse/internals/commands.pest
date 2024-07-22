@@ -1,3 +1,15 @@
 // Main rules
 /// A command that does not start with a keyword.
 externalCommand = ${ !(keywords) ~ elviWord ~ (space+ ~ elviWord)* }
+
+/// A compound command
+// TODO: Make these do stuff instead of being stubs
+compoundSubshell = { "(" ~ (space+)? ~ (statement+)? ~ (space+)? ~ ")" }
+compoundShell    = { "{" ~ (space+)? ~ (statement+)? ~ (newline) ~ "}" }
+
+compoundCommands = {
+    compoundShell
+  | compoundSubshell
+  | forLoop
+  | ifStatement
+}

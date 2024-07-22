@@ -1,3 +1,5 @@
 // TODO: We need to add a difference between {} and ().
 /// Function declaration according to <https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_09_05>.
-functionDeclaration = { #name = (!keywords ~ variableIdent) ~ (space+)? ~ "()" ~ (space+)? ~ "{" ~ ((space+ | newline+) ~ (#inner_function = statement)+ ~ newline+ ~ (space+)?)? ~ "}" }
+functionDeclaration = {
+    #name = (!keywords ~ variableIdent) ~ (space+)? ~ "()" ~ (space+)? ~ (space+)? ~ #inner_function = compoundCommands
+}

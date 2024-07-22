@@ -306,6 +306,28 @@ impl ElviParser {
         ))
     }
 
+    pub fn compoundShell(input: Node) -> Result<Vec<Actions>> {
+        Ok(match_nodes!(input.into_children();
+            [statement(stmt)..] => stmt.collect(),
+        ))
+    }
+
+    pub fn compoundSubshell(input: Node) -> Result<Vec<Actions>> {
+        Ok(match_nodes!(input.into_children();
+            [statement(stmt)..] => stmt.collect(),
+        ))
+    }
+
+    /// Handles compound commands.
+    pub fn compoundCommands(input: Node) -> Result<Actions> {
+        Ok(match_nodes!(input.into_children();
+            [forLoop(stmt)] => stmt,
+            [ifStatement(stmt)] => stmt,
+            [compoundShell(stmt)] => Actions::CompoundBrackets(stmt),
+            [compoundSubshell(stmt)] => Actions::Subshell(stmt),
+        ))
+    }
+
     /// Handles any external command.
     pub fn externalCommand(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
@@ -316,7 +338,7 @@ impl ElviParser {
     /// Handles function statements.
     pub fn functionDeclaration(input: Node) -> Result<Actions> {
         Ok(match_nodes!(input.into_children();
-            [name # variableIdent(name), inner_function # statement(stmt)..] => {
+            [name # variableIdent(name), inner_function # compoundCommands(stmt)..] => {
                 Actions::FunctionDeclaration(Function {
                     name,
                     contents: Some(stmt.collect()),
@@ -608,6 +630,20 @@ pub fn eval(
         }
         Actions::FunctionDeclaration(func) => {
             commands.register_function(func);
+        }
+        Actions::Subshell(stmts) => {
+            global_env.subshells_in += 1;
+            for act in &stmts {
+                let ret = eval(act.to_owned(), variables, commands, global_env);
+                variables.set_ret(ret);
+            }
+            global_env.subshells_in -= 1;
+        }
+        Actions::CompoundBrackets(stmts) => {
+            for act in &stmts {
+                let ret = eval(act.to_owned(), variables, commands, global_env);
+                variables.set_ret(ret);
+            }
         }
     }
     ReturnCode::ret(variables.get_ret().convert_err_type().get())
