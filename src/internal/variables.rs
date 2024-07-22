@@ -315,6 +315,13 @@ impl Default for Variables {
                         ..Default::default()
                     },
                 ),
+                (
+                    "SHLVL".into(),
+                    Variable {
+                        contents: ElviType::Number(1),
+                        ..Default::default()
+                    },
+                ),
             ]),
 
             params: vec![],

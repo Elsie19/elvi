@@ -475,9 +475,7 @@ pub fn eval(
             }
             Builtins::Exit(var) => {
                 let ret = builtins::exit::exit::main(var.as_deref(), variables);
-                if global_env.subshells_in > 1 {
-                    global_env.subshells_in -= 1;
-                } else {
+                if global_env.update_shlvl(-1, variables) < 1 {
                     std::process::exit(ret.get().into());
                 }
             }
@@ -632,12 +630,12 @@ pub fn eval(
             commands.register_function(func);
         }
         Actions::Subshell(stmts) => {
-            global_env.subshells_in += 1;
+            global_env.update_shlvl(1, variables);
             for act in &stmts {
                 let ret = eval(act.to_owned(), variables, commands, global_env);
                 variables.set_ret(ret);
             }
-            global_env.subshells_in -= 1;
+            global_env.update_shlvl(-1, variables);
         }
         Actions::CompoundBrackets(stmts) => {
             for act in &stmts {
