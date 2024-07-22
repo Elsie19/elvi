@@ -544,7 +544,7 @@ impl ElviType {
             "$" => {
                 ret_vec.push(process::id().to_string());
             }
-            "#" => ret_vec.push((variables.len_parameters() - 1).to_string()),
+            "#" => ret_vec.push((variables.len_parameters().saturating_sub(1)).to_string()),
             default => {
                 if let Some(woot) = variables.get_variable(default) {
                     ret_vec.push(woot.contents.to_string());

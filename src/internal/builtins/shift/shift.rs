@@ -46,7 +46,7 @@ pub fn main(args: Option<&[ElviType]>, variables: &mut Variables) -> ReturnCode 
         eprintln!("{err}");
         return err.ret();
     };
-    if variables.params.len() < number {
+    if variables.params.len() <= number {
         eprintln!("can't shift that many");
         std::process::exit(ReturnCode::MISUSE.into());
     }
