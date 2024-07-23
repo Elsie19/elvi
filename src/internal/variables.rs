@@ -63,7 +63,7 @@ pub enum ElviMutable {
     ReadonlyUnsettable,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 /// Enum representing the globality of a variable.
 pub enum ElviGlobal {
     /// Exported variable.

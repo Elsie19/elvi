@@ -44,8 +44,9 @@ if grep -q 'h' /proc/cpuinfo; then
     echo "IT WORKS"
 fi
 
-echo "SHLVL is starting at ${SHLVL}"
+echo "banglo is starting at '${banglo}'"
 (
-    echo "SHLVL is ${SHLVL} in a subshell"
+    banglo="bar"
+    echo "banglo is ${banglo} in a subshell"
 )
-echo "SHLVL is back to ${SHLVL}"
+echo "banglo is back to ${banglo}"
