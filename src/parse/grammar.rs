@@ -635,9 +635,10 @@ pub fn eval(
                 variables.set_ret(ret);
             }
             global_env.update_shlvl(-1, variables);
-            variables
-                .vars
-                .retain(|_, v| v.shell_lvl <= ElviGlobal::Normal(global_env.subshells_in))
+            variables.vars.retain(|_, v| {
+                v.shell_lvl <= ElviGlobal::Normal(global_env.subshells_in)
+                    || v.shell_lvl == ElviGlobal::Global
+            })
         }
         Actions::CompoundBrackets(stmts) => {
             for act in &stmts {
