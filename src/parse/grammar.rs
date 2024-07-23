@@ -476,6 +476,8 @@ pub fn eval(
                 let ret = builtins::exit::exit::main(var.as_deref(), variables);
                 if global_env.update_shlvl(-1, variables) < 1 {
                     std::process::exit(ret.get().into());
+                } else {
+                    variables.set_ret(ret);
                 }
             }
             Builtins::Unset(var) => {
@@ -630,9 +632,18 @@ pub fn eval(
         }
         Actions::Subshell(stmts) => {
             global_env.update_shlvl(1, variables);
-            for act in &stmts {
-                let ret = eval(act.to_owned(), variables, commands, global_env);
-                variables.set_ret(ret);
+            let mut passed_vars = variables.clone();
+            for (idx, act) in stmts.iter().enumerate() {
+                let ret = eval(act.to_owned(), &mut passed_vars, commands, global_env);
+                // If we are at the end of the statement list, we should set the global state
+                // return:
+                // (
+                //   bla # Nothing
+                //   bla # Exit code here
+                // )
+                if idx == stmts.len() {
+                    variables.set_ret(ret);
+                }
             }
             global_env.update_shlvl(-1, variables);
             variables.vars.retain(|_, v| {

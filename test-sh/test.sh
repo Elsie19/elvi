@@ -44,9 +44,12 @@ if grep -q 'h' /proc/cpuinfo; then
     echo "IT WORKS"
 fi
 
-echo "banglo is starting at '${banglo}'"
+echo "PATH is ${PATH}"
 (
-    banglo="bar"
-    echo "banglo is ${banglo} in a subshell"
+    PATH="${PATH}:foo"
+    echo "PATH is ${PATH} in a subshell"
 )
-echo "banglo is back to ${banglo}"
+echo "PATH is back to ${PATH}"
+(
+    exit 1
+)
