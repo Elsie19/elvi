@@ -32,9 +32,9 @@ use user_flags::Args;
 fn main() {
     let args = Args::parse();
     let unparsed_file = if let Some(ref input) = args.group.read_from_input {
-        input
+        input.clone()
     } else {
-        &match fs::read_to_string(args.group.file.as_ref().unwrap()) {
+        match fs::read_to_string(args.group.file.clone().unwrap()) {
             Ok(yay) => yay,
             Err(_) => Args::command()
                 .error(
@@ -74,7 +74,7 @@ fn main() {
 
     // Check if we can successfully parse the script on first go.
     let raw_parse =
-        match ElviParser::parse_with_userdata(Rule::program, unparsed_file, &positionals) {
+        match ElviParser::parse_with_userdata(Rule::program, &unparsed_file, &positionals) {
             Ok(yay) => yay,
             Err(oof) => {
                 eprintln!("{}", oof.with_path(file));
