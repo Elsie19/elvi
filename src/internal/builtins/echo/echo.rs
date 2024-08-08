@@ -38,7 +38,7 @@ pub fn main(text: Option<&[ElviType]>, variables: &Variables) -> ReturnCode {
         ReturnCode::SUCCESS.into()
     } else {
         for part in &matches.free {
-            to_print.push(part.to_owned());
+            to_print.push(part.to_owned().replace("\\033", "\x1b"));
         }
         if matches.opt_present("n") {
             print!("{}", to_print.join(" "));

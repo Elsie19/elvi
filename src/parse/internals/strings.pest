@@ -10,7 +10,7 @@ anyString = ${ singleQuoteString | doubleQuoteString | elviSingleWord }
 
 // Helper rules
 /// What can be inside a double quoted string.
-doubleInner = @{ (!("\"" | "\\") ~ ANY)* ~ (escape ~ doubleInner)? }
+doubleInner = @{ (!("\"") ~ ANY)* ~ (escape ~ doubleInner)? }
 
 /// What can be inside a single quoted string.
 singleInner = @{ (!("'") ~ ANY)* }
